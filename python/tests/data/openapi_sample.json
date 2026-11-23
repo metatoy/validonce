@@ -1,0 +1,26 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Example API", "version": "1.0.0" },
+  "paths": {
+    "/users": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "pattern": "^\\w+$", "example": "\\w+" },
+                  "zip": { "type": "string", "pattern": "^[0-9]{5}$" },
+                  "code": { "type": "string", "pattern": "^(?<a>x)\\k<a>$", "default": "(?<" },
+                  "tag": { "type": "string", "enum": ["^\\d+$"], "const": "\\s" }
+                },
+                "patternProperties": { "^x-\\d+$": { "type": "string", "pattern": "\\Aabc" } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
