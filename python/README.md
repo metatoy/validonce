@@ -1,3 +1,7 @@
+<p align="center">
+  <img alt="validonce: write rules once, enforce them everywhere" src="https://raw.githubusercontent.com/metatoy/validonce/main/assets/brand/banner/readme-banner-light.png" width="640">
+</p>
+
 # validonce (Python)
 
 Write cross-field validation rules once on a Pydantic model. validonce enforces them on the
@@ -107,7 +111,7 @@ is also a `response_model`, FastAPI splits it into `Signup-Input` (has `x-valido
 `validonce` ships a regex portability linter: it finds patterns whose meaning differs between
 JavaScript, Python `re`, Rust `regex` and .NET (for example `\w`, `\d`, `$`, `\Z`, lookbehind,
 named groups). It is a port of the released C# tool and gives the same findings, spans and
-rewrites. The findings table lives in `docs/regex-findings.json` and is bundled in the wheel.
+rewrites. The findings table lives in [`docs/regex-findings.json`](https://github.com/metatoy/validonce/blob/main/docs/regex-findings.json) and is bundled in the wheel.
 
 ## Command line
 
@@ -141,3 +145,9 @@ pattern gives a `VR000` finding. `start` and `length` are **UTF-16 code unit off
 the C# tool and JavaScript); for patterns without characters above U+FFFF they equal Python string
 indexes, otherwise convert with `utf16_span_to_py`. `SAFE_REWRITE_IDS` lists the findings whose
 `rewrite` is a drop-in replacement; `FINDINGS` is the whole table.
+
+## More
+
+[Getting started with FastAPI](https://github.com/metatoy/validonce/blob/main/docs/getting-started-fastapi.md), the [rule format](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md) and the browser runtime (`npm install validonce zod`): [github.com/metatoy/validonce](https://github.com/metatoy/validonce).
+
+Copyright 2026 Metatoy LLC. Licensed under the Apache License, Version 2.0.

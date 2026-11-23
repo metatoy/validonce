@@ -1,9 +1,13 @@
+<p align="center">
+  <img alt="validonce: write rules once, enforce them everywhere" src="https://raw.githubusercontent.com/metatoy/validonce/main/assets/brand/banner/readme-banner-light.png" width="640">
+</p>
+
 # validonce (TypeScript)
 
 Validate once, enforce everywhere. A server exports its cross-field rules as data; this package evaluates them in the browser and attaches them to a Zod 4 schema.
 
 ```sh
-pnpm add validonce zod
+pnpm add validonce zod      # or: npm install validonce zod
 ```
 
 `validonce` (the root entry) has no dependencies and no Zod. `validonce/zod` needs `zod@^4`. `validonce/openapi` has no dependencies.
@@ -109,6 +113,17 @@ const group = new FormGroup(
 - Use one validator instance per group. `server_only` rules are skipped.
 - `messages` is a key -> text catalog with `{param}` placeholders; a missing key falls back to the key.
 
+## Server errors
+
+```ts
+import { fieldErrorsFromIssues, issuesFromResponse } from "validonce/server-errors";
+
+const issues = issuesFromResponse(await res.json()); // FastAPI 422 or ASP.NET Core ProblemDetails
+const errors = fieldErrorsFromIssues(issues, messages, rules); // { "company": "Company is required." }
+```
+
+`issuesFromFastApi` and `issuesFromProblemDetails` read one shape each. Entries that are not validonce issues are ignored.
+
 ## Extract rules at build time: `validonce extract`
 
 ```sh
@@ -128,3 +143,9 @@ import { evaluate, parseRuleSet } from "validonce";
 const issues = evaluate(parseRuleSet(raw).rules, data, { side: "client" });
 // [{ path, ruleId, key, params }]
 ```
+
+## More
+
+Guides for [React](https://github.com/metatoy/validonce/blob/main/docs/client-react.md) and [Angular](https://github.com/metatoy/validonce/blob/main/docs/client-angular.md), the [rule format](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md), and the C# and Python server packages: [github.com/metatoy/validonce](https://github.com/metatoy/validonce).
+
+Copyright 2026 Metatoy LLC. Licensed under the Apache License, Version 2.0.
