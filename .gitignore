@@ -16,3 +16,9 @@ __pycache__/
 htmlcov/
 # os
 .DS_Store
+
+# Playwright output (screenshots are uploaded by CI as artifacts)
+examples/react-form/e2e/screenshots/
+examples/react-form/test-results/
+examples/react-form/playwright-report/
+examples/*/backend.log
