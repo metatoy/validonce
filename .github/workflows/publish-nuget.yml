@@ -2,11 +2,14 @@
 # Copyright 2026 Metatoy LLC
 name: publish-nuget
 # Publishes .NET packages to nuget.org through trusted publishing (no stored API key).
-# Run by hand only, and only after the founder approves the release.
+# Runs when a GitHub Release is published: packs all four packages at the release version (the tag
+# must be v<Version in dotnet/Directory.Build.props>). Or by hand:
 #   source = dotnet:               packs the projects named in `packages` from dotnet/src at `version`
 #   source = placeholders/dotnet:  packs the name-holding placeholders (no version override)
 # Needs the repository variable NUGET_USER (the nuget.org account name; not a secret).
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       source:
@@ -35,15 +38,36 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+      - name: Settings for this run
+        id: cfg
+        env:
+          EVENT: ${{ github.event_name }}
+          TAG: ${{ github.event.release.tag_name }}
+          IN_SOURCE: ${{ inputs.source }}
+          IN_PACKAGES: ${{ inputs.packages }}
+          IN_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = "release" ]; then
+            version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' dotnet/Directory.Build.props | head -1)
+            [ "$TAG" = "v$version" ] || { echo "release tag $TAG does not match Directory.Build.props version $version"; exit 1; }
+            echo "source=dotnet" >> "$GITHUB_OUTPUT"
+            echo "packages=Validonce Validonce.FluentValidation Validonce.AspNetCore Validonce.Cli" >> "$GITHUB_OUTPUT"
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          else
+            echo "source=$IN_SOURCE" >> "$GITHUB_OUTPUT"
+            echo "packages=$IN_PACKAGES" >> "$GITHUB_OUTPUT"
+            echo "version=$IN_VERSION" >> "$GITHUB_OUTPUT"
+          fi
       - name: Test before packing
-        if: inputs.source == 'dotnet'
+        if: steps.cfg.outputs.source == 'dotnet'
         working-directory: dotnet
         run: dotnet test -c Release
       - name: Pack
         env:
-          SOURCE: ${{ inputs.source }}
-          PACKAGES: ${{ inputs.packages }}
-          VERSION: ${{ inputs.version }}
+          SOURCE: ${{ steps.cfg.outputs.source }}
+          PACKAGES: ${{ steps.cfg.outputs.packages }}
+          VERSION: ${{ steps.cfg.outputs.version }}
         run: |
           set -euo pipefail
           if [ "$SOURCE" = "dotnet" ]; then
