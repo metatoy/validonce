@@ -75,12 +75,13 @@ export function dependentFields(rules: RulesLike): Record<string, string[]> {
  *   const deps = registerDeps(rules);
  *   <input {...register("plan", { ...deps("plan") })} />
  */
-export function registerDeps(
+export function registerDeps<TName extends string = string>(
   rules: RulesLike,
-): (name: string) => { deps?: string[] } {
+): (name: TName) => { deps?: TName[] } {
   const map = dependentFields(rules);
   return (name) => {
     const d = Object.hasOwn(map, name) ? map[name] : undefined;
-    return d ? { deps: [...d] } : {};
+    // The rules come from the server, so their field names are the form's wire names.
+    return d ? { deps: [...d] as TName[] } : {};
   };
 }

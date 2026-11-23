@@ -4,6 +4,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import type { Catalog } from "validonce/messages";
+import { registerDeps } from "validonce/react-hook-form";
 import { rulesFromOpenApi } from "validonce/openapi";
 import {
   fieldErrorsFromIssues,
@@ -13,7 +15,7 @@ import type { RuleSet } from "validonce";
 import { withRules } from "validonce/zod";
 import { z } from "zod";
 
-const messages: Record<string, string> = {
+const messages: Catalog = {
   "rules.company_required": "Company is required on the Pro plan",
   "rules.end_after_start": "End date must be on or after the start date",
   "rules.quantity_min": "Quantity must be at least {min}",
@@ -47,6 +49,8 @@ function Form({ rules }: { rules: RuleSet }) {
     () => withRules(baseSchema, rules, { messages }),
     [rules],
   );
+  // Changing one field re-checks the fields whose rules read it.
+  const deps = useMemo(() => registerDeps<Field>(rules), [rules]);
   const {
     register,
     handleSubmit,
@@ -54,6 +58,7 @@ function Form({ rules }: { rules: RuleSet }) {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
+    mode: "onChange",
     defaultValues: {
       plan: "free",
       company: null,
@@ -77,7 +82,7 @@ function Form({ rules }: { rules: RuleSet }) {
       return;
     }
     const body: unknown = await res.json().catch(() => null);
-    setServerErrors(fieldErrorsFromIssues(issuesFromResponse(body), messages));
+    setServerErrors(fieldErrorsFromIssues(issuesFromResponse(body), messages, rules));
   }
 
   const onValid = (values: FormValues) => post(values);
@@ -108,7 +113,7 @@ function Form({ rules }: { rules: RuleSet }) {
     >
       <label>
         Plan
-        <select {...register("plan")} {...a11y("plan")} data-testid="plan">
+        <select {...register("plan", { ...deps("plan") })} {...a11y("plan")} data-testid="plan">
           <option value="free">free</option>
           <option value="pro">pro</option>
         </select>
@@ -119,18 +124,18 @@ function Form({ rules }: { rules: RuleSet }) {
         <input
           data-testid="company"
           {...a11y("company")}
-          {...register("company", { setValueAs: (v) => (v === "" ? null : v) })}
+          {...register("company", { ...deps("company"), setValueAs: (v) => (v === "" ? null : v) })}
         />
       </label>
       {fieldError("company")}
       <label>
         Email
-        <input data-testid="email" {...a11y("email")} {...register("email")} />
+        <input data-testid="email" {...a11y("email")} {...register("email", { ...deps("email") })} />
       </label>
       {fieldError("email")}
       <label>
         Start date
-        <input type="date" data-testid="start" {...a11y("start")} {...register("start")} />
+        <input type="date" data-testid="start" {...a11y("start")} {...register("start", { ...deps("start") })} />
       </label>
       {fieldError("start")}
       <label>
@@ -139,7 +144,7 @@ function Form({ rules }: { rules: RuleSet }) {
           type="date"
           data-testid="end"
           {...a11y("end")}
-          {...register("end", { setValueAs: (v) => (v === "" ? null : v) })}
+          {...register("end", { ...deps("end"), setValueAs: (v) => (v === "" ? null : v) })}
         />
       </label>
       {fieldError("end")}
@@ -150,6 +155,7 @@ function Form({ rules }: { rules: RuleSet }) {
           data-testid="quantity"
           {...a11y("quantity")}
           {...register("quantity", {
+            ...deps("quantity"),
             setValueAs: (v) => (v === "" || v == null ? Number.NaN : Number(v)),
           })}
         />

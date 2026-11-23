@@ -94,6 +94,23 @@ test("valid data is saved", async ({ page }) => {
   await expect(page.getByTestId("result")).toHaveText("Saved");
 });
 
+test("live update: switching plan clears the company error", async ({ page }) => {
+  await load(page);
+  await page.getByTestId("plan").selectOption("pro");
+  await expect(page.getByTestId("error-company")).toHaveText(MSG.company);
+  await page.getByTestId("plan").selectOption("free");
+  await expect(page.getByTestId("error-company")).toBeHidden();
+});
+
+test("live update: moving start earlier clears the end error", async ({ page }) => {
+  await load(page);
+  await page.getByTestId("start").fill("2026-03-10");
+  await page.getByTestId("end").fill("2026-03-01");
+  await expect(page.getByTestId("error-end")).toHaveText(MSG.end);
+  await page.getByTestId("start").fill("2026-02-01");
+  await expect(page.getByTestId("error-end")).toBeHidden();
+});
+
 /** The error must be the element right after the field's label, and the field must point to it. */
 async function expectUnderField(page: import("@playwright/test").Page, field: string) {
   await expect(
