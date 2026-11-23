@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Validonce.FluentValidation</PackageId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Validonce/Validonce.csproj" />
+  </ItemGroup>
+</Project>

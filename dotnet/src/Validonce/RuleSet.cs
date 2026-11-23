@@ -8,6 +8,9 @@ namespace Validonce;
 
 public sealed record RuleSet(int Version, IReadOnlyList<Rule> Rules)
 {
+    /// <summary>The rule-format JSON object (the value of <c>x-validonce</c>).</summary>
+    public JsonObject ToJson() => RuleJson.Write(this);
+
     public static RuleSet Parse(string json)
     {
         JsonNode? node;

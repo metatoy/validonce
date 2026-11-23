@@ -11,5 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Validonce/Validonce.csproj" />
+    <ProjectReference Include="../../src/Validonce.FluentValidation/Validonce.FluentValidation.csproj" />
   </ItemGroup>
 </Project>
