@@ -1,0 +1,690 @@
+{
+  "version": 1,
+  "suite": "edge",
+  "description": "Edge cases across the pinned behaviors (found by cross-checking the three evaluators, results checked by hand against the spec).",
+  "cases": [
+    {
+      "id": "edge-001",
+      "description": "year<100 datetime",
+      "rules": [
+        {
+          "id": "Edge.compare.001",
+          "kind": "compare",
+          "left": {
+            "field": "e"
+          },
+          "op": "gt",
+          "right": {
+            "field": "s"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "s": "0051-01-01T00:00:00Z",
+        "e": "0050-12-31T23:59:59Z"
+      },
+      "expect": [
+        {
+          "path": [
+            "e"
+          ],
+          "ruleId": "Edge.compare.001",
+          "key": "rules.edge",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "edge-002",
+      "description": "year<100 date",
+      "rules": [
+        {
+          "id": "Edge.compare.002",
+          "kind": "compare",
+          "left": {
+            "field": "e"
+          },
+          "op": "ge",
+          "right": {
+            "field": "s"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "s": "0099-03-01",
+        "e": "0099-02-28"
+      },
+      "expect": [
+        {
+          "path": [
+            "e"
+          ],
+          "ruleId": "Edge.compare.002",
+          "key": "rules.edge",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "edge-003",
+      "description": "year 0000 invalid",
+      "rules": [
+        {
+          "id": "Edge.compare.003",
+          "kind": "compare",
+          "left": {
+            "field": "e"
+          },
+          "op": "ge",
+          "right": {
+            "field": "s"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "s": "0001-01-01",
+        "e": "0000-01-01"
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-004",
+      "description": "offset +24:00 invalid",
+      "rules": [
+        {
+          "id": "Edge.compare.004",
+          "kind": "compare",
+          "left": {
+            "field": "e"
+          },
+          "op": "gt",
+          "right": {
+            "field": "s"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "s": "2026-01-01T00:00:00Z",
+        "e": "2025-01-01T00:00:00+24:00"
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-005",
+      "description": "offset -23:59 valid",
+      "rules": [
+        {
+          "id": "Edge.compare.005",
+          "kind": "compare",
+          "left": {
+            "field": "e"
+          },
+          "op": "gt",
+          "right": {
+            "field": "s"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "s": "2026-01-02T00:00:00Z",
+        "e": "2026-01-01T00:30:00-23:59"
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-006",
+      "description": "2^53+1 eq 2^53",
+      "rules": [
+        {
+          "id": "Edge.compare.006",
+          "kind": "compare",
+          "left": {
+            "field": "x"
+          },
+          "op": "eq",
+          "right": {
+            "field": "y"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "x": 9007199254740993,
+        "y": 9007199254740992
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-007",
+      "description": "big ints ordered",
+      "rules": [
+        {
+          "id": "Edge.compare.007",
+          "kind": "compare",
+          "left": {
+            "field": "x"
+          },
+          "op": "lt",
+          "right": {
+            "field": "y"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "x": 100000000000000000000,
+        "y": 10000000000000000000
+      },
+      "expect": [
+        {
+          "path": [
+            "x"
+          ],
+          "ruleId": "Edge.compare.007",
+          "key": "rules.edge",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "edge-008",
+      "description": "negative zero eq zero",
+      "rules": [
+        {
+          "id": "Edge.compare.008",
+          "kind": "compare",
+          "left": {
+            "field": "x"
+          },
+          "op": "eq",
+          "right": {
+            "value": 0
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "x": -0.0
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-009",
+      "description": "whitespace string compares",
+      "rules": [
+        {
+          "id": "Edge.compare.009",
+          "kind": "compare",
+          "left": {
+            "field": "x"
+          },
+          "op": "gt",
+          "right": {
+            "field": "y"
+          },
+          "type": "string",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "x": " ",
+        "y": "a"
+      },
+      "expect": [
+        {
+          "path": [
+            "x"
+          ],
+          "ruleId": "Edge.compare.009",
+          "key": "rules.edge",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "edge-010",
+      "description": "in booleans vs 1",
+      "rules": [
+        {
+          "id": "Edge.required_when.010",
+          "kind": "required_when",
+          "field": "f",
+          "when": {
+            "in": {
+              "field": "c",
+              "values": [
+                true
+              ]
+            }
+          },
+          "message": {
+            "key": "rules.edge",
+            "params": {
+              "n": 1
+            }
+          }
+        }
+      ],
+      "data": {
+        "c": 1
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-011",
+      "description": "in booleans vs true",
+      "rules": [
+        {
+          "id": "Edge.required_when.011",
+          "kind": "required_when",
+          "field": "f",
+          "when": {
+            "in": {
+              "field": "c",
+              "values": [
+                true
+              ]
+            }
+          },
+          "message": {
+            "key": "rules.edge",
+            "params": {
+              "n": 1
+            }
+          }
+        }
+      ],
+      "data": {
+        "c": true
+      },
+      "expect": [
+        {
+          "path": [
+            "f"
+          ],
+          "ruleId": "Edge.required_when.011",
+          "key": "rules.edge",
+          "params": {
+            "n": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "edge-012",
+      "description": "nested not/all/any",
+      "rules": [
+        {
+          "id": "Edge.required_when.012",
+          "kind": "required_when",
+          "field": "f",
+          "when": {
+            "not": {
+              "all": [
+                {
+                  "present": {
+                    "field": "p"
+                  }
+                },
+                {
+                  "any": [
+                    {
+                      "eq": {
+                        "field": "q",
+                        "value": 2
+                      }
+                    },
+                    {
+                      "absent": {
+                        "field": "r"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "message": {
+            "key": "rules.edge",
+            "params": {
+              "n": 1
+            }
+          }
+        }
+      ],
+      "data": {
+        "p": "x",
+        "q": 2.0
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-013",
+      "description": "nested not/all/any 2",
+      "rules": [
+        {
+          "id": "Edge.required_when.013",
+          "kind": "required_when",
+          "field": "f",
+          "when": {
+            "not": {
+              "all": [
+                {
+                  "present": {
+                    "field": "p"
+                  }
+                },
+                {
+                  "any": [
+                    {
+                      "eq": {
+                        "field": "q",
+                        "value": 2
+                      }
+                    },
+                    {
+                      "absent": {
+                        "field": "r"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "message": {
+            "key": "rules.edge",
+            "params": {
+              "n": 1
+            }
+          }
+        }
+      ],
+      "data": {
+        "p": "x",
+        "q": 3,
+        "r": 0
+      },
+      "expect": [
+        {
+          "path": [
+            "f"
+          ],
+          "ruleId": "Edge.required_when.013",
+          "key": "rules.edge",
+          "params": {
+            "n": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "edge-014",
+      "description": "seconds 60 invalid",
+      "rules": [
+        {
+          "id": "Edge.compare.014",
+          "kind": "compare",
+          "left": {
+            "field": "e"
+          },
+          "op": "gt",
+          "right": {
+            "field": "s"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "s": "2026-01-01T00:00:00Z",
+        "e": "2025-12-31T23:59:60Z"
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-015",
+      "description": "fraction 1 digit",
+      "rules": [
+        {
+          "id": "Edge.compare.015",
+          "kind": "compare",
+          "left": {
+            "field": "e"
+          },
+          "op": "gt",
+          "right": {
+            "field": "s"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "s": "2026-01-01T00:00:00.5Z",
+        "e": "2026-01-01T00:00:00.499Z"
+      },
+      "expect": [
+        {
+          "path": [
+            "e"
+          ],
+          "ruleId": "Edge.compare.015",
+          "key": "rules.edge",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "edge-016",
+      "description": "feb 29 non-leap",
+      "rules": [
+        {
+          "id": "Edge.compare.016",
+          "kind": "compare",
+          "left": {
+            "field": "e"
+          },
+          "op": "ge",
+          "right": {
+            "field": "s"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "s": "2030-03-01",
+        "e": "2030-02-29"
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-017",
+      "description": "1900 not leap",
+      "rules": [
+        {
+          "id": "Edge.compare.017",
+          "kind": "compare",
+          "left": {
+            "field": "e"
+          },
+          "op": "ge",
+          "right": {
+            "field": "s"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "s": "1900-03-01",
+        "e": "1900-02-29"
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-018",
+      "description": "2000 leap",
+      "rules": [
+        {
+          "id": "Edge.compare.018",
+          "kind": "compare",
+          "left": {
+            "field": "e"
+          },
+          "op": "ge",
+          "right": {
+            "field": "s"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "s": "2000-03-01",
+        "e": "2000-02-29"
+      },
+      "expect": [
+        {
+          "path": [
+            "e"
+          ],
+          "ruleId": "Edge.compare.018",
+          "key": "rules.edge",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "edge-019",
+      "description": "astral eq",
+      "rules": [
+        {
+          "id": "Edge.compare.019",
+          "kind": "compare",
+          "left": {
+            "field": "x"
+          },
+          "op": "eq",
+          "right": {
+            "field": "y"
+          },
+          "type": "string",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "x": "😀",
+        "y": "😀"
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-020",
+      "description": "empty list vs eq",
+      "rules": [
+        {
+          "id": "Edge.required_when.020",
+          "kind": "required_when",
+          "field": "f",
+          "when": {
+            "eq": {
+              "field": "c",
+              "value": "x"
+            }
+          },
+          "message": {
+            "key": "rules.edge",
+            "params": {
+              "n": 1
+            }
+          }
+        }
+      ],
+      "data": {
+        "c": []
+      },
+      "expect": []
+    },
+    {
+      "id": "edge-021",
+      "description": "compare with an explicit path reports on that path",
+      "rules": [
+        {
+          "id": "Edge.compare.021",
+          "kind": "compare",
+          "left": {
+            "field": "end"
+          },
+          "op": "ge",
+          "right": {
+            "field": "start"
+          },
+          "type": "date",
+          "path": "dates",
+          "message": {
+            "key": "rules.edge"
+          }
+        }
+      ],
+      "data": {
+        "start": "2026-02-02",
+        "end": "2026-02-01"
+      },
+      "expect": [
+        {
+          "path": [
+            "dates"
+          ],
+          "ruleId": "Edge.compare.021",
+          "key": "rules.edge",
+          "params": {}
+        }
+      ]
+    }
+  ]
+}

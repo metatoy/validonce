@@ -28,7 +28,7 @@ PARAMS = [pytest.param(c, s, id=f"{c['id']}-{s}") for c in CASES for s in ("serv
 
 
 def test_case_count() -> None:
-    assert len(CASES) == 74
+    assert len(CASES) == 95
 
 
 @pytest.mark.parametrize(("case", "side"), PARAMS)
@@ -68,3 +68,11 @@ def test_unimplemented_kind() -> None:
     )
     with pytest.raises(NotImplementedError, match="at_least_one_of is not implemented yet"):
         evaluate(rs, {})
+
+
+def test_evaluate_accepts_a_rule_list() -> None:
+    case = CASES[0]
+    rs = parse_rule_set({"version": 1, "rules": case["rules"]})
+    from_list = [i.to_dict() for i in evaluate(rs.rules, case["data"])]
+    from_set = [i.to_dict() for i in evaluate(rs, case["data"])]
+    assert from_list == from_set

@@ -6,12 +6,12 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any, Literal
 
-from .rules import Rule, RuleSet
+from .rules import Rule, RuleSet, ValidonceFormatError
 
 _DATE_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})$")
 _DT_RE = re.compile(
@@ -127,7 +127,8 @@ def _coerce(type_: str, v: Any) -> Any:
 
 def _compare(rule: Rule, data: Mapping[str, Any]) -> bool:
     """Return True when the rule fails."""
-    assert rule.left is not None and rule.right is not None
+    if rule.left is None or rule.right is None:
+        raise ValidonceFormatError(f"compare rule {rule.id!r} needs left and right")
     left = data.get(rule.left["field"])
     right = data.get(rule.right["field"]) if "field" in rule.right else rule.right.get("value")
     if _is_blank(left) or _is_blank(right):
@@ -155,16 +156,18 @@ def _compare(rule: Rule, data: Mapping[str, Any]) -> bool:
 
 
 def evaluate(
-    rules: RuleSet,
+    rules: RuleSet | Sequence[Rule],
     data: Mapping[str, Any],
     side: Literal["server", "client"] = "server",
 ) -> list[Issue]:
+    """Evaluate rules (a parsed RuleSet, or its list of rules) against wire-form data."""
     issues: list[Issue] = []
-    for rule in rules.rules:
+    for rule in rules.rules if isinstance(rules, RuleSet) else rules:
         if side == "client" and rule.server_only:
             continue
         if rule.kind == "required_when":
-            assert rule.when is not None and rule.field is not None
+            if rule.when is None or rule.field is None:
+                raise ValidonceFormatError(f"required_when rule {rule.id!r} needs field and when")
             failed = _cond(rule.when, data) and _is_blank(data.get(rule.field))
         elif rule.kind == "compare":
             failed = _compare(rule, data)
