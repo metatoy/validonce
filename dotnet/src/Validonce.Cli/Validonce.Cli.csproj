@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Validonce.Cli</RootNamespace>
+    <RollForward>Major</RollForward>
+    <PackageId>Validonce.Cli</PackageId>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>validonce</ToolCommandName>
+    <Description>Lint regular expressions in OpenAPI and JSON Schema documents for behavior that differs between JavaScript, Python, Rust and .NET regex engines.</Description>
+    <PackageProjectUrl>https://github.com/metatoy/validonce</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>regex;openapi;json-schema;lint;validation;portability</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Validonce/Validonce.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

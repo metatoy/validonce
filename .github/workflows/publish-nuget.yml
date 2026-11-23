@@ -1,17 +1,27 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2026 Metatoy LLC
 name: publish-nuget
-# Publishes the .NET packages to nuget.org through trusted publishing (no stored API key).
-# Run by hand only. "placeholders/dotnet" publishes the name-holding placeholders.
+# Publishes .NET packages to nuget.org through trusted publishing (no stored API key).
+# Run by hand only, and only after the founder approves the release.
+#   source = dotnet:               packs the projects named in `packages` from dotnet/src at `version`
+#   source = placeholders/dotnet:  packs the name-holding placeholders (no version override)
 # Needs the repository variable NUGET_USER (the nuget.org account name; not a secret).
 on:
   workflow_dispatch:
     inputs:
       source:
-        description: Folder to pack
+        description: What to publish
         type: choice
-        options: [placeholders/dotnet, dotnet]
-        default: placeholders/dotnet
+        options: [dotnet, placeholders/dotnet]
+        default: dotnet
+      packages:
+        description: Space-separated project names under dotnet/src (source = dotnet only)
+        type: string
+        default: Validonce Validonce.Cli
+      version:
+        description: Package version (source = dotnet only), e.g. 0.1.0
+        type: string
+        required: false
 permissions:
   contents: read
 jobs:
@@ -25,12 +35,32 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+      - name: Test before packing
+        if: inputs.source == 'dotnet'
+        working-directory: dotnet
+        run: dotnet test -c Release
       - name: Pack
-        working-directory: ${{ inputs.source }}
+        env:
+          SOURCE: ${{ inputs.source }}
+          PACKAGES: ${{ inputs.packages }}
+          VERSION: ${{ inputs.version }}
         run: |
-          for proj in $(find . -name '*.csproj' -not -path '*/tests/*'); do
-            dotnet pack "$proj" -c Release -o "$GITHUB_WORKSPACE/out"
-          done
+          set -euo pipefail
+          if [ "$SOURCE" = "dotnet" ]; then
+            if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+              echo "version must look like 0.1.0, got '$VERSION'"; exit 1
+            fi
+            for name in $PACKAGES; do
+              proj="dotnet/src/$name/$name.csproj"
+              [ -f "$proj" ] || { echo "no project $proj"; exit 1; }
+              dotnet pack "$proj" -c Release -p:Version="$VERSION" -o "$GITHUB_WORKSPACE/out"
+            done
+          else
+            for proj in $(find placeholders/dotnet -name '*.csproj'); do
+              dotnet pack "$proj" -c Release -o "$GITHUB_WORKSPACE/out"
+            done
+          fi
+          ls -la "$GITHUB_WORKSPACE/out"
       - name: Log in to nuget.org
         id: login
         uses: NuGet/login@v1

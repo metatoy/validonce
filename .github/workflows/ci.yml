@@ -197,6 +197,10 @@ jobs:
           dotnet run --project conformance/regex/runners/dotnet -c Release -- conformance/regex > "$RUNNER_TEMP/dotnet.json"
       - name: Every engine matches every expectation
         run: uv run --project python python scripts/check_regex_oracle.py "$RUNNER_TEMP/js.json" "$RUNNER_TEMP/py.json" "$RUNNER_TEMP/dotnet.json"
+      - name: Suggested rewrites never hide a difference
+        run: |
+          dotnet build dotnet/src/Validonce.Cli -c Release
+          uv run --python 3.14 --project python python scripts/check_rewrites.py "$RUNNER_TEMP/rewrites"
       - name: Runner self-test
         run: |
           node conformance/regex/runners/js.mjs conformance/regex/runners/testdata > "$RUNNER_TEMP/self-js.json"

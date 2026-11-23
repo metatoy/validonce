@@ -2,6 +2,8 @@
   <Project Path="src/Validonce/Validonce.csproj" />
   <Project Path="src/Validonce.FluentValidation/Validonce.FluentValidation.csproj" />
   <Project Path="src/Validonce.AspNetCore/Validonce.AspNetCore.csproj" />
+  <Project Path="src/Validonce.Cli/Validonce.Cli.csproj" />
   <Project Path="tests/Validonce.Tests/Validonce.Tests.csproj" />
   <Project Path="tests/Validonce.AspNetCore.Tests/Validonce.AspNetCore.Tests.csproj" />
+  <Project Path="tests/Validonce.Cli.Tests/Validonce.Cli.Tests.csproj" />
 </Solution>
