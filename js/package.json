@@ -11,7 +11,9 @@
     "node": ">=20"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "NOTICE"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,19 +21,39 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./zod": {
+      "types": "./dist/zod.d.ts",
+      "import": "./dist/zod.js"
+    },
+    "./openapi": {
+      "types": "./dist/openapi.d.ts",
+      "import": "./dist/openapi.js"
     }
   },
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --format=esm --platform=neutral --target=es2022 --outfile=dist/index.js && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "build": "esbuild src/index.ts src/zod.ts src/openapi.ts --bundle --splitting --format=esm --platform=neutral --target=es2022 --external:zod --outdir=dist && tsc -p tsconfig.build.json --emitDeclarationOnly",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "biome check ."
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",
+    "@hookform/resolvers": "7.0.8",
     "@types/node": "22.20.5",
     "esbuild": "0.28.2",
+    "react": "19.3.1",
+    "react-hook-form": "7.92.0",
     "typescript": "7.0.2",
-    "vitest": "5.1.1"
+    "vitest": "5.1.1",
+    "zod": "4.6.7"
+  },
+  "peerDependencies": {
+    "zod": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
   }
 }
