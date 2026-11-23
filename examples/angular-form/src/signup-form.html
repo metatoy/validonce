@@ -1,0 +1,45 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2026 Metatoy LLC -->
+<form novalidate (submit)="submit($event)">
+  <label>
+    Plan
+    <select data-testid="plan" [formField]="f.plan" [attr.aria-invalid]="errors().plan ? true : null" aria-describedby="error-plan">
+      <option value="free">free</option>
+      <option value="pro">pro</option>
+    </select>
+  </label>
+  <p id="error-plan" class="error" data-testid="error-plan" [hidden]="!errors().plan">{{ errors().plan }}</p>
+  <label>
+    Company
+    <input data-testid="company" [formField]="f.company" [attr.aria-invalid]="errors().company ? true : null" aria-describedby="error-company" />
+  </label>
+  <p id="error-company" class="error" data-testid="error-company" [hidden]="!errors().company">{{ errors().company }}</p>
+  <label>
+    Email
+    <input data-testid="email" [formField]="f.email" [attr.aria-invalid]="errors().email ? true : null" aria-describedby="error-email" />
+  </label>
+  <p id="error-email" class="error" data-testid="error-email" [hidden]="!errors().email">{{ errors().email }}</p>
+  <label>
+    Start date
+    <input type="date" data-testid="start" [formField]="f.start" [attr.aria-invalid]="errors().start ? true : null" aria-describedby="error-start" />
+  </label>
+  <p id="error-start" class="error" data-testid="error-start" [hidden]="!errors().start">{{ errors().start }}</p>
+  <label>
+    End date
+    <input type="date" data-testid="end" [formField]="f.end" [attr.aria-invalid]="errors().end ? true : null" aria-describedby="error-end" />
+  </label>
+  <p id="error-end" class="error" data-testid="error-end" [hidden]="!errors().end">{{ errors().end }}</p>
+  <label>
+    Quantity
+    <input type="number" data-testid="quantity" [formField]="f.quantity" [attr.aria-invalid]="errors().quantity ? true : null" aria-describedby="error-quantity" />
+  </label>
+  <p id="error-quantity" class="error" data-testid="error-quantity" [hidden]="!errors().quantity">{{ errors().quantity }}</p>
+  <label class="check">
+    <input type="checkbox" data-testid="skip-client" [checked]="skipClient()" (change)="onSkip($event)" />
+    Skip browser checks
+  </label>
+  <button type="submit" data-testid="submit">Sign up</button>
+  @if (saved()) {
+    <p data-testid="result">Saved</p>
+  }
+</form>

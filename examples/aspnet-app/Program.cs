@@ -15,7 +15,7 @@ if (builder.Configuration["urls"] is null && Environment.GetEnvironmentVariable(
 builder.Services.AddValidonce();
 builder.Services.AddOpenApi(o => o.AddValidonceSchemaTransformer());
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
-    .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+    .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4200", "http://127.0.0.1:4200")
     .AllowAnyHeader()
     .WithMethods("GET", "POST")));
 

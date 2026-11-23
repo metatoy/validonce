@@ -1,0 +1,8 @@
+form { display: grid; gap: .75rem; }
+label { display: grid; gap: .25rem; font-weight: 600; }
+label.check { display: flex; gap: .5rem; align-items: center; font-weight: 400; }
+input, select { padding: .4rem; font: inherit; }
+button { background: #4f7a17; color: #fff; border: 0; padding: .6rem; font: inherit; cursor: pointer; }
+[hidden] { display: none; }
+:host { display: block; }
+.error { color: #9b2c1d; margin: 0; }

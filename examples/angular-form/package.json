@@ -1,0 +1,33 @@
+{
+  "name": "angular-form",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Metatoy LLC",
+  "type": "module",
+  "scripts": {
+    "start": "ng serve --port 4200",
+    "dev": "ng serve --port 4200",
+    "build": "ng build",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.e2e.json",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@angular/common": "22.3.0",
+    "@angular/compiler": "22.3.0",
+    "@angular/core": "22.3.0",
+    "@angular/forms": "22.3.0",
+    "@angular/platform-browser": "22.3.0",
+    "rxjs": "7.8.2",
+    "validonce": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@angular/build": "22.3.0",
+    "@angular/cli": "22.3.0",
+    "@angular/compiler-cli": "22.3.0",
+    "@playwright/test": "1.65.1",
+    "@types/node": "22.20.5",
+    "typescript": "6.0.3"
+  }
+}

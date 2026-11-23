@@ -18,9 +18,10 @@ htmlcov/
 .DS_Store
 
 # Playwright output (screenshots are uploaded by CI as artifacts)
-examples/react-form/e2e/screenshots/
-examples/react-form/test-results/
-examples/react-form/playwright-report/
+examples/*-form/e2e/screenshots/
+examples/*-form/test-results/
+examples/*-form/playwright-report/
+examples/angular-form/.angular/
 examples/*/backend.log
 
 # Private notes live outside this repository
