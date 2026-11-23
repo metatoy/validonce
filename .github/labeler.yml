@@ -1,0 +1,21 @@
+dotnet:
+  - changed-files:
+      - any-glob-to-any-file: ["dotnet/**"]
+python:
+  - changed-files:
+      - any-glob-to-any-file: ["python/**"]
+js:
+  - changed-files:
+      - any-glob-to-any-file: ["js/**"]
+mcp:
+  - changed-files:
+      - any-glob-to-any-file: ["mcp/**", "skills/**", "testbeds/**", ".claude-plugin/**"]
+docs:
+  - changed-files:
+      - any-glob-to-any-file: ["docs/**", "**/*.md", "assets/**"]
+ci:
+  - changed-files:
+      - any-glob-to-any-file: [".github/**", "scripts/**", ".devcontainer/**"]
+conformance:
+  - changed-files:
+      - any-glob-to-any-file: ["conformance/**"]

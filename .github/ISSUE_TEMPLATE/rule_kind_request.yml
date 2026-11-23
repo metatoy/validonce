@@ -1,0 +1,22 @@
+name: Rule kind request
+description: A cross-field rule you need that the five rule kinds can't express
+labels: [rule-kind]
+body:
+  - type: textarea
+    id: rule
+    attributes:
+      label: The rule, in plain words
+      placeholder: "The discount is required when the order total is over 100."
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How you write it today
+      description: Your FluentValidation, Pydantic, Zod or Angular code (generic names, please).
+      render: text
+  - type: textarea
+    id: why
+    attributes:
+      label: Why the existing kinds don't fit
+      description: required_when, compare, at_least_one_of, exactly_one_of, all_or_none.
