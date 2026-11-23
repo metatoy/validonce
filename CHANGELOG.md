@@ -2,7 +2,7 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
-## 0.2.0 (unreleased)
+## 0.2.0 (2026-11-22)
 
 ### Added
 - Rule kinds `at_least_one_of`, `exactly_one_of` and `all_or_none` in all three evaluators (C#, TypeScript, Python), with 30 new shared conformance cases (125 in total).
