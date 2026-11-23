@@ -118,7 +118,7 @@ Then import from `schemas.rules` (`Signup` with orval, `signupSchema` with kubb)
 
 ## Gotchas
 
-- **Dates are ISO strings.** Use `z.string()` and `<input type="date">` (`YYYY-MM-DD`), not `z.date()`. A `Date` object is not a date to the rules.
+- **Dates are ISO strings.** Use `isoDate()` from `validonce/zod` (or `z.string()`) with `<input type="date">` (`YYYY-MM-DD`), not `z.date()`. A `Date` object is not a date to the rules. `isoDate()` matches what the servers accept; `z.iso.date()` also lets year `0000` through.
 - **Zod 4 skips object refinements when a field fails.** A normal `.refine()` on the object would not run while another field is invalid, so errors would appear one at a time. `withRules` adds an always-run check and evaluates the raw input, so rule errors show together with field errors.
 - `withRules` throws if a rule names a field the schema does not have. This catches renames early.
 - Rules marked `server_only` are skipped in the browser.

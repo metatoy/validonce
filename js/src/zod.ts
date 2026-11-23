@@ -81,3 +81,38 @@ export function withRules<T extends z.ZodObject>(
   };
   return schema.check(check) as T;
 }
+
+const YEAR_ZERO = /^0000-/;
+
+/** Options for {@link isoDate} and {@link isoDateTime}. */
+export interface IsoFieldOptions {
+  /** Error message (or message key) when the value is not a valid date. */
+  message?: string;
+}
+
+/**
+ * A Zod string schema for a `date` field that accepts exactly what validonce's `date` type and
+ * the servers accept: `YYYY-MM-DD`, a real calendar date, years 0001–9999.
+ *
+ * `z.iso.date()` also accepts year `0000`, which .NET `DateOnly`, Python `date` and validonce
+ * all reject. Use this instead so the form rejects what the server would reject.
+ */
+export function isoDate(options?: IsoFieldOptions) {
+  return z.iso.date(options?.message).refine((v) => !YEAR_ZERO.test(v), {
+    message: options?.message ?? "Invalid date",
+  });
+}
+
+/**
+ * A Zod string schema for a `datetime` field matching validonce's `datetime` type: an ISO 8601
+ * date and time with seconds and an offset (`Z` or `±HH:MM`), years 0001–9999.
+ *
+ * It is `z.iso.datetime({ offset: true })` without year `0000`.
+ */
+export function isoDateTime(options?: IsoFieldOptions) {
+  return z.iso
+    .datetime({ offset: true, message: options?.message })
+    .refine((v) => !YEAR_ZERO.test(v), {
+      message: options?.message ?? "Invalid datetime",
+    });
+}

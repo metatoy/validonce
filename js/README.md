@@ -44,6 +44,22 @@ const Signup = withRules(
 - Each issue has `code: "custom"`, `path`, `message` (catalog entry with `{param}` filled in, else the key) and `params: { validonce: true, ruleId, key, params }`.
 - A rule naming a field the schema lacks throws when you call `withRules`.
 
+## Date fields: `isoDate` and `isoDateTime`
+
+`z.iso.date()` accepts year `0000`, which ASP.NET (`DateOnly`), Pydantic (`date`) and validonce's `date` type all reject. Use the matching helpers so the form rejects what the server rejects:
+
+```ts
+import { isoDate, isoDateTime } from "validonce/zod";
+
+const Signup = z.object({
+  start: isoDate(),            // YYYY-MM-DD, real date, years 0001-9999
+  end: isoDate().nullish(),
+  sentAt: isoDateTime(),       // seconds and an offset (Z or ±HH:MM) required
+});
+```
+
+Both take `{ message }` for your own message or key. Apart from year 0000 they accept exactly what `z.iso.date()` and `z.iso.datetime({ offset: true })` accept.
+
 ## Messages
 
 ```ts
@@ -190,7 +206,7 @@ export default {
 kubb generate && validonce wrap --openapi openapi.json --zod src/gen/schemas.ts -o src/gen/schemas.rules.ts
 ```
 
-with `pluginZod({ output: { path: "./schemas.ts" } })` so the output is a single file. Both recipes run in CI against real orval and kubb output: [examples/wrap-demo](../examples/wrap-demo).
+with `pluginZod({ output: { path: "./schemas.ts" } })` so the output is a single file. Generators emit `z.iso.date()` for `format: date`; to reject year `0000` in the browser too, extend the wrapped schema, for example `Signup.extend({ start: isoDate().nullable() })`. Both recipes run in CI against real orval and kubb output: [examples/wrap-demo](../examples/wrap-demo).
 
 ## Evaluate without Zod
 

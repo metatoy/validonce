@@ -77,6 +77,13 @@ describe("generate_code", () => {
   it("clients: zod, react-hook-form, angular", () => {
     const z = generateCode({ ...base, target: "zod", modelName: "Signup" });
     expect(z.source).toContain('withRules(signupBase, rules, { messages })');
+    // The schema skeleton's date fields use the helpers that match the servers' date range
+    // (z.iso.date() allows year 0000).
+    const zm = generateCode({ ...base, target: "zod", modelName: "Signup", includeModel: true });
+    expect(zm.source).toContain('import { isoDate, withRules } from "validonce/zod";');
+    expect(zm.source).toContain("start: isoDate().nullable().optional()");
+    expect(zm.source).not.toContain("z.iso.date()");
+    expect(z.source).toContain('import { withRules } from "validonce/zod";');
     const rhf = generateCode({ ...base, target: "react-hook-form" });
     expect(rhf.source).toContain("registerDeps<Field>(rules)");
     const ng = generateCode({ ...base, target: "angular-reactive" });

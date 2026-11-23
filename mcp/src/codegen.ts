@@ -514,6 +514,8 @@ function zodField(f: FieldInfo): string {
     case "number": return "z.number().nullable().optional()";
     case "integer": return "z.number().int().nullable().optional()";
     case "bool": return "z.boolean().nullable().optional()";
+    case "date": return "isoDate().nullable().optional()";
+    case "datetime": return "isoDateTime().nullable().optional()";
     default: return "z.string().nullable().optional()";
   }
 }
@@ -551,7 +553,10 @@ function genClient(set: RuleSet, input: CodegenInput, fields: Map<string, FieldI
     if (target === "react-hook-form") out.push(`import { zodResolver } from "@hookform/resolvers/zod";`, `import { useForm } from "react-hook-form";`);
     out.push(`import type { RuleSet } from "validonce";`);
     if (target === "react-hook-form") out.push(`import { registerDeps } from "validonce/react-hook-form";`);
-    out.push(`import { withRules } from "validonce/zod";`, "");
+    const isoHelpers = wantModel
+      ? [...new Set([...fields.values()].flatMap((f) => (f.kind === "date" ? ["isoDate"] : f.kind === "datetime" ? ["isoDateTime"] : [])))].sort()
+      : [];
+    out.push(`import { ${[...isoHelpers, "withRules"].join(", ")} } from "validonce/zod";`, "");
     out.push(`const rules = ${tsRules(clientRules)} as const satisfies RuleSet;`, "", `const messages = ${messageCatalog(set)};`, "");
     if (wantModel) {
       out.push(`// Skeleton: replace with your real schema (field-level checks stay there).`, `const ${base} = z.object({`);

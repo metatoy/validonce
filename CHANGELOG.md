@@ -5,10 +5,11 @@ All notable changes to validonce. Versions follow semantic versioning; before 1.
 ## Unreleased
 
 ### Added
+- TypeScript: `isoDate()` and `isoDateTime()` in `validonce/zod`: Zod date and datetime schemas that accept exactly what validonce's `date` and `datetime` types and the servers accept (`z.iso.date()` also allows year `0000`).
 - C#: `.AtPath(...)` on `RequiredWhen` and `Compare` (as on the group rules), so every rule kind can report on another property. `RequiredWhen` and `Compare` now return `RuleBuilder<T>` (a subclass of `ValidonceRuleBuilder`).
 
 ### Docs
-- Rule format: note that year `0000` is not a valid `date` (Zod's `z.iso.date()` accepts it), and how the migration guide handles the difference.
+- Rule format: year `0000` is not a valid `date` (Zod's `z.iso.date()` accepts it); use `isoDate()`.
 
 ## 0.2.0 (2026-11-22)
 
