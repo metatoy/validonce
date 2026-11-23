@@ -54,6 +54,9 @@ jobs:
       - name: Example form builds
         run: pnpm typecheck && pnpm build
         working-directory: examples/react-form
+      - name: Angular example builds
+        run: pnpm typecheck && pnpm build
+        working-directory: examples/angular-form
 
   python:
     runs-on: ubuntu-latest
@@ -112,11 +115,12 @@ jobs:
         run: uv run --project python python scripts/check_golden.py
 
   e2e:
-    # The React example form against each backend, in a real browser.
+    # The React and Angular example forms against each backend, in a real browser.
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        framework: [react, angular]
         backend: [aspnet, fastapi]
     env:
       CI: "1"
@@ -139,7 +143,7 @@ jobs:
         working-directory: js
       - name: Install the Playwright browser
         run: pnpm exec playwright install --with-deps chromium
-        working-directory: examples/react-form
+        working-directory: examples/${{ matrix.framework }}-form
       - name: Start ASP.NET
         if: matrix.backend == 'aspnet'
         working-directory: examples/aspnet-app
@@ -160,7 +164,7 @@ jobs:
         run: for i in $(seq 1 90); do curl -s -o /dev/null "$VALIDONCE_API/" && exit 0; sleep 1; done; exit 1
       - name: End-to-end tests
         run: pnpm e2e
-        working-directory: examples/react-form
+        working-directory: examples/${{ matrix.framework }}-form
       - name: Stop the backend
         if: always()
         run: |
@@ -174,8 +178,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots-${{ matrix.backend }}
-          path: examples/react-form/e2e/screenshots/
+          name: screenshots-${{ matrix.framework }}-${{ matrix.backend }}
+          path: examples/${{ matrix.framework }}-form/e2e/screenshots/
 
   regex-oracle:
     # Runs the regex fixtures on five real engines (V8 with and without `u`, Python re, Rust regex

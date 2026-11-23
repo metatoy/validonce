@@ -2,15 +2,17 @@
 # Copyright 2026 Metatoy LLC
 name: publish-pypi
 # Publishes the Python package to PyPI through trusted publishing (no stored token).
-# Run by hand only. "placeholders/python" publishes the name-holding placeholder.
+# Run by hand only, after the founder approves the release.
+#   source = python:               the real package (tests run first; version from pyproject.toml)
+#   source = placeholders/python:  the name-holding placeholder
 on:
   workflow_dispatch:
     inputs:
       source:
         description: Folder to build
         type: choice
-        options: [placeholders/python, python]
-        default: placeholders/python
+        options: [python, placeholders/python]
+        default: python
 permissions:
   contents: read
 jobs:
@@ -19,6 +21,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
+      - name: Test before building
+        if: inputs.source == 'python'
+        working-directory: python
+        run: uv run pytest -q
       - run: uv build --out-dir "$GITHUB_WORKSPACE/dist"
         working-directory: ${{ inputs.source }}
       - uses: actions/upload-artifact@v4
