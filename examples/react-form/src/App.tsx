@@ -35,11 +35,16 @@ const fields = ["plan", "company", "email", "start", "end", "quantity"] as const
 type Field = (typeof fields)[number];
 
 const params = new URLSearchParams(window.location.search);
-const api = (params.get("api") ?? "http://localhost:5080").replace(/\/$/, "");
-const port = new URL(api).port;
-const backend = port === "8010" ? "FastAPI" : "ASP.NET";
+// Default: same-origin `/api`, which the dev server proxies to the chosen backend (see
+// vite.config.ts). `?api=http://host:port` still points the form at a backend directly.
+const api = (params.get("api") ?? "/api").replace(/\/$/, "");
+const proxied = api.startsWith("/");
+const port = proxied ? "" : new URL(api).port;
+const backend = proxied ? "via /api proxy" : port === "8010" ? "FastAPI" : "ASP.NET";
+// Through the proxy, /api/openapi.json is rewritten to each backend's own document path.
 const openapiPath =
-  params.get("openapi") ?? (port === "8010" ? "/openapi.json" : "/openapi/v1.json");
+  params.get("openapi") ??
+  (proxied || port === "8010" ? "/openapi.json" : "/openapi/v1.json");
 
 function Form({ rules }: { rules: RuleSet }) {
   const [skipClient, setSkipClient] = useState(false);

@@ -1,0 +1,17 @@
+{
+  "migrate": [],
+  "keep": [
+    {
+      "check": "Email uniqueness via async repository",
+      "reason_category": "async_db",
+      "file": "Registration.cs",
+      "marker": "EmailExistsAsync\\(email",
+      "mention": "email|unique"
+    }
+  ],
+  "allowedFiles": [
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "migrate": [],
+  "keep": [
+    {
+      "check": "a + b == total: arithmetic across fields",
+      "reason_category": "arithmetic",
+      "file": "order.ts",
+      "marker": "subtotal \\+ v\\.tax",
+      "mention": "total"
+    }
+  ],
+  "allowedFiles": [
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}

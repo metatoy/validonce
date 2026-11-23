@@ -1,0 +1,59 @@
+{
+  "migrate": [
+    {
+      "id": "Signup.required_when.company",
+      "kind": "required_when",
+      "field": "company",
+      "when": {
+        "eq": {
+          "field": "plan",
+          "value": "pro"
+        }
+      },
+      "message": {
+        "key": "rules.company_required"
+      }
+    },
+    {
+      "id": "Signup.compare.end",
+      "kind": "compare",
+      "left": {
+        "field": "end"
+      },
+      "op": "ge",
+      "right": {
+        "field": "start"
+      },
+      "type": "date",
+      "message": {
+        "key": "rules.end_after_start"
+      }
+    },
+    {
+      "id": "Signup.compare.quantity",
+      "kind": "compare",
+      "left": {
+        "field": "quantity"
+      },
+      "op": "ge",
+      "right": {
+        "value": 1
+      },
+      "type": "number",
+      "message": {
+        "key": "rules.quantity_min",
+        "params": {
+          "min": 1
+        }
+      }
+    }
+  ],
+  "keep": [],
+  "allowedFiles": [
+    "signup.py",
+    "pyproject.toml",
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}

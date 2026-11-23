@@ -1,0 +1,17 @@
+{
+  "migrate": [],
+  "keep": [
+    {
+      "check": "postal_code format depends on country",
+      "reason_category": "conditional_format",
+      "file": "address.py",
+      "marker": "_FORMATS",
+      "mention": "postal"
+    }
+  ],
+  "allowedFiles": [
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}

@@ -1,0 +1,40 @@
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 1}
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 1, "company": null}
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 1, "company": ""}
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 1, "company": " ", "end": "2026-05-09"}
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 1, "company": "Acme", "end": "2026-05-09"}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 1}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 1, "company": null}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 1, "company": ""}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 1, "company": " ", "end": "2026-05-09"}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 1, "company": "Acme", "end": "2026-05-09"}
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 5, "company": "Acme"}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 5, "company": "Acme"}
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 5, "company": "Acme", "end": null}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 5, "company": "Acme", "end": null}
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 5, "company": "Acme", "end": "2026-05-09"}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 5, "company": "Acme", "end": "2026-05-09"}
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 5, "company": "Acme", "end": "2026-05-10"}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 5, "company": "Acme", "end": "2026-05-10"}
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 5, "company": "Acme", "end": "2026-05-11"}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 5, "company": "Acme", "end": "2026-05-11"}
+{"plan": "free", "email": "a@example.test", "start": "2026-01-01", "quantity": -1, "end": "2026-01-02"}
+{"plan": "free", "email": "a@example.test", "start": "2026-01-01", "quantity": 0, "end": "2026-01-02"}
+{"plan": "free", "email": "a@example.test", "start": "2026-01-01", "quantity": 1, "end": "2026-01-02"}
+{"plan": "free", "email": "a@example.test", "start": "2026-01-01", "quantity": 2, "end": "2026-01-02"}
+{"plan": "free", "email": "a@example.test", "start": "2026-01-01", "quantity": 100, "end": "2026-01-02"}
+{"plan": "free", "email": "a@example.test", "start": "2024-02-29", "quantity": 3, "company": "", "end": "2024-02-28"}
+{"plan": "free", "email": "a@example.test", "start": "2024-02-29", "quantity": 3, "company": "", "end": "2024-03-01"}
+{"plan": "free", "email": "a@example.test", "start": "0001-01-01", "quantity": 3, "company": "", "end": "9999-12-31"}
+{"plan": "free", "email": "a@example.test", "start": "9999-12-31", "quantity": 3, "company": "", "end": "0001-01-01"}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 0, "company": "", "end": "2026-05-09"}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": 1, "company": null, "end": "2026-05-09"}
+{"plan": "pro", "email": "a@example.test", "start": "2026-05-10", "quantity": -5, "end": "2026-05-09"}
+{"plan": "free", "email": "a@example.test", "start": "2026-05-10", "quantity": 0, "company": "Acme", "end": "2026-05-09"}
+{"plan": "pro", "email": "a@example.test", "start": "2026-12-31", "quantity": 1, "company": " ", "end": "2026-01-01"}
+{"plan": "pro", "email": "b@example.test", "start": "2026-05-10", "quantity": 1, "company": "Acme", "end": "2026-05-10"}
+{"plan": "pro", "email": "c@example.test", "start": "2026-03-01", "end": "2026-03-02", "quantity": 7, "company": "Example Co"}
+{"plan": "free", "email": "d@example.test", "start": "2026-03-01", "end": "2026-02-28", "quantity": 1}
+{"plan": "pro", "email": "e@example.test", "start": "2026-03-01", "quantity": 2, "company": ""}
+{"plan": "free", "email": "f@example.test", "start": "2026-03-01", "end": null, "quantity": -1, "company": null}
+{"plan": "pro", "email": "g@example.test", "start": "2025-12-31", "end": "2026-01-01", "quantity": 0, "company": "X"}

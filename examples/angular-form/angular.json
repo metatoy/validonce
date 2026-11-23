@@ -27,7 +27,12 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
-          "options": { "port": 4200, "host": "localhost" },
+          "options": {
+            "port": 4200,
+            "host": "localhost",
+            "proxyConfig": "proxy.conf.mjs",
+            "allowedHosts": [".app.github.dev"]
+          },
           "configurations": {
             "production": { "buildTarget": "angular-form:build:production" },
             "development": { "buildTarget": "angular-form:build:development" }

@@ -6,11 +6,13 @@ import { rulesFromOpenApi } from "validonce/openapi";
 import { withRules } from "validonce/zod";
 import { api, baseSchema, messages, SchemaStore, SignupForm } from "./signup-form";
 
-const port = new URL(api).port;
-const backend = port === "8010" ? "FastAPI" : "ASP.NET";
+const proxied = api.startsWith("/");
+const port = proxied ? "" : new URL(api).port;
+const backend = proxied ? "via /api proxy" : port === "8010" ? "FastAPI" : "ASP.NET";
+// Through the proxy, /api/openapi.json is rewritten to each backend's own document path.
 const openapiPath =
   new URLSearchParams(window.location.search).get("openapi") ??
-  (port === "8010" ? "/openapi.json" : "/openapi/v1.json");
+  (proxied || port === "8010" ? "/openapi.json" : "/openapi/v1.json");
 
 @Component({
   selector: "app-root",

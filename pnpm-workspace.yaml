@@ -3,4 +3,7 @@
 # machine.
 packages:
   - 'js'
+  - 'mcp'
+  - 'mcp/evals'
+  - 'testbeds/before'
   - 'examples/*'

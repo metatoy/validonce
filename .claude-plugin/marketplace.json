@@ -1,0 +1,19 @@
+{
+  "name": "validonce",
+  "owner": { "name": "Metatoy LLC" },
+  "metadata": {
+    "description": "validonce: write cross-field validation rules once, enforce them everywhere."
+  },
+  "plugins": [
+    {
+      "name": "validonce",
+      "source": "./",
+      "description": "Migrate hand-written cross-field validation to validonce rules, proven by a differential check (skill + MCP server).",
+      "version": "0.1.0",
+      "author": { "name": "Metatoy LLC" },
+      "license": "Apache-2.0",
+      "category": "development",
+      "keywords": ["validation", "migration", "mcp"]
+    }
+  ]
+}

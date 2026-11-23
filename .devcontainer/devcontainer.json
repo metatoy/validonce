@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 Metatoy LLC
+{
+  "name": "validonce demo",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:2": { "version": "10.0" },
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.12", "installTools": false },
+    "ghcr.io/va-h/devcontainers-features/uv:1": {},
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  "hostRequirements": { "cpus": 4 },
+  "onCreateCommand": "corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile && pnpm --dir js build && (cd examples/fastapi-app && uv sync) && dotnet build examples/aspnet-app -c Release",
+  "postAttachCommand": "bash scripts/demo.sh",
+  "forwardPorts": [5173, 4200, 5080, 8010],
+  "portsAttributes": {
+    "5173": { "label": "Form (React): open this one", "onAutoForward": "openBrowser" },
+    "4200": { "label": "Form (Angular, scripts/demo.sh --frontend angular)", "onAutoForward": "silent" },
+    "5080": { "label": "ASP.NET backend (reached through /api)", "onAutoForward": "silent" },
+    "8010": { "label": "FastAPI backend (reached through /api)", "onAutoForward": "silent" }
+  },
+  "customizations": {
+    "vscode": { "extensions": ["ms-dotnettools.csdevkit", "ms-python.python"] }
+  }
+}

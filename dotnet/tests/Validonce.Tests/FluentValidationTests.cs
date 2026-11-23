@@ -241,6 +241,50 @@ public class FluentValidationTests
         }
     }
 
+    private sealed class PathedValidator : ValidonceValidator<Signup>
+    {
+        public PathedValidator()
+        {
+            RequiredWhen(x => x.Company, If.Eq(x => x.Plan, "pro")).AtPath(x => x.Plan).WithMessageKey("rules.company_required");
+            Compare(x => x.End, CompareOp.Ge, x => x.Start).WithMessageKey("rules.end_after_start").AtPath(x => x.Start).ServerOnly();
+            Compare(x => x.Quantity, CompareOp.Ge, 1).AtPath(x => x.PromoCode).WithMessageKey("rules.qty_min");
+        }
+    }
+
+    [Fact]
+    public void RequiredWhenAndCompare_AtPath_ExportsPath()
+    {
+        var expected = JsonNode.Parse("""
+        {"version":1,"rules":[
+         {"id":"Signup.required_when.company","kind":"required_when","path":"plan","field":"company",
+          "when":{"eq":{"field":"plan","value":"pro"}},"message":{"key":"rules.company_required"}},
+         {"id":"Signup.compare.end","kind":"compare","path":"start","left":{"field":"end"},"op":"ge",
+          "right":{"field":"start"},"type":"date","message":{"key":"rules.end_after_start"},"server_only":true},
+         {"id":"Signup.compare.quantity","kind":"compare","path":"promo_code","left":{"field":"quantity"},"op":"ge",
+          "right":{"value":1},"type":"number","message":{"key":"rules.qty_min"}}
+        ]}
+        """)!;
+        var exported = new PathedValidator().ExportRules();
+        Assert.True(JsonNode.DeepEquals(expected, exported.ToJson()), exported.ToJson().ToJsonString());
+        Assert.True(JsonNode.DeepEquals(expected, RuleSet.Parse(exported.ToJson()).ToJson()));
+    }
+
+    [Fact]
+    public void RequiredWhenAndCompare_AtPath_ReportsOnThatProperty()
+    {
+        var r = new PathedValidator().Validate(new Signup
+        {
+            Plan = "pro",
+            Start = new DateOnly(2024, 2, 1),
+            End = new DateOnly(2024, 1, 1),
+            Quantity = 0,
+        });
+        Assert.Contains(r.Errors, e => e.PropertyName == "Plan" && e.ErrorCode == "rules.company_required");
+        Assert.Contains(r.Errors, e => e.PropertyName == "Start" && e.ErrorCode == "rules.end_after_start");
+        Assert.Contains(r.Errors, e => e.PropertyName == "PromoCode" && e.ErrorCode == "rules.qty_min");
+        Assert.DoesNotContain(r.Errors, e => e.PropertyName is "Company" or "End" or "Quantity");
+    }
+
     [Fact]
     public void GroupRules_ExportJson()
     {

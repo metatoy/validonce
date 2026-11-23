@@ -7,7 +7,12 @@ const api = process.env.VALIDONCE_API ?? "http://localhost:5080";
 const port = new URL(api).port;
 const backend = port === "8010" ? "fastapi" : "aspnet";
 const openapi = port === "8010" ? "/openapi.json" : "/openapi/v1.json";
-const url = `/?api=${encodeURIComponent(api)}&openapi=${encodeURIComponent(openapi)}`;
+// VALIDONCE_PROXY=1 loads the form with no ?api=, so it uses its default same-origin /api proxy
+// (the dev server forwards to VALIDONCE_API), the way it runs in a codespace.
+const url =
+  process.env.VALIDONCE_PROXY === "1"
+    ? "/"
+    : `/?api=${encodeURIComponent(api)}&openapi=${encodeURIComponent(openapi)}`;
 
 const MSG = {
   company: "Company is required on the Pro plan",

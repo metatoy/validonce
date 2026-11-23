@@ -1,0 +1,17 @@
+{
+  "migrate": [],
+  "keep": [
+    {
+      "check": "billing.vatId required when billing.business (nested object)",
+      "reason_category": "nested",
+      "file": "checkout.ts",
+      "marker": "billing\\.business",
+      "mention": "vatId|billing"
+    }
+  ],
+  "allowedFiles": [
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}

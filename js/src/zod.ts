@@ -3,8 +3,9 @@
 
 import { z } from "zod";
 import { evaluate } from "./evaluate";
+import { ruleFields } from "./fields";
 import { type Catalog, formatMessage } from "./messages";
-import type { Condition, Rule } from "./types";
+import type { Rule } from "./types";
 
 export interface WithRulesOptions {
   /**
@@ -21,31 +22,6 @@ export interface ValidonceIssueParams {
   ruleId: string;
   key: string;
   params: Record<string, unknown>;
-}
-
-function conditionFields(c: Condition, out: Set<string>): void {
-  if ("eq" in c) out.add(c.eq.field);
-  else if ("ne" in c) out.add(c.ne.field);
-  else if ("in" in c) out.add(c.in.field);
-  else if ("present" in c) out.add(c.present.field);
-  else if ("absent" in c) out.add(c.absent.field);
-  else if ("all" in c) for (const x of c.all) conditionFields(x, out);
-  else if ("any" in c) for (const x of c.any) conditionFields(x, out);
-  else if ("not" in c) conditionFields(c.not, out);
-}
-
-function ruleFields(rule: Rule): string[] {
-  const out = new Set<string>();
-  if (rule.kind === "required_when") {
-    out.add(rule.field);
-    conditionFields(rule.when, out);
-  } else if (rule.kind === "compare") {
-    out.add(rule.left.field);
-    if ("field" in rule.right) out.add(rule.right.field);
-  } else {
-    for (const f of rule.fields) out.add(f);
-  }
-  return [...out];
 }
 
 /**
@@ -104,4 +80,39 @@ export function withRules<T extends z.ZodObject>(
     }
   };
   return schema.check(check) as T;
+}
+
+const YEAR_ZERO = /^0000-/;
+
+/** Options for {@link isoDate} and {@link isoDateTime}. */
+export interface IsoFieldOptions {
+  /** Error message (or message key) when the value is not a valid date. */
+  message?: string;
+}
+
+/**
+ * A Zod string schema for a `date` field that accepts exactly what validonce's `date` type and
+ * the servers accept: `YYYY-MM-DD`, a real calendar date, years 0001–9999.
+ *
+ * `z.iso.date()` also accepts year `0000`, which .NET `DateOnly`, Python `date` and validonce
+ * all reject. Use this instead so the form rejects what the server would reject.
+ */
+export function isoDate(options?: IsoFieldOptions) {
+  return z.iso.date(options?.message).refine((v) => !YEAR_ZERO.test(v), {
+    message: options?.message ?? "Invalid date",
+  });
+}
+
+/**
+ * A Zod string schema for a `datetime` field matching validonce's `datetime` type: an ISO 8601
+ * date and time with seconds and an offset (`Z` or `±HH:MM`), years 0001–9999.
+ *
+ * It is `z.iso.datetime({ offset: true })` without year `0000`.
+ */
+export function isoDateTime(options?: IsoFieldOptions) {
+  return z.iso
+    .datetime({ offset: true, message: options?.message })
+    .refine((v) => !YEAR_ZERO.test(v), {
+      message: options?.message ?? "Invalid datetime",
+    });
 }

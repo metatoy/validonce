@@ -53,15 +53,18 @@ public abstract class ValidonceValidator<T> : AbstractValidator<T>, IRuleExporte
     public Type ModelType => typeof(T);
 
     /// <summary>The field is required (not blank) whenever the condition holds.</summary>
-    protected ValidonceRuleBuilder RequiredWhen<TProp>(Expression<Func<T, TProp>> field, Cond<T> when)
+    protected RuleBuilder<T> RequiredWhen<TProp>(Expression<Func<T, TProp>> field, Cond<T> when)
     {
         var f = _wire.WireName(_wire.Property(field));
-        return Add(new ValidonceRuleBuilder("required_when", f,
-            (id, msg, so) => new RequiredWhenRule(id, null, msg, so, f, when.Condition)));
+        RuleBuilder<T>? b = null;
+        b = new RuleBuilder<T>("required_when", f, _wire,
+            (id, msg, so) => new RequiredWhenRule(id, b!.PathOverride, msg, so, f, when.Condition));
+        Add(b);
+        return b;
     }
 
     /// <summary>Compares two properties. The compare type is inferred from the property type.</summary>
-    protected ValidonceRuleBuilder Compare<TLeft, TRight>(
+    protected RuleBuilder<T> Compare<TLeft, TRight>(
         Expression<Func<T, TLeft>> left, CompareOp op, Expression<Func<T, TRight>> right)
     {
         var l = _wire.WireName(_wire.Property(left));
@@ -70,12 +73,15 @@ public abstract class ValidonceValidator<T> : AbstractValidator<T>, IRuleExporte
         if (InferType(typeof(TRight)) != type)
             throw new InvalidOperationException(
                 $"Compare on {typeof(T).Name}.{l} vs {r}: the properties have different compare types ({type} vs {InferType(typeof(TRight))}).");
-        return Add(new ValidonceRuleBuilder("compare", l,
-            (id, msg, so) => new CompareRule(id, null, msg, so, l, op, r, null, type)));
+        RuleBuilder<T>? b = null;
+        b = new RuleBuilder<T>("compare", l, _wire,
+            (id, msg, so) => new CompareRule(id, b!.PathOverride, msg, so, l, op, r, null, type));
+        Add(b);
+        return b;
     }
 
     /// <summary>Compares a property with a constant (a number, string, <see cref="DateOnly"/> or <see cref="DateTimeOffset"/>).</summary>
-    protected ValidonceRuleBuilder Compare<TLeft, TValue>(Expression<Func<T, TLeft>> left, CompareOp op, TValue value)
+    protected RuleBuilder<T> Compare<TLeft, TValue>(Expression<Func<T, TLeft>> left, CompareOp op, TValue value)
     {
         var l = _wire.WireName(_wire.Property(left));
         var type = InferType(typeof(TLeft));
@@ -83,8 +89,11 @@ public abstract class ValidonceValidator<T> : AbstractValidator<T>, IRuleExporte
             throw new InvalidOperationException(
                 $"Compare on {typeof(T).Name}.{l}: the constant is a {typeof(TValue).Name}, which is not a {type} comparison.");
         var node = _wire.Scalar(value);
-        return Add(new ValidonceRuleBuilder("compare", l,
-            (id, msg, so) => new CompareRule(id, null, msg, so, l, op, null, node, type)));
+        RuleBuilder<T>? b = null;
+        b = new RuleBuilder<T>("compare", l, _wire,
+            (id, msg, so) => new CompareRule(id, b!.PathOverride, msg, so, l, op, null, node, type));
+        Add(b);
+        return b;
     }
 
     /// <summary>Fails when every listed field is blank.</summary>
@@ -130,11 +139,10 @@ public abstract class ValidonceValidator<T> : AbstractValidator<T>, IRuleExporte
         throw new InvalidOperationException($"{t.Name} is not supported in a compare rule (use a number, string, DateOnly or DateTimeOffset).");
     }
 
-    private ValidonceRuleBuilder Add(ValidonceRuleBuilder b)
+    private void Add(ValidonceRuleBuilder b)
     {
         _builders.Add(b);
         _exported = null;
-        return b;
     }
 
     private RuleSet Finish()

@@ -44,6 +44,22 @@ const Signup = withRules(
 - Each issue has `code: "custom"`, `path`, `message` (catalog entry with `{param}` filled in, else the key) and `params: { validonce: true, ruleId, key, params }`.
 - A rule naming a field the schema lacks throws when you call `withRules`.
 
+## Date fields: `isoDate` and `isoDateTime`
+
+`z.iso.date()` accepts year `0000`, which ASP.NET (`DateOnly`), Pydantic (`date`) and validonce's `date` type all reject. Use the matching helpers so the form rejects what the server rejects:
+
+```ts
+import { isoDate, isoDateTime } from "validonce/zod";
+
+const Signup = z.object({
+  start: isoDate(),            // YYYY-MM-DD, real date, years 0001-9999
+  end: isoDate().nullish(),
+  sentAt: isoDateTime(),       // seconds and an offset (Z or ±HH:MM) required
+});
+```
+
+Both take `{ message }` for your own message or key. Apart from year 0000 they accept exactly what `z.iso.date()` and `z.iso.datetime({ offset: true })` accept.
+
 ## Messages
 
 ```ts
@@ -134,6 +150,63 @@ npx validonce extract openapi.json --schema Signup --format json
 Writes every schema's `x-validonce` (or only the `--schema` names; `Name-Input` is used for `Name`) as a TypeScript module, `export const rules = { Signup: { version: 1, rules: [...] } } as const satisfies Record<string, RuleSet>`, or as plain JSON. Output goes to standard output without `-o`. It is deterministic: names and keys are sorted. Exit codes: 0 done, 1 no `x-validonce` found, 2 usage error or unreadable input.
 
 The npm `validonce` command is this TypeScript tool. The .NET and Python `validonce` commands are separate tools with their own options.
+
+## Attach rules to orval or kubb output: `validonce wrap`
+
+orval and kubb turn an OpenAPI document into Zod schemas but drop `x-validonce`. `wrap` writes a companion module that attaches the rules to those schemas:
+
+```sh
+npx validonce wrap --openapi openapi.json --zod src/gen/schemas.ts -o src/gen/schemas.rules.ts
+```
+
+```ts
+// src/gen/schemas.rules.ts (generated)
+export const Signup = _withRules(_gen.Signup, _rules["Signup"]);
+```
+
+Import `Signup` (or `signupSchema` with kubb) from `schemas.rules` instead of `schemas`. The rules are embedded in the companion, so it has no runtime fetch and needs only `validonce` and `zod`.
+
+Options: `--style auto|orval|kubb` (default `auto`), `--map Name=export` (repeatable). Matching, per schema that has rules:
+
+| Generator | Export looked for | Example |
+|---|---|---|
+| orval (`generateReusableSchemas: true`) | PascalCase | `Signup`, `SignupInput` |
+| kubb (`@kubb/plugin-zod`) | camelCase + `Schema` | `signupSchema`, `signupInputSchema` |
+
+FastAPI's `Signup-Input` matches as `SignupInput` / `signupInputSchema`. Per-operation orval bodies (`CreateSignupBody`) are not matched by name; use `--map Signup=CreateSignupBody`. Exports are found with a line-anchored pattern (`^export const Name =`), not a TypeScript parser.
+
+It fails at generation time, never at import: exit 1, and nothing is written, when a schema with rules has no matching export, when two exports match (`Signup` and `signupSchema`), when `--map` names a missing export, or when a rule names a field missing from that schema's `properties` (`withRules` would otherwise throw when the app loads). Schemas that are not plain objects (`allOf`/`oneOf`/`anyOf`, no `properties`) are skipped with a warning. Limitation: rules on a schema that other schemas embed are only attached to its top-level export; a warning says so, and the embedded use is not checked.
+
+**orval**, from `hooks.afterAllFilesWrite` (set `injectGeneratedDirsAndFiles: false`, or orval appends the file list to the command):
+
+```js
+// orval.config.mjs
+export default {
+  api: {
+    input: "./openapi.json",
+    output: {
+      client: "zod",
+      mode: "single",
+      target: "./src/gen/schemas.ts",
+      override: { zod: { generateReusableSchemas: true } },
+    },
+    hooks: {
+      afterAllFilesWrite: {
+        command: "validonce wrap --openapi ./openapi.json --zod ./src/gen/schemas.ts -o ./src/gen/schemas.rules.ts",
+        injectGeneratedDirsAndFiles: false,
+      },
+    },
+  },
+};
+```
+
+**kubb** has no after-generation command hook that takes a shell string, so run `wrap` after it:
+
+```sh
+kubb generate && validonce wrap --openapi openapi.json --zod src/gen/schemas.ts -o src/gen/schemas.rules.ts
+```
+
+with `pluginZod({ output: { path: "./schemas.ts" } })` so the output is a single file. Generators emit `z.iso.date()` for `format: date`; to reject year `0000` in the browser too, extend the wrapped schema, for example `Signup.extend({ start: isoDate().nullable() })`. Both recipes run in CI against real orval and kubb output: [examples/wrap-demo](../examples/wrap-demo).
 
 ## Evaluate without Zod
 

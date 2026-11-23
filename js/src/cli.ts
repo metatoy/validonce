@@ -2,10 +2,11 @@
 // Copyright 2026 Metatoy LLC
 
 import { readFileSync, realpathSync, writeFileSync } from "node:fs";
-import { basename } from "node:path";
+import { basename, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { allRulesFromOpenApi } from "./openapi";
 import { type RuleSet, ValidonceFormatError } from "./types";
+import { type WrapStyle, wrap } from "./wrap";
 
 /** Where `main` writes. Defaults to the process streams. */
 export interface Io {
@@ -17,6 +18,8 @@ const HELP = `validonce: extract shared validation rules from an OpenAPI documen
 
 Usage:
   validonce extract <openapi.json> [-o <file>] [--schema <Name>]... [--format ts|json]
+  validonce wrap --openapi <openapi.json> --zod <schemas.ts> -o <schemas.rules.ts>
+                 [--style auto|orval|kubb] [--map <Name>=<export>]...
 
 Options:
   -o, --out <file>     write to <file> (default: standard output; "-" is also standard output)
@@ -25,7 +28,17 @@ Options:
   -h, --help           show this help
   -v, --version        show the version
 
-Exit codes: 0 done, 1 no x-validonce found, 2 usage error or unreadable input.
+wrap writes a companion module that attaches the rules to the Zod schemas that orval or kubb
+generated (export const Signup = withRules(gen.Signup, rules.Signup)):
+  --openapi <file>     the OpenAPI document with x-validonce
+  --zod <file>         the generated Zod module
+  -o, --out <file>     the companion module to write (required)
+  --style <s>          export naming: auto (default), orval (Signup) or kubb (signupSchema)
+  --map Name=export    use this export for schema Name (repeatable); needed for per-operation
+                       exports such as CreateSignupBody
+
+Exit codes: 0 done, 1 no x-validonce found or wrap could not match (nothing is written),
+2 usage error or unreadable input.
 `;
 
 function version(): string {
@@ -84,6 +97,104 @@ function render(
   ].join("\n");
 }
 
+function wrapCommand(
+  args: string[],
+  out: (s: string) => void,
+  err: (s: string) => void,
+  usage: (msg: string) => number,
+): number {
+  let openapi: string | undefined;
+  let zodFile: string | undefined;
+  let outFile: string | undefined;
+  let style: WrapStyle = "auto";
+  const map: Record<string, string> = {};
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i] as string;
+    if (a === "-h" || a === "--help") {
+      out(HELP);
+      return 0;
+    }
+    if (["--openapi", "--zod", "-o", "--out", "--style", "--map"].includes(a)) {
+      const v = args[++i];
+      if (v === undefined) return usage(`${a} needs a value`);
+      if (a === "--openapi") openapi = v;
+      else if (a === "--zod") zodFile = v;
+      else if (a === "--style") {
+        if (v !== "auto" && v !== "orval" && v !== "kubb")
+          return usage(`--style must be auto, orval or kubb, not "${v}"`);
+        style = v;
+      } else if (a === "--map") {
+        const eq = v.indexOf("=");
+        if (eq < 1 || eq === v.length - 1)
+          return usage(`--map needs Name=export, not "${v}"`);
+        map[v.slice(0, eq)] = v.slice(eq + 1);
+      } else outFile = v;
+    } else if (a.startsWith("-")) return usage(`unknown option "${a}"`);
+    else return usage(`unexpected argument "${a}"`);
+  }
+  if (openapi === undefined) return usage("wrap needs --openapi <file>");
+  if (zodFile === undefined) return usage("wrap needs --zod <file>");
+  if (outFile === undefined) return usage("wrap needs -o <file>");
+
+  let doc: unknown;
+  let zodSource: string;
+  try {
+    doc = JSON.parse(readFileSync(openapi, "utf8"));
+  } catch (e) {
+    return usage(
+      `cannot read ${openapi}: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
+  try {
+    zodSource = readFileSync(zodFile, "utf8");
+  } catch (e) {
+    return usage(
+      `cannot read ${zodFile}: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
+
+  let rules: Record<string, RuleSet>;
+  try {
+    rules = collect(doc, []);
+  } catch (e) {
+    if (e instanceof ValidonceFormatError) {
+      err(`validonce: invalid x-validonce in ${openapi}: ${e.message}\n`);
+      return 2;
+    }
+    throw e;
+  }
+  if (Object.keys(rules).length === 0) {
+    err(`validonce: no x-validonce found in ${openapi}\n`);
+    return 1;
+  }
+
+  let spec = relative(dirname(outFile), zodFile).replaceAll("\\", "/");
+  spec = spec.replace(/\.(?:ts|mts|cts)$/, "");
+  if (!spec.startsWith(".")) spec = `./${spec}`;
+  const result = wrap({
+    doc,
+    rules: sortKeys(rules) as Record<string, RuleSet>,
+    zodSource,
+    zodImport: spec,
+    style,
+    map,
+    openapiLabel: basename(openapi),
+  });
+  for (const w of result.warnings) err(`validonce: warning: ${w}\n`);
+  if (result.errors.length > 0 || result.text === undefined) {
+    for (const m of result.errors) err(`validonce: ${m}\n`);
+    return 1;
+  }
+  try {
+    writeFileSync(outFile, result.text);
+  } catch (e) {
+    return usage(
+      `cannot write ${outFile}: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
+  return 0;
+}
+
 /**
  * The CLI. Returns the exit code (0, 1 or 2); never calls `process.exit`.
  * Nothing is written when the code is not 0.
@@ -106,6 +217,7 @@ export function main(argv: readonly string[], io?: Partial<Io>): number {
     out(`${version()}\n`);
     return 0;
   }
+  if (args[0] === "wrap") return wrapCommand(args.slice(1), out, err, usage);
   if (args[0] !== "extract") return usage(`unknown command "${args[0]}"`);
   args.shift();
 

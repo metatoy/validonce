@@ -1,0 +1,26 @@
+{
+  "name": "validonce-mcp-evals",
+  "private": true,
+  "version": "0.0.0",
+  "description": "promptfoo harness that measures the validonce migration agent (Claude and Copilot). Local only.",
+  "license": "Apache-2.0",
+  "author": "Metatoy LLC",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dry-run": "PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_DISABLE_UPDATE=1 PROMPTFOO_DISABLE_SHARING=1 node dry-run.mjs",
+    "matrix": "node matrix.mjs",
+    "eval:claude": "node run-eval.mjs claude",
+    "eval:copilot": "node run-eval.mjs copilot",
+    "prepare:vscode": "node prepare-vscode.mjs",
+    "score:vscode": "node score-vscode.mjs",
+    "dry-verify:vscode": "PROMPTFOO_DISABLE_TELEMETRY=1 node dry-verify-vscode.mjs"
+  },
+  "devDependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.330",
+    "@modelcontextprotocol/client": "2.4.0",
+    "promptfoo": "0.126.0"
+  }
+}

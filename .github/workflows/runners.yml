@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+
+name: runners
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  old-validator-runners:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22 # the runners need the Node 22 permission model
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: pnpm install --frozen-lockfile
+      - name: Build validonce (the reference evaluate)
+        run: pnpm build
+        working-directory: js
+      - name: Set up the Pydantic fixture venv
+        run: uv sync
+        working-directory: testbeds/before/pydantic
+      - name: Each runner matches validonce evaluate on every input (zod, yup, angular, pydantic, fluentvalidation)
+        run: node check.mjs
+        working-directory: testbeds/before
+      - name: A fixture that does I/O on import fails with the clear message
+        run: |
+          set -u
+          r=../../skills/validonce-migrate/scripts
+          out=$(node $r/run-js.mjs zod/io_on_import.mjs Bad inputs/signup.jsonl "$RUNNER_TEMP/o.jsonl" --kind zod 2>&1 || true)
+          echo "$out" | grep -q "validonce runner: node:fs needs I/O; isolate the schema module"
+          out=$(node $r/run-js.mjs yup/io_on_import.mjs Bad inputs/signup.jsonl "$RUNNER_TEMP/o.jsonl" --kind yup 2>&1 || true)
+          echo "$out" | grep -q "validonce runner: node:net needs I/O; isolate the schema module"
+          out=$(cd pydantic && env -i PATH=/usr/bin:/bin .venv/bin/python -I ../$r/run-pydantic.py io_on_import.py Bad ../inputs/signup.jsonl "$RUNNER_TEMP/o.jsonl" 2>&1 || true)
+          echo "$out" | grep -q "validonce runner: io_on_import.py needs I/O; isolate the schema module"
+        working-directory: testbeds/before
+      - name: The C# runner says "cannot prove" for a validator that needs constructor services
+        run: |
+          set -u
+          dotnet build fluentvalidation -c Release -o "$RUNNER_TEMP/fv" -v q -nologo
+          dotnet build ../../skills/validonce-migrate/scripts/dotnet-runner -c Release -o "$RUNNER_TEMP/runner" -v q -nologo
+          set +e
+          out=$(dotnet "$RUNNER_TEMP/runner/DotnetRunner.dll" --assembly "$RUNNER_TEMP/fv/Before.Fluent.dll" \
+            --validator Before.NeedsServicesValidator --model Before.Signup \
+            --inputs inputs/signup.jsonl --out "$RUNNER_TEMP/o.jsonl" 2>&1)
+          code=$?
+          set -e
+          echo "$out"
+          test "$code" -eq 4
+          echo "$out" | grep -q "validonce runner: Before.NeedsServicesValidator needs constructor services; cannot prove"
+        working-directory: testbeds/before

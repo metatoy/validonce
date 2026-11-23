@@ -1,0 +1,17 @@
+{
+  "name": "validonce",
+  "version": "0.1.0",
+  "description": "Migrate hand-written cross-field validation (FluentValidation, Pydantic, Zod, Angular, yup) to validonce rules, proven by a differential check. Bundles the validonce-migrate skill and the validonce-mcp server.",
+  "author": { "name": "Metatoy LLC" },
+  "homepage": "https://github.com/metatoy/validonce",
+  "repository": "https://github.com/metatoy/validonce",
+  "license": "Apache-2.0",
+  "keywords": ["validation", "migration", "openapi", "fluentvalidation", "pydantic", "zod"],
+  "skills": "./skills/",
+  "mcpServers": {
+    "validonce": {
+      "command": "npx",
+      "args": ["-y", "validonce-mcp"]
+    }
+  }
+}
