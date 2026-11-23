@@ -58,6 +58,8 @@ app.MapOpenApi();
 app.MapPost("/signups", (Signup s) => Results.Ok()).WithValidonce();
 ```
 
+For MVC controllers, call `builder.Services.AddValidonceMvc()` after `AddControllers()`; the `ValidonceActionFilter` it adds returns the same 422 body.
+
 ## What you get
 
 OpenAPI: the schema of `Signup` gains

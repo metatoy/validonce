@@ -9,8 +9,12 @@ using Validonce.Patterns;
 
 namespace Validonce.Cli;
 
+/// <summary>The <c>validonce</c> command line tool.</summary>
 public static class Program
 {
+    /// <summary>The tool entry point.</summary>
+    /// <param name="args">The command line arguments.</param>
+    /// <returns>The process exit code.</returns>
     public static int Main(string[] args) => Run(args, Console.Out, Console.Error, Console.In);
 
     internal static readonly (string Name, Engine Engine)[] EngineNames =

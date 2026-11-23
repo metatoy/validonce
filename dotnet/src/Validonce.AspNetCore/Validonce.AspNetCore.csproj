@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Description>ASP.NET Core integration for validonce: adds your FluentValidation cross-field rules to the OpenAPI document and returns 422 problem details with the issue list.</Description>
+    <PackageTags>aspnetcore;validation;openapi;fluentvalidation;problemdetails</PackageTags>
     <PackageId>Validonce.AspNetCore</PackageId>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -13,5 +17,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Validonce.FluentValidation/Validonce.FluentValidation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

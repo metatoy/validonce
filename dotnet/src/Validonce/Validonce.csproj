@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Description>Rule-format v1 types and evaluator for validonce (write cross-field validation rules once on the server, enforce them in the browser), plus the regex portability linter API.</Description>
+    <PackageTags>validation;forms;openapi;regex;lint;zod</PackageTags>
     <PackageId>Validonce</PackageId>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>

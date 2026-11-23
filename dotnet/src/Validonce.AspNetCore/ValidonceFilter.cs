@@ -7,6 +7,7 @@ using FluentValidation.Results;
 
 namespace Validonce.AspNetCore;
 
+/// <summary>Minimal API support.</summary>
 public static class ValidonceEndpointExtensions
 {
     /// <summary>
@@ -40,13 +41,19 @@ public static class ValidonceEndpointExtensions
         });
 }
 
+/// <summary>Builds the validation-failure response shared by minimal APIs and MVC.</summary>
 public static class ValidonceProblem
 {
     /// <summary>The issues Validonce rules produced, in evaluation order.</summary>
-    public static IReadOnlyList<Issue> Issues(IEnumerable<ValidationFailure> failures) =>
+    internal static IReadOnlyList<Issue> Issues(IEnumerable<ValidationFailure> failures) =>
         failures.Select(f => f.CustomState).OfType<Issue>().ToList();
 
+    /// <summary>The 422 (or configured status) ProblemDetails response for the failures.</summary>
     public static IResult Create(IEnumerable<ValidationFailure> failures, HttpContext http)
+        => TypedResults.Problem(CreateDetails(failures, http));
+
+    /// <summary>The ProblemDetails body: <c>errors</c> by property, plus the top-level <c>validonce</c> issue list.</summary>
+    public static HttpValidationProblemDetails CreateDetails(IEnumerable<ValidationFailure> failures, HttpContext http)
     {
         var list = failures.ToList();
         var errors = list.GroupBy(f => f.PropertyName)
@@ -60,6 +67,6 @@ public static class ValidonceProblem
         var issues = new JsonArray();
         foreach (var i in Issues(list)) issues.Add(i.ToJson());
         problem.Extensions["validonce"] = issues;
-        return TypedResults.Problem(problem);
+        return problem;
     }
 }

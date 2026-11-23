@@ -11,8 +11,10 @@ namespace Validonce.AspNetCore;
 /// <summary>Adds <c>x-validonce</c> to the schema of every type that has a <see cref="ValidonceValidator{T}"/> registered.</summary>
 public sealed class ValidonceSchemaTransformer : IOpenApiSchemaTransformer
 {
+    /// <summary>The OpenAPI extension name: <c>x-validonce</c>.</summary>
     public const string ExtensionName = "x-validonce";
 
+    /// <inheritdoc />
     public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
     {
         // Property-position schemas of the same type are references to the component; annotate the type itself once.

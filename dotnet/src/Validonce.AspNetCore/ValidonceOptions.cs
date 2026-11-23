@@ -3,6 +3,7 @@
 
 namespace Validonce.AspNetCore;
 
+/// <summary>Options for Validonce in ASP.NET Core.</summary>
 public sealed class ValidonceOptions
 {
     /// <summary>

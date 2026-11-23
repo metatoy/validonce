@@ -22,12 +22,16 @@ public sealed class GroupRuleBuilder<T> : ValidonceRuleBuilder
         return this;
     }
 
+    /// <inheritdoc cref="ValidonceRuleBuilder.WithMessageKey" />
     public new GroupRuleBuilder<T> WithMessageKey(string key, IReadOnlyDictionary<string, object?>? parameters = null)
     { base.WithMessageKey(key, parameters); return this; }
 
+    /// <inheritdoc cref="ValidonceRuleBuilder.WithRuleId" />
     public new GroupRuleBuilder<T> WithRuleId(string id) { base.WithRuleId(id); return this; }
 
+    /// <inheritdoc cref="ValidonceRuleBuilder.ServerOnly" />
     public new GroupRuleBuilder<T> ServerOnly() { base.ServerOnly(); return this; }
 
+    /// <inheritdoc cref="ValidonceRuleBuilder.WithMessage" />
     public new GroupRuleBuilder<T> WithMessage(string message) { base.WithMessage(message); return this; }
 }

@@ -6,11 +6,16 @@ using System.Text.Json.Nodes;
 
 namespace Validonce;
 
+/// <summary>A versioned list of rules: the value of <c>x-validonce</c>.</summary>
+/// <param name="Version">The rule-format version. Only 1 exists.</param>
+/// <param name="Rules">The rules, in evaluation order.</param>
 public sealed record RuleSet(int Version, IReadOnlyList<Rule> Rules)
 {
     /// <summary>The rule-format JSON object (the value of <c>x-validonce</c>).</summary>
     public JsonObject ToJson() => RuleJson.Write(this);
 
+    /// <summary>Parses rule-format JSON text.</summary>
+    /// <exception cref="ValidonceFormatException">The text is not valid version-1 rule data.</exception>
     public static RuleSet Parse(string json)
     {
         JsonNode? node;

@@ -1,11 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Description>Write cross-field validation rules once with FluentValidation (required-when, compare fields, at least one of, exactly one of, all or none) and export them for browser forms.</Description>
+    <PackageTags>validation;fluentvalidation;forms;openapi;zod</PackageTags>
     <PackageId>Validonce.FluentValidation</PackageId>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.2.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Validonce/Validonce.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

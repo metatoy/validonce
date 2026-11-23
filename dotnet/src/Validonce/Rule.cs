@@ -6,6 +6,12 @@ using System.Text.Json.Nodes;
 
 namespace Validonce;
 
+/// <summary>A cross-field rule. The concrete kinds are <see cref="RequiredWhenRule"/>, <see cref="CompareRule"/> and <see cref="GroupRule"/>.</summary>
+/// <param name="Id">The rule id, unique in its rule set.</param>
+/// <param name="Kind">The rule kind as written in the rule format.</param>
+/// <param name="Path">The path to report on, or null for the kind's default.</param>
+/// <param name="Message">The message key and params.</param>
+/// <param name="ServerOnly">True when clients skip this rule.</param>
 public abstract record Rule(string Id, string Kind, string? Path, RuleMessage Message, bool ServerOnly)
 {
     /// <summary>The path the issue is reported on (explicit path or the kind's default).</summary>
@@ -60,21 +66,38 @@ public abstract record Rule(string Id, string Kind, string? Path, RuleMessage Me
     }
 }
 
+/// <summary>The field must not be blank whenever the condition holds.</summary>
+/// <param name="Id">The rule id.</param>
+/// <param name="Path">The path to report on, or null for the field.</param>
+/// <param name="Message">The message key and params.</param>
+/// <param name="ServerOnly">True when clients skip this rule.</param>
+/// <param name="Field">The required field.</param>
+/// <param name="When">The condition that makes the field required.</param>
 public sealed record RequiredWhenRule(string Id, string? Path, RuleMessage Message, bool ServerOnly, string Field, Condition When)
     : Rule(Id, "required_when", Path, Message, ServerOnly)
 {
+    /// <inheritdoc />
     public override string EffectivePath => Path ?? Field;
 
+    /// <inheritdoc />
     public override bool Fails(JsonObject data) =>
         When.Evaluate(data) && Values.IsBlank(Values.Get(data, Field));
 }
 
 /// <summary>at_least_one_of, exactly_one_of or all_or_none over a list of fields.</summary>
-public sealed record GroupRule(string Id, string Kind_, string? Path, RuleMessage Message, bool ServerOnly, IReadOnlyList<string> Fields)
-    : Rule(Id, Kind_, Path, Message, ServerOnly)
+/// <param name="Id">The rule id.</param>
+/// <param name="Kind">The group kind: <c>at_least_one_of</c>, <c>exactly_one_of</c> or <c>all_or_none</c>.</param>
+/// <param name="Path">The path to report on, or null for the first field.</param>
+/// <param name="Message">The message key and params.</param>
+/// <param name="ServerOnly">True when clients skip this rule.</param>
+/// <param name="Fields">The fields in the group.</param>
+public sealed record GroupRule(string Id, string Kind, string? Path, RuleMessage Message, bool ServerOnly, IReadOnlyList<string> Fields)
+    : Rule(Id, Kind, Path, Message, ServerOnly)
 {
+    /// <inheritdoc />
     public override string EffectivePath => Path ?? Fields[0];
 
+    /// <inheritdoc />
     public override bool Fails(JsonObject data)
     {
         var filled = Fields.Count(f => !Values.IsBlank(Values.Get(data, f)));

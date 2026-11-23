@@ -3,12 +3,14 @@
 
 using System.Reflection;
 using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Validonce.FluentValidation;
 
 namespace Validonce.AspNetCore;
 
+/// <summary>Registers Validonce validators, the OpenAPI transformer and MVC validation.</summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>
@@ -18,6 +20,13 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddValidonce(this IServiceCollection services, params Assembly[] assemblies)
         => services.AddValidonce(null, assemblies.Length == 0 ? new[] { Assembly.GetCallingAssembly() } : assemblies);
 
+    /// <summary>
+    /// Registers every <see cref="ValidonceValidator{T}"/> in the assemblies as a singleton <c>IValidator&lt;T&gt;</c>,
+    /// and applies the options.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configure">Sets options such as the status code, or null for the defaults.</param>
+    /// <param name="assemblies">The assemblies to scan. Empty means the calling assembly.</param>
     public static IServiceCollection AddValidonce(
         this IServiceCollection services, Action<ValidonceOptions>? configure, params Assembly[] assemblies)
     {
@@ -37,6 +46,17 @@ public static class ServiceCollectionExtensions
     {
         services.TryAddSingleton(new ValidonceOptions());
         services.AddSingleton<IValidator<T>, TValidator>();
+        return services;
+    }
+
+    /// <summary>
+    /// Validates MVC controller action arguments with the registered validators. Adds
+    /// <see cref="ValidonceActionFilter"/> to every controller.
+    /// </summary>
+    public static IServiceCollection AddValidonceMvc(this IServiceCollection services)
+    {
+        services.TryAddSingleton(new ValidonceOptions());
+        services.Configure<MvcOptions>(o => o.Filters.Add<ValidonceActionFilter>());
         return services;
     }
 

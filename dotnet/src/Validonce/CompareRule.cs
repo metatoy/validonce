@@ -6,15 +6,52 @@ using System.Text.Json.Nodes;
 
 namespace Validonce;
 
-public enum CompareOp { Lt, Le, Gt, Ge, Eq, Ne }
+/// <summary>The operator of a compare rule.</summary>
+public enum CompareOp
+{
+    /// <summary>Less than.</summary>
+    Lt,
+    /// <summary>Less than or equal.</summary>
+    Le,
+    /// <summary>Greater than.</summary>
+    Gt,
+    /// <summary>Greater than or equal.</summary>
+    Ge,
+    /// <summary>Equal.</summary>
+    Eq,
+    /// <summary>Not equal.</summary>
+    Ne,
+}
 
-public enum CompareType { Number, String, Date, DateTime }
+/// <summary>How the two sides of a compare rule are read and ordered.</summary>
+public enum CompareType
+{
+    /// <summary>JSON numbers.</summary>
+    Number,
+    /// <summary>Strings, ordered by code point.</summary>
+    String,
+    /// <summary>Calendar dates (<c>yyyy-MM-dd</c>).</summary>
+    Date,
+    /// <summary>Instants with a UTC offset (RFC 3339).</summary>
+    DateTime,
+}
 
+/// <summary>Compares one field with another field or with a constant.</summary>
+/// <param name="Id">The rule id.</param>
+/// <param name="Path">The path to report on, or null for the left field.</param>
+/// <param name="Message">The message key and params.</param>
+/// <param name="ServerOnly">True when clients skip this rule.</param>
+/// <param name="LeftField">The field on the left of the operator.</param>
+/// <param name="Op">The operator.</param>
+/// <param name="RightField">The field on the right, or null when a constant is used.</param>
+/// <param name="RightValue">The constant on the right, or null when a field is used.</param>
+/// <param name="Type">How the values are read and ordered.</param>
 public sealed record CompareRule(
     string Id, string? Path, RuleMessage Message, bool ServerOnly,
     string LeftField, CompareOp Op, string? RightField, JsonNode? RightValue, CompareType Type)
     : Rule(Id, "compare", Path, Message, ServerOnly)
 {
+    /// <inheritdoc />
     public override string EffectivePath => Path ?? LeftField;
 
     internal static CompareRule FromJson(string id, string? path, RuleMessage message, bool serverOnly, JsonObject o)
@@ -45,6 +82,7 @@ public sealed record CompareRule(
         return new CompareRule(id, path, message, serverOnly, left, op, rf, rv, type);
     }
 
+    /// <inheritdoc />
     public override bool Fails(JsonObject data)
     {
         var l = Values.Get(data, LeftField);

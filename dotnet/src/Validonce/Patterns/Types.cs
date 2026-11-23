@@ -6,10 +6,30 @@ using System.Text.Json;
 namespace Validonce.Patterns;
 
 /// <summary>How serious a portability finding is.</summary>
-public enum Severity { Info, Warning, Error }
+public enum Severity
+{
+    /// <summary>Worth knowing; unlikely to change a result.</summary>
+    Info,
+    /// <summary>Can change a result on some inputs.</summary>
+    Warning,
+    /// <summary>The engines disagree or one rejects the pattern.</summary>
+    Error,
+}
 
 /// <summary>The regex engines the linter reasons about (fixture names: js, js-u, python-re, rust-regex, dotnet).</summary>
-public enum Engine { Js, JsU, PythonRe, RustRegex, DotNet }
+public enum Engine
+{
+    /// <summary>JavaScript without the <c>u</c> flag.</summary>
+    Js,
+    /// <summary>JavaScript with the <c>u</c> flag.</summary>
+    JsU,
+    /// <summary>Python <c>re</c>.</summary>
+    PythonRe,
+    /// <summary>The Rust <c>regex</c> crate (Pydantic's default).</summary>
+    RustRegex,
+    /// <summary>.NET <c>System.Text.RegularExpressions</c>.</summary>
+    DotNet,
+}
 
 /// <summary>One portability problem found in a pattern.</summary>
 public sealed record PatternFinding(

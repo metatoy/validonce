@@ -4,6 +4,7 @@
     <RootNamespace>Validonce.Cli</RootNamespace>
     <RollForward>Major</RollForward>
     <PackageId>Validonce.Cli</PackageId>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>validonce</ToolCommandName>
     <Description>Lint regular expressions in OpenAPI and JSON Schema documents for behavior that differs between JavaScript, Python, Rust and .NET regex engines.</Description>

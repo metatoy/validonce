@@ -16,14 +16,26 @@ namespace Validonce.FluentValidation;
 /// </summary>
 public abstract class ValidonceValidator<T> : AbstractValidator<T>, IRuleExporter
 {
-    /// <summary>Wire names default to camelCase (<see cref="JsonSerializerDefaults.Web"/>).</summary>
-    public static JsonSerializerOptions DefaultJsonOptions { get; } = new(JsonSerializerDefaults.Web);
+    /// <summary>
+    /// The options used when none are passed: <see cref="JsonSerializerDefaults.Web"/> (camelCase wire names).
+    /// This instance is read-only. To change wire names, pass your own <see cref="JsonSerializerOptions"/>
+    /// to the validator's constructor.
+    /// </summary>
+    public static JsonSerializerOptions DefaultJsonOptions { get; } = CreateDefaultOptions();
+
+    private static JsonSerializerOptions CreateDefaultOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        options.MakeReadOnly(populateMissingResolver: true);
+        return options;
+    }
 
     private readonly WireNames _wire;
     private readonly List<ValidonceRuleBuilder> _builders = new();
     private RuleSet? _exported;
     private Dictionary<string, string>? _wireToProperty;
 
+    /// <summary>Creates the validator with the default wire-name options (camelCase).</summary>
     protected ValidonceValidator() : this(null) { }
 
     /// <param name="jsonOptions">The options the API serializes with; they decide wire names.</param>
@@ -37,6 +49,7 @@ public abstract class ValidonceValidator<T> : AbstractValidator<T>, IRuleExporte
     /// <summary>Builds conditions: <c>If.Eq(x =&gt; x.Plan, "pro")</c>. (Named <c>If</c> because <c>When</c> is a FluentValidation method.)</summary>
     protected ConditionBuilder<T> If { get; }
 
+    /// <inheritdoc />
     public Type ModelType => typeof(T);
 
     /// <summary>The field is required (not blank) whenever the condition holds.</summary>
