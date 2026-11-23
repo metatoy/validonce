@@ -26,3 +26,4 @@ examples/*/backend.log
 
 # Private notes live outside this repository
 spec/
+.demo/

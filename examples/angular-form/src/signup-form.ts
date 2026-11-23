@@ -25,7 +25,9 @@ export const baseSchema = z.object({
 type Field = "plan" | "company" | "email" | "start" | "end" | "quantity";
 const fields: Field[] = ["plan", "company", "email", "start", "end", "quantity"];
 
-export const api = (new URLSearchParams(window.location.search).get("api") ?? "http://localhost:5080").replace(/\/$/, "");
+// Default: same-origin `/api`, proxied to the chosen backend by proxy.conf.mjs. `?api=http://host:port`
+// still points the form at a backend directly.
+export const api = (new URLSearchParams(window.location.search).get("api") ?? "/api").replace(/\/$/, "");
 
 /** Holds the server-derived schema; set once the OpenAPI document has loaded. */
 @Injectable({ providedIn: "root" })

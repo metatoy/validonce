@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+
+name: devcontainer
+
+# Builds the Codespaces container, starts the demo inside it, and checks a proxied request.
+on:
+  push:
+    paths:
+      - ".devcontainer/**"
+      - "scripts/demo.sh"
+      - "examples/react-form/**"
+      - "examples/angular-form/**"
+      - "examples/aspnet-app/**"
+      - "examples/fastapi-app/**"
+      - ".github/workflows/devcontainer.yml"
+  pull_request:
+    paths:
+      - ".devcontainer/**"
+      - "scripts/demo.sh"
+      - "examples/react-form/**"
+      - "examples/angular-form/**"
+      - "examples/aspnet-app/**"
+      - "examples/fastapi-app/**"
+      - ".github/workflows/devcontainer.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: devcontainers/ci@v0.3
+        with:
+          push: never
+          runCmd: |
+            set -euo pipefail
+            # Same steps a codespace runs: onCreateCommand's install is part of the build; the
+            # demo starts detached (as postAttachCommand does).
+            bash scripts/demo.sh
+            base=http://localhost:5173
+
+            echo "--- bad body: expect 422 carrying the rule error"
+            code=$(curl -s -o bad.json -w '%{http_code}' -X POST "$base/api/signups" \
+              -H 'content-type: application/json' \
+              -d '{"plan":"pro","company":"","email":"ada@example.test","start":"2026-03-10","end":"2026-03-01","quantity":0}')
+            cat bad.json; echo
+            [ "$code" = 422 ] || { echo "expected 422, got $code"; exit 1; }
+            grep -q 'rules.company_required' bad.json || { echo "rule error missing"; exit 1; }
+
+            echo "--- good body: expect 200"
+            code=$(curl -s -o good.json -w '%{http_code}' -X POST "$base/api/signups" \
+              -H 'content-type: application/json' \
+              -d '{"plan":"pro","company":"Example Co","email":"ada@example.test","start":"2026-03-10","end":"2026-03-12","quantity":2}')
+            cat good.json; echo
+            [ "$code" = 200 ] || { echo "expected 200, got $code"; exit 1; }
+
+            bash scripts/demo.sh --stop
