@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "topic": "runner-self-test",
+  "cases": [
+    {
+      "id": "st-001",
+      "finding": "VR001",
+      "description": "\\w on a non-ASCII letter",
+      "pattern": "^\\w+$",
+      "inputs": [
+        { "text": "Café", "expect": { "js": "no-match", "js-u": "no-match", "python-re": "match", "rust-regex": "match", "dotnet": "match" } }
+      ]
+    },
+    {
+      "id": "st-002",
+      "finding": "VR001",
+      "description": "lookbehind: Rust regex cannot compile it",
+      "pattern": "(?<=a)b",
+      "inputs": [
+        { "text": "ab", "expect": { "js": "match", "js-u": "match", "python-re": "match", "rust-regex": "error", "dotnet": "match" } }
+      ]
+    },
+    {
+      "id": "st-003",
+      "finding": "VR001",
+      "description": "$ before a final newline",
+      "pattern": "^a$",
+      "inputs": [
+        { "text": "a\n", "expect": { "js": "no-match", "js-u": "no-match", "python-re": "match", "rust-regex": "no-match", "dotnet": "match" } }
+      ]
+    }
+  ]
+}

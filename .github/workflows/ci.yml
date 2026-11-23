@@ -176,3 +176,38 @@ jobs:
         with:
           name: screenshots-${{ matrix.backend }}
           path: examples/react-form/e2e/screenshots/
+
+  regex-oracle:
+    # Runs the regex fixtures on five real engines (V8 with and without `u`, Python re, Rust regex
+    # through Pydantic, .NET) and fails when any engine's result differs from a fixture's expectation.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: astral-sh/setup-uv@v6
+      - name: Run the fixtures on every engine
+        run: |
+          node conformance/regex/runners/js.mjs conformance/regex > "$RUNNER_TEMP/js.json"
+          uv run --python 3.14 --project python python conformance/regex/runners/py_runner.py conformance/regex > "$RUNNER_TEMP/py.json"
+          dotnet run --project conformance/regex/runners/dotnet -c Release -- conformance/regex > "$RUNNER_TEMP/dotnet.json"
+      - name: Every engine matches every expectation
+        run: uv run --project python python scripts/check_regex_oracle.py "$RUNNER_TEMP/js.json" "$RUNNER_TEMP/py.json" "$RUNNER_TEMP/dotnet.json"
+      - name: Runner self-test
+        run: |
+          node conformance/regex/runners/js.mjs conformance/regex/runners/testdata > "$RUNNER_TEMP/self-js.json"
+          uv run --python 3.14 --project python python conformance/regex/runners/py_runner.py conformance/regex/runners/testdata > "$RUNNER_TEMP/self-py.json"
+          dotnet run --project conformance/regex/runners/dotnet -c Release -- conformance/regex/runners/testdata > "$RUNNER_TEMP/self-dotnet.json"
+          uv run --project python python scripts/check_regex_oracle.py --fixtures conformance/regex/runners/testdata "$RUNNER_TEMP/self-js.json" "$RUNNER_TEMP/self-py.json" "$RUNNER_TEMP/self-dotnet.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regex-oracle-results
+          path: |
+            ${{ runner.temp }}/js.json
+            ${{ runner.temp }}/py.json
+            ${{ runner.temp }}/dotnet.json
