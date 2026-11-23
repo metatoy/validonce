@@ -31,5 +31,5 @@ jobs:
       - run: pnpm build
         working-directory: js
       - name: Generate, compile, export, compare
-        run: ./run.sh
+        run: bash ./run.sh
         working-directory: mcp/test/golden

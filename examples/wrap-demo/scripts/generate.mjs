@@ -21,7 +21,10 @@ run(process.execPath, ["scripts/make-input-variant.mjs"]);
 run(bin("orval"), ["--config", "orval.config.mjs"]);
 run(bin("kubb"), ["generate", "--config", "kubb.config.ts"]);
 for (const [name, openapi] of Object.entries(specs))
-  run(bin("validonce"), [
+  // The workspace's own CLI build, as the orval hook uses: pnpm links the `validonce` bin only
+  // when js/dist exists at install time, which is not the case on a fresh CI checkout.
+  run(process.execPath, [
+    "../../js/dist/cli.js",
     "wrap",
     "--openapi", openapi,
     "--zod", `./gen/kubb-${name}/schemas.ts`,
