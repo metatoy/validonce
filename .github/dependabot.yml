@@ -5,7 +5,8 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: /
+    # No root package.json: list the pnpm workspace packages (the lockfile at the root is found).
+    directories: ["/js", "/mcp", "/mcp/evals", "/testbeds/before", "/examples/angular-form", "/examples/react-form", "/examples/wrap-demo"]
     schedule:
       interval: weekly
       day: monday
