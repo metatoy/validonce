@@ -2,7 +2,7 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-11-22)
 
 First public release: the regex portability linter.
 
