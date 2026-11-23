@@ -1,0 +1,15 @@
+[project]
+name = "validonce-example-fastapi"
+version = "0.0.0"
+description = "validonce end-to-end example: a FastAPI app with shared validation rules."
+requires-python = ">=3.10"
+dependencies = ["fastapi>=0.115", "uvicorn>=0.30", "validonce"]
+
+[tool.uv.sources]
+validonce = { path = "../../python", editable = true }
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
