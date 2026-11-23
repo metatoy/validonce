@@ -35,8 +35,8 @@ const cases: Case[] = readdirSync(rulesDir)
         .cases,
   );
 
-it("loads exactly 95 cases", () => {
-  expect(cases.length).toBe(95);
+it("loads exactly 125 cases", () => {
+  expect(cases.length).toBe(125);
 });
 
 describe.each(cases.map((c) => [c.id, c] as const))("%s", (_id, c) => {

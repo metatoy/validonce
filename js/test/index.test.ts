@@ -27,17 +27,24 @@ describe("parseRuleSet", () => {
   });
 });
 
-describe("unimplemented kinds", () => {
-  for (const kind of [
-    "at_least_one_of",
-    "exactly_one_of",
-    "all_or_none",
-  ] as const) {
-    test(`${kind} throws`, () => {
-      const rule = { id: "x", kind, fields: ["a", "b"], message: { key: "k" } };
-      expect(() => evaluate([rule], {})).toThrow(
-        `${kind} is not implemented yet`,
-      );
-    });
-  }
+describe("group kinds", () => {
+  const rule = (
+    kind: "at_least_one_of" | "exactly_one_of" | "all_or_none",
+  ) => ({
+    id: "x",
+    kind,
+    fields: ["a", "b"],
+    message: { key: "k" },
+  });
+  test("report on the first field by default", () => {
+    expect(evaluate([rule("at_least_one_of")], {})).toEqual([
+      { path: ["a"], ruleId: "x", key: "k", params: {} },
+    ]);
+  });
+  test("exactly_one_of fails when both are given", () => {
+    expect(evaluate([rule("exactly_one_of")], { a: 1, b: 2 })).toHaveLength(1);
+  });
+  test("all_or_none passes when none are given", () => {
+    expect(evaluate([rule("all_or_none")], {})).toEqual([]);
+  });
 });

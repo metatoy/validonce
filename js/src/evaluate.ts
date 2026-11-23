@@ -166,7 +166,15 @@ export function evaluate(
       failed = compareFails(rule, data);
       defaultPath = rule.left.field;
     } else {
-      throw new Error(`${(rule as Rule).kind} is not implemented yet`);
+      // at_least_one_of, exactly_one_of, all_or_none: count the non-blank fields.
+      const given = rule.fields.filter((f) => !isBlank(get(data, f))).length;
+      failed =
+        rule.kind === "at_least_one_of"
+          ? given === 0
+          : rule.kind === "exactly_one_of"
+            ? given !== 1
+            : given > 0 && given < rule.fields.length;
+      defaultPath = rule.fields[0] as string;
     }
     if (failed) {
       issues.push({
