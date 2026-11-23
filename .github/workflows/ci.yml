@@ -152,13 +152,22 @@ jobs:
         working-directory: examples/fastapi-app
         run: |
           uv sync
-          nohup uv run uvicorn app:app --port 8010 > backend.log 2>&1 &
+          # Run from the virtual environment, not through `uv run`, so no uv process holds the
+          # cache lock while the server is up.
+          nohup .venv/bin/uvicorn app:app --port 8010 > backend.log 2>&1 &
           echo "VALIDONCE_API=http://localhost:8010" >> "$GITHUB_ENV"
       - name: Wait for the backend
         run: for i in $(seq 1 90); do curl -s -o /dev/null "$VALIDONCE_API/" && exit 0; sleep 1; done; exit 1
       - name: End-to-end tests
         run: pnpm e2e
         working-directory: examples/react-form
+      - name: Stop the backend
+        if: always()
+        run: |
+          for port in 5080 8010; do
+            pids=$(lsof -t -iTCP:$port -sTCP:LISTEN || true)
+            [ -n "$pids" ] && kill $pids || true
+          done
       - name: Backend log
         if: failure()
         run: cat examples/*-app/backend.log || true
