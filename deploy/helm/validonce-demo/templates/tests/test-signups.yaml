@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+#
+# `helm test`: goes through the web Service's /api proxy, so it checks nginx, the API and the
+# NetworkPolicy path together. A signup that breaks a cross-field rule (plan=pro without a
+# company) must get 422; a valid one must get 200; the OpenAPI document must carry the rules.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "validonce-demo.fullname" . }}-test-signups
+  labels:
+    {{- include "validonce-demo.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: test
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  securityContext:
+    {{- toYaml .Values.podSecurityContext | nindent 4 }}
+    # The curl image names its user (curl_user); runAsNonRoot needs a numeric uid to verify.
+    runAsUser: 100
+    runAsGroup: 101
+  containers:
+    - name: curl
+      image: {{ include "validonce-demo.image" .Values.tests.image }}
+      imagePullPolicy: {{ .Values.tests.image.pullPolicy }}
+      securityContext:
+        {{- toYaml .Values.containerSecurityContext | nindent 8 }}
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          memory: 64Mi
+      env:
+        - name: BASE
+          value: "http://{{ include "validonce-demo.webName" . }}:{{ .Values.web.service.port }}"
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          set -u
+          fail=0
+          check() {
+            name="$1"; want="$2"; body="$3"
+            got=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 \
+              -H 'Content-Type: application/json' -X POST -d "$body" "$BASE/api/signups")
+            if [ "$got" = "$want" ]; then
+              echo "PASS $name: HTTP $got"
+            else
+              echo "FAIL $name: want HTTP $want, got $got"; fail=1
+            fi
+          }
+          check "pro plan without company" 422 \
+            '{"plan":"pro","email":"a@example.test","start":"2026-01-01","quantity":1}'
+          check "valid signup" 200 \
+            '{"plan":"pro","company":"Example Co","email":"a@example.test","start":"2026-01-01","quantity":1}'
+          if curl -sS --max-time 10 "$BASE/api/openapi.json" | grep -q 'x-validonce'; then
+            echo "PASS openapi.json carries x-validonce rules"
+          else
+            echo "FAIL openapi.json has no x-validonce rules"; fail=1
+          fi
+          exit $fail

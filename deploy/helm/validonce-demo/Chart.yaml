@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+apiVersion: v2
+name: validonce-demo
+description: The validonce demo (FastAPI API + React form behind nginx) on Kubernetes.
+type: application
+version: 0.1.0
+appVersion: "0.3.0"
+home: https://github.com/metatoy/validonce
+sources:
+  - https://github.com/metatoy/validonce
+maintainers:
+  - name: Metatoy LLC
+keywords:
+  - validation
+  - fastapi
+  - react

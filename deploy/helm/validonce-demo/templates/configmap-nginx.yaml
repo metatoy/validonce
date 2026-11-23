@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "validonce-demo.webName" . }}-nginx
+  labels:
+    {{- include "validonce-demo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+data:
+  default.conf: |
+    # Serves the built form and proxies same-origin /api to the API Service, stripping the
+    # /api prefix (/api/openapi.json -> /openapi.json, /api/signups -> /signups).
+    server {
+        listen {{ .Values.web.containerPort }};
+        server_name _;
+        root /usr/share/nginx/html;
+
+        location = /healthz {
+            access_log off;
+            default_type text/plain;
+            return 200 "ok\n";
+        }
+
+        location /api/ {
+            proxy_pass http://{{ include "validonce-demo.apiName" . }}:{{ .Values.api.service.port }}/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }
