@@ -2,6 +2,16 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
+## 0.2.0 (unreleased)
+
+### Added
+- Rule kinds `at_least_one_of`, `exactly_one_of` and `all_or_none` in all three evaluators (C#, TypeScript, Python), with 30 new shared conformance cases (125 in total).
+- C#: `AtLeastOneOf`, `ExactlyOneOf` and `AllOrNone` builders on `ValidonceValidator<T>`, with `.AtPath(...)` to report on another property.
+- Python: `at_least_one_of`, `exactly_one_of` and `all_or_none` builders for `ValidonceModel`.
+
+### Breaking (Validonce library)
+- `UnsupportedRule` is removed; group rules are now `GroupRule` with a `Fields` list, and they evaluate instead of throwing.
+
 ## 0.1.0 (2026-11-22)
 
 First public release: the regex portability linter.

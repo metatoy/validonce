@@ -35,7 +35,7 @@ public abstract record Rule(string Id, string Kind, string? Path, RuleMessage Me
                     throw new ValidonceFormatException("'fields' needs 2 or more names");
                 var fields = fa.Select(f => f is JsonValue v && v.GetValueKind() == JsonValueKind.String
                     ? v.GetValue<string>() : throw new ValidonceFormatException("field names must be strings")).ToList();
-                return new UnsupportedRule(id, kind, path, message, serverOnly, fields[0]);
+                return new GroupRule(id, kind, path, message, serverOnly, fields);
             default:
                 throw new ValidonceFormatException($"unknown rule kind '{kind}'");
         }
@@ -69,12 +69,21 @@ public sealed record RequiredWhenRule(string Id, string? Path, RuleMessage Messa
         When.Evaluate(data) && Values.IsBlank(Values.Get(data, Field));
 }
 
-/// <summary>A rule kind that parses but is not evaluated yet.</summary>
-public sealed record UnsupportedRule(string Id, string Kind_, string? Path, RuleMessage Message, bool ServerOnly, string DefaultPath)
+/// <summary>at_least_one_of, exactly_one_of or all_or_none over a list of fields.</summary>
+public sealed record GroupRule(string Id, string Kind_, string? Path, RuleMessage Message, bool ServerOnly, IReadOnlyList<string> Fields)
     : Rule(Id, Kind_, Path, Message, ServerOnly)
 {
-    public override string EffectivePath => Path ?? DefaultPath;
+    public override string EffectivePath => Path ?? Fields[0];
 
-    public override bool Fails(JsonObject data) =>
-        throw new NotSupportedException($"{Kind} is not implemented yet");
+    public override bool Fails(JsonObject data)
+    {
+        var filled = Fields.Count(f => !Values.IsBlank(Values.Get(data, f)));
+        return Kind switch
+        {
+            "at_least_one_of" => filled == 0,
+            "exactly_one_of" => filled != 1,
+            "all_or_none" => filled != 0 && filled != Fields.Count,
+            _ => throw new NotSupportedException($"unknown group kind '{Kind}'"),
+        };
+    }
 }

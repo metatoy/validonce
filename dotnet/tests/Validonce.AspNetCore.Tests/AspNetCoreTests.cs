@@ -25,6 +25,8 @@ public sealed record Booking
     public DateOnly? Start { get; init; }
     public DateOnly? End { get; init; }
     public int? Quantity { get; init; }
+    public string? Email { get; init; }
+    public string? Phone { get; init; }
 }
 
 public sealed class BookingValidator : ValidonceValidator<Booking>
@@ -34,6 +36,7 @@ public sealed class BookingValidator : ValidonceValidator<Booking>
         RequiredWhen(x => x.Company, If.Eq(x => x.Plan, "pro")).WithMessageKey("rules.company_required");
         Compare(x => x.End, CompareOp.Ge, x => x.Start).WithMessageKey("rules.end_after_start");
         Compare(x => x.Quantity, CompareOp.Ge, 1).WithMessageKey("rules.qty_min");
+        AtLeastOneOf(x => x.Email, x => x.Phone).WithMessageKey("rules.contact_required");
     }
 }
 
@@ -79,7 +82,7 @@ public class AspNetCoreTests
         var wire = JsonNode.Parse(body)!.AsObject();
         var expected = new JsonArray(Evaluator.Evaluate(new BookingValidator().ExportRules().Rules, wire)
             .Select(i => (JsonNode)i.ToJson()).ToArray());
-        Assert.Equal(3, expected.Count);
+        Assert.Equal(4, expected.Count);
         Assert.True(JsonNode.DeepEquals(expected, problem["validonce"]), problem["validonce"]!.ToJsonString());
         Assert.NotNull(problem["errors"]!["Company"]);
     }
@@ -89,7 +92,7 @@ public class AspNetCoreTests
     {
         var (app, client) = await StartAsync();
         await using var _ = app;
-        var response = await client.PostAsJsonAsync("/bookings", new { plan = "free", quantity = 2 });
+        var response = await client.PostAsJsonAsync("/bookings", new { plan = "free", quantity = 2, email = "a@example.test" });
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

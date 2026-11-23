@@ -46,7 +46,7 @@ public class ConformanceTests
         });
 
     [Fact]
-    public void LoadsExactly95Cases() => Assert.Equal(95, All.Value.Count);
+    public void LoadsExactly125Cases() => Assert.Equal(125, All.Value.Count);
 
     [Theory]
     [MemberData(nameof(CaseSides))]

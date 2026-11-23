@@ -36,6 +36,18 @@ public sealed class SignupValidator : ValidonceValidator<Signup>
 - Rule ids default to `TypeName.kind.wireField` and must be unique per validator; override with `.WithRuleId(...)`.
   `.ServerOnly()` makes clients skip a rule.
 
+### Group rules
+
+```csharp
+AtLeastOneOf(x => x.Email, x => x.Phone).WithMessageKey("rules.contact_required");   // fails when all are blank
+ExactlyOneOf(x => x.Card, x => x.Invoice).WithMessageKey("rules.one_payment");       // fails unless exactly one is set
+AllOrNone(x => x.Street, x => x.City, x => x.Postcode).WithMessageKey("rules.address_complete");
+```
+
+Each takes two or more distinct sibling properties. The default id is `TypeName.kind.firstWireField` and the
+issue is reported on the first field; `.AtPath(x => x.Contact)` reports it on another property. `.WithRuleId`,
+`.ServerOnly()` and `.WithMessageKey(key, params)` work as for the other rules.
+
 ## Register and use
 
 ```csharp

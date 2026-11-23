@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 namespace Validonce.FluentValidation;
 
 /// <summary>Options for one cross-field rule. Returned by <c>RequiredWhen</c> / <c>Compare</c>.</summary>
-public sealed class ValidonceRuleBuilder
+public class ValidonceRuleBuilder
 {
     internal ValidonceRuleBuilder(string kind, string field, Func<string, RuleMessage, bool, Rule> build)
     {

@@ -14,12 +14,12 @@ public class UnitTests
         Assert.Throws<ValidonceFormatException>(() => RuleSet.Parse("""{"version":2,"rules":[]}"""));
 
     [Fact]
-    public void UnimplementedKindThrowsWhenEvaluated()
+    public void GroupKindsEvaluate()
     {
         var set = RuleSet.Parse("""
             {"version":1,"rules":[{"id":"A.x","kind":"at_least_one_of","fields":["a","b"],"message":{"key":"k"}}]}
             """);
-        var ex = Assert.Throws<NotSupportedException>(() => Evaluator.Evaluate(set.Rules, new JsonObject()));
-        Assert.Equal("at_least_one_of is not implemented yet", ex.Message);
+        Assert.Single(Evaluator.Evaluate(set.Rules, new JsonObject()));
+        Assert.Empty(Evaluator.Evaluate(set.Rules, new JsonObject { ["b"] = "x" }));
     }
 }

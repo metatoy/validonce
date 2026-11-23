@@ -74,6 +74,29 @@ public abstract class ValidonceValidator<T> : AbstractValidator<T>, IRuleExporte
             (id, msg, so) => new CompareRule(id, null, msg, so, l, op, null, node, type)));
     }
 
+    /// <summary>Fails when every listed field is blank.</summary>
+    protected GroupRuleBuilder<T> AtLeastOneOf(params Expression<Func<T, object?>>[] fields) => Group("at_least_one_of", fields);
+
+    /// <summary>Fails unless exactly one listed field is non-blank.</summary>
+    protected GroupRuleBuilder<T> ExactlyOneOf(params Expression<Func<T, object?>>[] fields) => Group("exactly_one_of", fields);
+
+    /// <summary>Fails when some, but not all, listed fields are blank.</summary>
+    protected GroupRuleBuilder<T> AllOrNone(params Expression<Func<T, object?>>[] fields) => Group("all_or_none", fields);
+
+    private GroupRuleBuilder<T> Group(string kind, Expression<Func<T, object?>>[] fields)
+    {
+        if (fields is null || fields.Length < 2)
+            throw new ArgumentException($"{kind} needs at least 2 fields", nameof(fields));
+        var names = fields.Select(e => _wire.WireName(_wire.Property(e))).ToList();
+        if (names.Distinct(StringComparer.Ordinal).Count() != names.Count)
+            throw new ArgumentException($"{kind} fields must be distinct", nameof(fields));
+        GroupRuleBuilder<T>? b = null;
+        b = new GroupRuleBuilder<T>(kind, names[0], _wire,
+            (id, msg, so) => new GroupRule(id, kind, b!.PathOverride, msg, so, names));
+        Add(b);
+        return b;
+    }
+
     /// <summary>The rule-format data (version 1) for this validator's cross-field rules.</summary>
     public RuleSet ExportRules() => _exported ??= Finish();
 

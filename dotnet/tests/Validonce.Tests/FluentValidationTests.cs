@@ -218,4 +218,74 @@ public class FluentValidationTests
     {
         public NestedValidator() => RequiredWhen(x => x.Inner!.Company, If.Present(x => x.Inner));
     }
+
+    public sealed record Order
+    {
+        public string? Email { get; init; }
+        public string? Phone { get; init; }
+        public string? Card { get; init; }
+        public string? Invoice { get; init; }
+        public string? Street { get; init; }
+        public string? City { get; init; }
+        [JsonPropertyName("post_code")] public string? PostCode { get; init; }
+        public string? Contact { get; init; }
+    }
+
+    private sealed class OrderValidator : ValidonceValidator<Order>
+    {
+        public OrderValidator()
+        {
+            AtLeastOneOf(x => x.Email, x => x.Phone).WithMessageKey("rules.contact_required").AtPath(x => x.Contact);
+            ExactlyOneOf(x => x.Card, x => x.Invoice).WithMessageKey("rules.one_payment").ServerOnly();
+            AllOrNone(x => x.Street, x => x.City, x => x.PostCode).WithMessageKey("rules.address_complete").WithRuleId("Order.addr");
+        }
+    }
+
+    [Fact]
+    public void GroupRules_ExportJson()
+    {
+        var expected = JsonNode.Parse("""
+        {"version":1,"rules":[
+         {"id":"Order.at_least_one_of.email","kind":"at_least_one_of","path":"contact","fields":["email","phone"],
+          "message":{"key":"rules.contact_required"}},
+         {"id":"Order.exactly_one_of.card","kind":"exactly_one_of","fields":["card","invoice"],
+          "message":{"key":"rules.one_payment"},"server_only":true},
+         {"id":"Order.addr","kind":"all_or_none","fields":["street","city","post_code"],
+          "message":{"key":"rules.address_complete"}}
+        ]}
+        """)!;
+        var exported = new OrderValidator().ExportRules();
+        Assert.True(JsonNode.DeepEquals(expected, exported.ToJson()), exported.ToJson().ToJsonString());
+        Assert.True(JsonNode.DeepEquals(expected, RuleSet.Parse(exported.ToJson()).ToJson()));
+    }
+
+    [Fact]
+    public void GroupRules_FailOnRightProperty()
+    {
+        var r = new OrderValidator().Validate(new Order { Street = "1 Main" });
+        Assert.Contains(r.Errors, e => e.PropertyName == "Contact" && e.ErrorCode == "rules.contact_required");
+        Assert.Contains(r.Errors, e => e.PropertyName == "Card" && e.ErrorCode == "rules.one_payment");
+        Assert.Contains(r.Errors, e => e.PropertyName == "Street" && e.ErrorCode == "rules.address_complete");
+        var ok = new OrderValidator().Validate(new Order { Email = "a@example.test", Card = "x" });
+        Assert.True(ok.IsValid);
+    }
+
+    [Fact]
+    public void GroupRules_RejectBadInput()
+    {
+        Assert.Throws<ArgumentException>(() => new OneFieldValidator());
+        Assert.Throws<ArgumentException>(() => new SameFieldValidator());
+        Assert.Throws<InvalidOperationException>(() => new GroupCollisionValidator().ExportRules());
+    }
+
+    private sealed class OneFieldValidator : ValidonceValidator<Order> { public OneFieldValidator() => AtLeastOneOf(x => x.Email); }
+    private sealed class SameFieldValidator : ValidonceValidator<Order> { public SameFieldValidator() => AllOrNone(x => x.Email, x => x.Email); }
+    private sealed class GroupCollisionValidator : ValidonceValidator<Order>
+    {
+        public GroupCollisionValidator()
+        {
+            AtLeastOneOf(x => x.Email, x => x.Phone);
+            ExactlyOneOf(x => x.Email, x => x.Phone).WithRuleId("Order.at_least_one_of.email");
+        }
+    }
 }

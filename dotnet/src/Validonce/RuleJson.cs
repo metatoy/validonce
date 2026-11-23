@@ -33,6 +33,9 @@ internal static class RuleJson
                     : new JsonObject { ["value"] = c.RightValue?.DeepClone() };
                 o["type"] = c.Type.ToString().ToLowerInvariant();
                 break;
+            case GroupRule g:
+                o["fields"] = new JsonArray(g.Fields.Select(f => (JsonNode)JsonValue.Create(f)!).ToArray());
+                break;
             default:
                 throw new NotSupportedException($"writing '{rule.Kind}' rules is not implemented yet");
         }
