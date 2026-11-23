@@ -1,0 +1,822 @@
+{
+  "version": 1,
+  "suite": "groups",
+  "description": "at_least_one_of, exactly_one_of and all_or_none, with blank handling.",
+  "cases": [
+    {
+      "id": "grp-001",
+      "description": "at_least_one_of: first field given",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "email": "a@example.test"
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-002",
+      "description": "at_least_one_of: second field given",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "phone": "+1 555 0100"
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-003",
+      "description": "at_least_one_of: both given",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "email": "a@example.test",
+        "phone": "+1 555 0100"
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-004",
+      "description": "at_least_one_of: both missing",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {},
+      "expect": [
+        {
+          "path": [
+            "email"
+          ],
+          "ruleId": "Contact.at_least_one_of.email",
+          "key": "rules.contact_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-005",
+      "description": "at_least_one_of: null and empty string are blank",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "email": null,
+        "phone": ""
+      },
+      "expect": [
+        {
+          "path": [
+            "email"
+          ],
+          "ruleId": "Contact.at_least_one_of.email",
+          "key": "rules.contact_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-006",
+      "description": "at_least_one_of: empty list is blank",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "email": [],
+        "phone": null
+      },
+      "expect": [
+        {
+          "path": [
+            "email"
+          ],
+          "ruleId": "Contact.at_least_one_of.email",
+          "key": "rules.contact_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-007",
+      "description": "at_least_one_of: whitespace is not blank",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "email": " "
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-008",
+      "description": "at_least_one_of: zero is not blank",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "phone": 0
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-009",
+      "description": "at_least_one_of: false is not blank",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "phone": false
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-010",
+      "description": "at_least_one_of: empty object is not blank",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "email": {}
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-011",
+      "description": "at_least_one_of: three fields, only the last given",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email3",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone",
+            "post"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "post": "1 Main St"
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-012",
+      "description": "at_least_one_of: three fields, none given",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.email3",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone",
+            "post"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        }
+      ],
+      "data": {
+        "email": "",
+        "phone": null
+      },
+      "expect": [
+        {
+          "path": [
+            "email"
+          ],
+          "ruleId": "Contact.at_least_one_of.email3",
+          "key": "rules.contact_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-013",
+      "description": "at_least_one_of: explicit path",
+      "rules": [
+        {
+          "id": "Contact.at_least_one_of.pathed",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          },
+          "path": "contact"
+        }
+      ],
+      "data": {},
+      "expect": [
+        {
+          "path": [
+            "contact"
+          ],
+          "ruleId": "Contact.at_least_one_of.pathed",
+          "key": "rules.contact_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-014",
+      "description": "exactly_one_of: one given",
+      "rules": [
+        {
+          "id": "Payment.exactly_one_of.card",
+          "kind": "exactly_one_of",
+          "fields": [
+            "card",
+            "invoice"
+          ],
+          "message": {
+            "key": "rules.one_payment"
+          }
+        }
+      ],
+      "data": {
+        "card": "4111"
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-015",
+      "description": "exactly_one_of: the other given",
+      "rules": [
+        {
+          "id": "Payment.exactly_one_of.card",
+          "kind": "exactly_one_of",
+          "fields": [
+            "card",
+            "invoice"
+          ],
+          "message": {
+            "key": "rules.one_payment"
+          }
+        }
+      ],
+      "data": {
+        "invoice": true
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-016",
+      "description": "exactly_one_of: none given",
+      "rules": [
+        {
+          "id": "Payment.exactly_one_of.card",
+          "kind": "exactly_one_of",
+          "fields": [
+            "card",
+            "invoice"
+          ],
+          "message": {
+            "key": "rules.one_payment"
+          }
+        }
+      ],
+      "data": {},
+      "expect": [
+        {
+          "path": [
+            "card"
+          ],
+          "ruleId": "Payment.exactly_one_of.card",
+          "key": "rules.one_payment",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-017",
+      "description": "exactly_one_of: both given",
+      "rules": [
+        {
+          "id": "Payment.exactly_one_of.card",
+          "kind": "exactly_one_of",
+          "fields": [
+            "card",
+            "invoice"
+          ],
+          "message": {
+            "key": "rules.one_payment"
+          }
+        }
+      ],
+      "data": {
+        "card": "4111",
+        "invoice": true
+      },
+      "expect": [
+        {
+          "path": [
+            "card"
+          ],
+          "ruleId": "Payment.exactly_one_of.card",
+          "key": "rules.one_payment",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-018",
+      "description": "exactly_one_of: false counts as given",
+      "rules": [
+        {
+          "id": "Payment.exactly_one_of.card",
+          "kind": "exactly_one_of",
+          "fields": [
+            "card",
+            "invoice"
+          ],
+          "message": {
+            "key": "rules.one_payment"
+          }
+        }
+      ],
+      "data": {
+        "card": "4111",
+        "invoice": false
+      },
+      "expect": [
+        {
+          "path": [
+            "card"
+          ],
+          "ruleId": "Payment.exactly_one_of.card",
+          "key": "rules.one_payment",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-019",
+      "description": "exactly_one_of: null and empty do not count",
+      "rules": [
+        {
+          "id": "Payment.exactly_one_of.card",
+          "kind": "exactly_one_of",
+          "fields": [
+            "card",
+            "invoice"
+          ],
+          "message": {
+            "key": "rules.one_payment"
+          }
+        }
+      ],
+      "data": {
+        "card": "4111",
+        "invoice": null
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-020",
+      "description": "exactly_one_of: three fields, two given",
+      "rules": [
+        {
+          "id": "Payment.exactly_one_of.card3",
+          "kind": "exactly_one_of",
+          "fields": [
+            "card",
+            "invoice",
+            "voucher"
+          ],
+          "message": {
+            "key": "rules.one_payment"
+          }
+        }
+      ],
+      "data": {
+        "card": "4111",
+        "voucher": "X1"
+      },
+      "expect": [
+        {
+          "path": [
+            "card"
+          ],
+          "ruleId": "Payment.exactly_one_of.card3",
+          "key": "rules.one_payment",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-021",
+      "description": "exactly_one_of: three fields, one given",
+      "rules": [
+        {
+          "id": "Payment.exactly_one_of.card3",
+          "kind": "exactly_one_of",
+          "fields": [
+            "card",
+            "invoice",
+            "voucher"
+          ],
+          "message": {
+            "key": "rules.one_payment"
+          }
+        }
+      ],
+      "data": {
+        "voucher": "X1",
+        "invoice": ""
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-022",
+      "description": "exactly_one_of: message params pass through",
+      "rules": [
+        {
+          "id": "Payment.exactly_one_of.params",
+          "kind": "exactly_one_of",
+          "fields": [
+            "card",
+            "invoice"
+          ],
+          "message": {
+            "key": "rules.one_payment_of",
+            "params": {
+              "count": 2,
+              "fields": "card, invoice"
+            }
+          }
+        }
+      ],
+      "data": {},
+      "expect": [
+        {
+          "path": [
+            "card"
+          ],
+          "ruleId": "Payment.exactly_one_of.params",
+          "key": "rules.one_payment_of",
+          "params": {
+            "count": 2,
+            "fields": "card, invoice"
+          }
+        }
+      ]
+    },
+    {
+      "id": "grp-023",
+      "description": "all_or_none: none given",
+      "rules": [
+        {
+          "id": "Address.all_or_none.street",
+          "kind": "all_or_none",
+          "fields": [
+            "street",
+            "city",
+            "postcode"
+          ],
+          "message": {
+            "key": "rules.address_complete"
+          }
+        }
+      ],
+      "data": {},
+      "expect": []
+    },
+    {
+      "id": "grp-024",
+      "description": "all_or_none: all given",
+      "rules": [
+        {
+          "id": "Address.all_or_none.street",
+          "kind": "all_or_none",
+          "fields": [
+            "street",
+            "city",
+            "postcode"
+          ],
+          "message": {
+            "key": "rules.address_complete"
+          }
+        }
+      ],
+      "data": {
+        "street": "1 Main St",
+        "city": "Springfield",
+        "postcode": "12345"
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-025",
+      "description": "all_or_none: one given",
+      "rules": [
+        {
+          "id": "Address.all_or_none.street",
+          "kind": "all_or_none",
+          "fields": [
+            "street",
+            "city",
+            "postcode"
+          ],
+          "message": {
+            "key": "rules.address_complete"
+          }
+        }
+      ],
+      "data": {
+        "city": "Springfield"
+      },
+      "expect": [
+        {
+          "path": [
+            "street"
+          ],
+          "ruleId": "Address.all_or_none.street",
+          "key": "rules.address_complete",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-026",
+      "description": "all_or_none: two given",
+      "rules": [
+        {
+          "id": "Address.all_or_none.street",
+          "kind": "all_or_none",
+          "fields": [
+            "street",
+            "city",
+            "postcode"
+          ],
+          "message": {
+            "key": "rules.address_complete"
+          }
+        }
+      ],
+      "data": {
+        "street": "1 Main St",
+        "postcode": "12345"
+      },
+      "expect": [
+        {
+          "path": [
+            "street"
+          ],
+          "ruleId": "Address.all_or_none.street",
+          "key": "rules.address_complete",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-027",
+      "description": "all_or_none: all blank in different ways",
+      "rules": [
+        {
+          "id": "Address.all_or_none.street",
+          "kind": "all_or_none",
+          "fields": [
+            "street",
+            "city",
+            "postcode"
+          ],
+          "message": {
+            "key": "rules.address_complete"
+          }
+        }
+      ],
+      "data": {
+        "street": "",
+        "city": null,
+        "postcode": []
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-028",
+      "description": "all_or_none: zero counts as given",
+      "rules": [
+        {
+          "id": "Address.all_or_none.street",
+          "kind": "all_or_none",
+          "fields": [
+            "street",
+            "city",
+            "postcode"
+          ],
+          "message": {
+            "key": "rules.address_complete"
+          }
+        }
+      ],
+      "data": {
+        "street": "1 Main St",
+        "city": "Springfield",
+        "postcode": 0
+      },
+      "expect": []
+    },
+    {
+      "id": "grp-029",
+      "description": "all_or_none: server_only rule",
+      "rules": [
+        {
+          "id": "Address.all_or_none.server",
+          "kind": "all_or_none",
+          "fields": [
+            "street",
+            "city"
+          ],
+          "message": {
+            "key": "rules.address_complete"
+          },
+          "server_only": true
+        }
+      ],
+      "data": {
+        "street": "1 Main St"
+      },
+      "expect": [
+        {
+          "path": [
+            "street"
+          ],
+          "ruleId": "Address.all_or_none.server",
+          "key": "rules.address_complete",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "grp-030",
+      "description": "mixed kinds report in rule order",
+      "rules": [
+        {
+          "id": "Contact.required_when.reason",
+          "kind": "required_when",
+          "field": "reason",
+          "when": {
+            "present": {
+              "field": "phone"
+            }
+          },
+          "message": {
+            "key": "rules.reason_required"
+          }
+        },
+        {
+          "id": "Contact.at_least_one_of.email",
+          "kind": "at_least_one_of",
+          "fields": [
+            "email",
+            "phone"
+          ],
+          "message": {
+            "key": "rules.contact_required"
+          }
+        },
+        {
+          "id": "Payment.exactly_one_of.card",
+          "kind": "exactly_one_of",
+          "fields": [
+            "card",
+            "invoice"
+          ],
+          "message": {
+            "key": "rules.one_payment"
+          }
+        }
+      ],
+      "data": {
+        "phone": "+1 555 0100",
+        "card": "4111",
+        "invoice": true
+      },
+      "expect": [
+        {
+          "path": [
+            "reason"
+          ],
+          "ruleId": "Contact.required_when.reason",
+          "key": "rules.reason_required",
+          "params": {}
+        },
+        {
+          "path": [
+            "card"
+          ],
+          "ruleId": "Payment.exactly_one_of.card",
+          "key": "rules.one_payment",
+          "params": {}
+        }
+      ]
+    }
+  ]
+}
