@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+
+name: wrap
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  wrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22 # orval 8 needs Node >= 22.18
+      - run: pnpm install --frozen-lockfile
+      - name: Build validonce (the wrap command)
+        run: pnpm build
+        working-directory: js
+      - name: wrap unit and golden tests (unknown field, ambiguous, unmatched, Signup-Input)
+        run: pnpm vitest run test/wrap.test.ts
+        working-directory: js
+      - name: Generate real orval and kubb output from both golden files, then run validonce wrap
+        run: pnpm generate
+        working-directory: examples/wrap-demo
+      - name: Typecheck every companion
+        run: pnpm typecheck
+        working-directory: examples/wrap-demo
+      - name: The end_after_start rule fails through each companion
+        run: pnpm test
+        working-directory: examples/wrap-demo

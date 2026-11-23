@@ -1,0 +1,26 @@
+{
+  "name": "validonce-example-wrap-demo",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Metatoy LLC",
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "validonce": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@kubb/adapter-oas": "5.23.4",
+    "@kubb/plugin-zod": "5.11.1",
+    "@types/node": "22.20.5",
+    "kubb": "5.23.4",
+    "orval": "8.49.0",
+    "typescript": "7.0.2",
+    "vitest": "5.1.1"
+  }
+}

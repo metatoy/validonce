@@ -135,6 +135,63 @@ Writes every schema's `x-validonce` (or only the `--schema` names; `Name-Input` 
 
 The npm `validonce` command is this TypeScript tool. The .NET and Python `validonce` commands are separate tools with their own options.
 
+## Attach rules to orval or kubb output: `validonce wrap`
+
+orval and kubb turn an OpenAPI document into Zod schemas but drop `x-validonce`. `wrap` writes a companion module that attaches the rules to those schemas:
+
+```sh
+npx validonce wrap --openapi openapi.json --zod src/gen/schemas.ts -o src/gen/schemas.rules.ts
+```
+
+```ts
+// src/gen/schemas.rules.ts (generated)
+export const Signup = _withRules(_gen.Signup, _rules["Signup"]);
+```
+
+Import `Signup` (or `signupSchema` with kubb) from `schemas.rules` instead of `schemas`. The rules are embedded in the companion, so it has no runtime fetch and needs only `validonce` and `zod`.
+
+Options: `--style auto|orval|kubb` (default `auto`), `--map Name=export` (repeatable). Matching, per schema that has rules:
+
+| Generator | Export looked for | Example |
+|---|---|---|
+| orval (`generateReusableSchemas: true`) | PascalCase | `Signup`, `SignupInput` |
+| kubb (`@kubb/plugin-zod`) | camelCase + `Schema` | `signupSchema`, `signupInputSchema` |
+
+FastAPI's `Signup-Input` matches as `SignupInput` / `signupInputSchema`. Per-operation orval bodies (`CreateSignupBody`) are not matched by name; use `--map Signup=CreateSignupBody`. Exports are found with a line-anchored pattern (`^export const Name =`), not a TypeScript parser.
+
+It fails at generation time, never at import: exit 1, and nothing is written, when a schema with rules has no matching export, when two exports match (`Signup` and `signupSchema`), when `--map` names a missing export, or when a rule names a field missing from that schema's `properties` (`withRules` would otherwise throw when the app loads). Schemas that are not plain objects (`allOf`/`oneOf`/`anyOf`, no `properties`) are skipped with a warning. Limitation: rules on a schema that other schemas embed are only attached to its top-level export; a warning says so, and the embedded use is not checked.
+
+**orval**, from `hooks.afterAllFilesWrite` (set `injectGeneratedDirsAndFiles: false`, or orval appends the file list to the command):
+
+```js
+// orval.config.mjs
+export default {
+  api: {
+    input: "./openapi.json",
+    output: {
+      client: "zod",
+      mode: "single",
+      target: "./src/gen/schemas.ts",
+      override: { zod: { generateReusableSchemas: true } },
+    },
+    hooks: {
+      afterAllFilesWrite: {
+        command: "validonce wrap --openapi ./openapi.json --zod ./src/gen/schemas.ts -o ./src/gen/schemas.rules.ts",
+        injectGeneratedDirsAndFiles: false,
+      },
+    },
+  },
+};
+```
+
+**kubb** has no after-generation command hook that takes a shell string, so run `wrap` after it:
+
+```sh
+kubb generate && validonce wrap --openapi openapi.json --zod src/gen/schemas.ts -o src/gen/schemas.rules.ts
+```
+
+with `pluginZod({ output: { path: "./schemas.ts" } })` so the output is a single file. Both recipes run in CI against real orval and kubb output: [examples/wrap-demo](../examples/wrap-demo).
+
 ## Evaluate without Zod
 
 ```ts

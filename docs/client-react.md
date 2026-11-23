@@ -106,6 +106,16 @@ const deps = registerDeps(rules);
 
 `dependentFields(rules)` returns the whole map.
 
+## Rules on generated Zod schemas (orval, kubb)
+
+If your Zod schemas come from orval or kubb, the generated code has the field rules but not the cross-field ones. `validonce wrap` writes a companion module that adds them:
+
+```sh
+npx validonce wrap --openapi openapi.json --zod src/gen/schemas.ts -o src/gen/schemas.rules.ts
+```
+
+Then import from `schemas.rules` (`Signup` with orval, `signupSchema` with kubb) and pass it to `zodResolver` as above. Run it from orval's `hooks.afterAllFilesWrite`, or right after `kubb generate`. The full recipes, the name-matching rules and the generation-time errors are in [js/README.md](../js/README.md#attach-rules-to-orval-or-kubb-output-validonce-wrap); a working setup is [examples/wrap-demo](../examples/wrap-demo).
+
 ## Gotchas
 
 - **Dates are ISO strings.** Use `z.string()` and `<input type="date">` (`YYYY-MM-DD`), not `z.date()`. A `Date` object is not a date to the rules.
