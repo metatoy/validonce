@@ -1,0 +1,24 @@
+{
+  "name": "validonce-testbed-before",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Hand-written 'before' validators (no validonce) used to test the migration runners.",
+  "license": "Apache-2.0",
+  "author": "Metatoy LLC",
+  "type": "module",
+  "scripts": {
+    "check": "node check.mjs"
+  },
+  "dependencies": {
+    "@angular/compiler": "22.3.0",
+    "@angular/core": "22.3.0",
+    "@angular/forms": "22.3.0",
+    "rxjs": "7.8.2",
+    "yup": "1.7.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "validonce": "workspace:*"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "migrate": [],
+  "keep": [
+    {
+      "check": "str(expected_code) != str(entered_code): coercing comparison",
+      "reason_category": "coercion",
+      "file": "models.py",
+      "marker": "str\\(self\\.expected_code\\)",
+      "mention": "code"
+    },
+    {
+      "check": "_parse(check_out) < _parse(check_in): lenient multi-format date parse",
+      "reason_category": "coercion",
+      "file": "models.py",
+      "marker": "_parse\\(self\\.check_out\\)",
+      "mention": "date|check_out|check-out"
+    }
+  ],
+  "allowedFiles": [
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}
