@@ -1,0 +1,36 @@
+name: Bug report
+description: A rule behaves differently from the rule format, or differs between languages
+labels: [bug]
+body:
+  - type: dropdown
+    id: stack
+    attributes:
+      label: Where
+      multiple: true
+      options: [C# / ASP.NET Core, Python / FastAPI, TypeScript / Zod, React, Angular, validonce wrap, regex linter, validonce-mcp / migration skill]
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: validonce 0.3.0, zod 4.6.7, .NET 10, Python 3.12
+    validations:
+      required: true
+  - type: textarea
+    id: rule
+    attributes:
+      label: The rule (JSON from x-validonce)
+      render: json
+  - type: textarea
+    id: input
+    attributes:
+      label: The input that misbehaves
+      render: json
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual result
+      description: Which side accepted or rejected it, and the issue you got.
+    validations:
+      required: true

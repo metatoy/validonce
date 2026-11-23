@@ -8,9 +8,11 @@ All notable changes to validonce. Versions follow semantic versioning; before 1.
 - TypeScript: `validonce wrap` attaches a server's `x-validonce` rules to the Zod schemas that orval or kubb generate, writing a companion module. It matches exports by schema name (including FastAPI's `Signup-Input`), fails at generation time on unknown fields, ambiguous or unmatched schemas, and takes `--map` and `--style`. Recipes for orval's `afterAllFilesWrite` hook and for kubb are in the README; both run in CI against real generator output.
 - TypeScript: `isoDate()` and `isoDateTime()` in `validonce/zod`: Zod date and datetime schemas that accept exactly what validonce's `date` and `datetime` types and the servers accept (`z.iso.date()` also allows year `0000`).
 - C#: `.AtPath(...)` on `RequiredWhen` and `Compare` (as on the group rules), so every rule kind can report on another property. `RequiredWhen` and `Compare` now return `RuleBuilder<T>` (a subclass of `ValidonceRuleBuilder`).
+- NuGet packages ship with a build provenance attestation; check one with `gh attestation verify <file>.nupkg -R metatoy/validonce`. (npm packages carry npm provenance and PyPI packages trusted-publishing attestations, as before.)
 - A one-click GitHub Codespaces demo (ASP.NET backend and React form); the example forms now call their backend through a same-origin `/api` proxy.
 
 ### Docs
+- README and `docs/how-it-works.md` use the diagram from metatoy.com (rendered by `scripts/render-diagram.mjs`); a security policy (`SECURITY.md`) with private vulnerability reporting.
 - New: how validonce compares with the alternatives (`docs/comparison.md`), loading rules at runtime (`docs/live-rules.md`), and a README demo GIF recorded by `scripts/record-demo.mjs`.
 - Rule format: year `0000` is not a valid `date` (Zod's `z.iso.date()` accepts it); use `isoDate()`.
 

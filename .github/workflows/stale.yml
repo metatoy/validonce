@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+name: stale
+# Only issues waiting on the reporter: labelled waiting-for-reply, stale after 30 days, closed
+# 14 days later. Pull requests and all other issues are never touched.
+on:
+  schedule:
+    - cron: "41 6 * * *"
+permissions:
+  contents: read
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/stale@v11
+        with:
+          only-issue-labels: waiting-for-reply
+          days-before-issue-stale: 30
+          days-before-issue-close: 14
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          stale-issue-message: "This issue is waiting for more information and has had no reply for 30 days. It will close in 14 days unless someone replies."
+          close-issue-message: "Closed for lack of a reply. Comment with the details and it can be reopened."

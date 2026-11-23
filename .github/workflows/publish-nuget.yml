@@ -33,6 +33,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -85,6 +86,11 @@ jobs:
             done
           fi
           ls -la "$GITHUB_WORKSPACE/out"
+      - name: Attest build provenance
+        if: steps.cfg.outputs.source == 'dotnet'
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: out/*.nupkg
       - name: Log in to nuget.org
         id: login
         uses: NuGet/login@v1

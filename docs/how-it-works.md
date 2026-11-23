@@ -2,13 +2,9 @@
 
 validonce moves cross-field rules from the server to the browser as data, not as code.
 
-```text
- 1. write            2. export                3. read              4. enforce
- FluentValidation -> x-validonce in OpenAPI -> rulesFromOpenApi -> withRules (Zod)
- Pydantic         -> components.schemas.X      (validonce/openapi)   validonce/react-hook-form
-                                                                     validonce/angular
- 5. the server evaluates the same rules on every request and answers 422
-```
+<p align="center"><img src="../assets/diagram/how-it-works.png" alt="How validonce works. 1, server rules: FluentValidation (C#) with RequiredWhen and Compare, or Pydantic (Python) with __rules__. 2, the OpenAPI document: the rules travel as data under x-validonce on components.schemas, five rule kinds in one format. 3, the browser: the validonce runtime, withRules for Zod, with React (react-hook-form) and Angular (Signal and Reactive Forms). The server always enforces every request; a broken rule returns 422 with the same issue shape, mapped back onto each field." width="760"></p>
+
+The sections below follow the rules from left to right: written on the server, exported as data, read and enforced in the browser, and enforced again on the server.
 
 ## 1. Write the rules once
 

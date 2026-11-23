@@ -11,7 +11,7 @@ Write cross-field validation rules once, on the server, and enforce the same rul
 
 Field rules such as types, lengths and patterns already travel from a backend's OpenAPI document to the frontend. Rules that involve more than one field do not: "company is required when the plan is Pro", "the end date must be on or after the start date". Teams write those twice, once in the backend and once in the form, and the two copies drift. validonce exports the rules from FluentValidation (C#) or Pydantic (Python) as data in your OpenAPI document, and a small TypeScript runtime applies them to your Zod schema, so React and Angular forms check the same rules and show each error on the right field.
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/metatoy/validonce)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/metatoy/validonce) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/metatoy/validonce/badge)](https://scorecard.dev/viewer/?uri=github.com/metatoy/validonce)
 
 Try it without installing anything: the button opens a ready-to-run demo (ASP.NET backend and React form, with the shared rules enforced in the browser and on the server). It runs in a GitHub Codespace and uses your own free Codespaces hours.
 
@@ -21,13 +21,7 @@ Try it without installing anything: the button opens a ready-to-run demo (ASP.NE
 
 ## How it works
 
-```text
-server rules                 OpenAPI document            browser
-FluentValidation (C#)   -->  components.schemas.X   -->  validonce runtime  -->  React (react-hook-form)
-Pydantic (Python)            ["x-validonce"]             withRules(zod)           Angular (Signal / Reactive Forms)
-        |                                                                              |
-        +---- same rules enforced on every request; 422 body lists failing rules ------+
-```
+<p align="center"><img src="assets/diagram/how-it-works.png" alt="How validonce works. 1, server rules: FluentValidation (C#) with RequiredWhen and Compare, or Pydantic (Python) with __rules__. 2, the OpenAPI document: the rules travel as data under x-validonce on components.schemas, five rule kinds in one format. 3, the browser: the validonce runtime, withRules for Zod, with React (react-hook-form) and Angular (Signal and Reactive Forms). The server always enforces every request; a broken rule returns 422 with the same issue shape, mapped back onto each field." width="760"></p>
 
 The server always enforces the rules. The browser runs them first to give fast feedback. If the browser is skipped or out of date, the server's 422 response uses the same issue shape, and the client maps it back onto the form fields.
 
@@ -162,6 +156,7 @@ More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.m
 - [Regex findings](docs/regex-findings.md)
 - Packages: [TypeScript](js/README.md), [Python](python/README.md), [.NET](dotnet/README.md)
 - [Changelog](CHANGELOG.md)
+- [Security policy](SECURITY.md)
 
 ## Regex portability linter
 
