@@ -7,6 +7,9 @@ All notable changes to validonce. Versions follow semantic versioning; before 1.
 ### Added
 - C#: `.AtPath(...)` on `RequiredWhen` and `Compare` (as on the group rules), so every rule kind can report on another property. `RequiredWhen` and `Compare` now return `RuleBuilder<T>` (a subclass of `ValidonceRuleBuilder`).
 
+### Docs
+- Rule format: note that year `0000` is not a valid `date` (Zod's `z.iso.date()` accepts it), and how the migration guide handles the difference.
+
 ## 0.2.0 (2026-11-22)
 
 ### Added
