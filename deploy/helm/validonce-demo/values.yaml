@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+#
+# Defaults for the validonce demo. The images are not published to a registry; build them
+# locally (see deploy/README.md) and load them into the cluster, hence IfNotPresent.
+
+nameOverride: ""
+fullnameOverride: ""
+
+api:
+  replicaCount: 1
+  image:
+    repository: validonce-demo-api
+    tag: dev
+    pullPolicy: IfNotPresent
+  containerPort: 8010
+  service:
+    port: 8010
+  resources:
+    requests:
+      cpu: 50m
+      memory: 96Mi
+    limits:
+      memory: 256Mi
+
+web:
+  replicaCount: 1
+  image:
+    repository: validonce-demo-web
+    tag: dev
+    pullPolicy: IfNotPresent
+  containerPort: 8080
+  service:
+    type: ClusterIP
+    port: 80
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+# Optional Ingress in front of the web Service. The web pod proxies /api to the API itself,
+# so one path is enough.
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: validonce.example.test
+  tls: []
+  #  - secretName: validonce-demo-tls
+  #    hosts:
+  #      - validonce.example.test
+
+# Web accepts traffic from anywhere on its port and may only call the API (and DNS).
+# The API accepts traffic only from the web pods and the helm test pod, and makes no calls.
+networkPolicy:
+  enabled: true
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+tests:
+  image:
+    repository: curlimages/curl
+    tag: "8.17.0"
+    pullPolicy: IfNotPresent

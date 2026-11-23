@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+
+name: k8s
+
+# Builds both demo images, starts a kind cluster, installs the Helm chart and runs `helm test`
+# (a broken signup through the web pod's /api proxy must get 422, a valid one 200).
+on:
+  push:
+    paths:
+      - "deploy/**"
+      - "examples/fastapi-app/**"
+      - "examples/react-form/**"
+      - "python/**"
+      - "js/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".dockerignore"
+      - ".github/workflows/k8s.yml"
+  pull_request:
+    paths:
+      - "deploy/**"
+      - "examples/fastapi-app/**"
+      - "examples/react-form/**"
+      - "python/**"
+      - "js/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".dockerignore"
+      - ".github/workflows/k8s.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TAG: ci-${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: azure/setup-helm@v5
+        with:
+          version: v4.3.2
+      # Each image is written straight to a single-platform archive, which `kind load
+      # image-archive` accepts whatever image store the runner's Docker uses.
+      - name: Build the API image
+        run: >
+          docker buildx build -f deploy/docker/api.Dockerfile -t validonce-demo-api:$TAG
+          --provenance=false --output type=docker,dest=${{ runner.temp }}/api.tar .
+      - name: Build the web image
+        run: >
+          docker buildx build -f deploy/docker/web.Dockerfile -t validonce-demo-web:$TAG
+          --provenance=false --output type=docker,dest=${{ runner.temp }}/web.tar .
+      - name: Lint the chart
+        run: helm lint deploy/helm/validonce-demo --set api.image.tag=$TAG --set web.image.tag=$TAG
+      - uses: helm/kind-action@v1.15.2
+        with:
+          version: v0.33.0
+          cluster_name: validonce
+      - name: Load the images into kind
+        run: |
+          kind load image-archive ${{ runner.temp }}/api.tar --name validonce
+          kind load image-archive ${{ runner.temp }}/web.tar --name validonce
+      - name: Install the chart
+        run: >
+          helm install demo deploy/helm/validonce-demo --wait --timeout 5m
+          --set api.image.tag=$TAG --set web.image.tag=$TAG
+          --set api.image.pullPolicy=Never --set web.image.pullPolicy=Never
+      - name: helm test
+        run: helm test demo --logs
+      - name: Diagnostics
+        if: failure()
+        run: |
+          kubectl get all,networkpolicy -o wide
+          kubectl describe pods
+          kubectl logs -l app.kubernetes.io/instance=demo --all-containers --tail=200 || true

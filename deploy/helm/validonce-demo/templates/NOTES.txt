@@ -1,0 +1,15 @@
+{{- /*
+SPDX-License-Identifier: Apache-2.0
+Copyright 2026 Metatoy LLC
+*/}}
+validonce demo installed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+Open the form:
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "validonce-demo.webName" . }} 8080:{{ .Values.web.service.port }}
+  then browse to http://localhost:8080
+{{- if .Values.ingress.enabled }}
+or via the Ingress at http{{ if .Values.ingress.tls }}s{{ end }}://{{ .Values.ingress.host }}/
+{{- end }}
+
+Check it end to end (422 for a broken signup, 200 for a valid one):
+  helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }} --logs

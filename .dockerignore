@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+# Build context for deploy/docker/*.Dockerfile is the repo root. Keep it small.
+**/node_modules
+**/dist
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/test-results
+**/playwright-report
+**/*.log
+.git
+.demo
+.devcontainer
+dotnet
+assets
+**/bin
+**/obj
