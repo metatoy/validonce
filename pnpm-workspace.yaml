@@ -1,0 +1,6 @@
+# This repo is its own pnpm workspace. Keeping this file here means pnpm stops
+# looking upward, so the repo never joins a parent workspace on a developer's
+# machine.
+packages:
+  - 'js'
+  - 'examples/*'

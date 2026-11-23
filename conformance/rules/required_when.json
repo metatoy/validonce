@@ -1,0 +1,1202 @@
+{
+  "version": 1,
+  "suite": "required_when",
+  "description": "required_when rules, the condition operators, and blank handling.",
+  "cases": [
+    {
+      "id": "rw-001",
+      "description": "condition true, field filled",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "pro",
+        "company": "Acme"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-002",
+      "description": "condition true, field missing",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "pro"
+      },
+      "expect": [
+        {
+          "path": [
+            "company"
+          ],
+          "ruleId": "Signup.required_when.company",
+          "key": "rules.company_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-003",
+      "description": "condition true, field null",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "pro",
+        "company": null
+      },
+      "expect": [
+        {
+          "path": [
+            "company"
+          ],
+          "ruleId": "Signup.required_when.company",
+          "key": "rules.company_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-004",
+      "description": "condition true, field empty string",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "pro",
+        "company": ""
+      },
+      "expect": [
+        {
+          "path": [
+            "company"
+          ],
+          "ruleId": "Signup.required_when.company",
+          "key": "rules.company_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-005",
+      "description": "whitespace-only string is not blank",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "pro",
+        "company": "   "
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-006",
+      "description": "empty list is blank",
+      "rules": [
+        {
+          "id": "Post.required_when.tags",
+          "kind": "required_when",
+          "field": "tags",
+          "when": {
+            "eq": {
+              "field": "status",
+              "value": "published"
+            }
+          },
+          "message": {
+            "key": "rules.tags_required"
+          }
+        }
+      ],
+      "data": {
+        "status": "published",
+        "tags": []
+      },
+      "expect": [
+        {
+          "path": [
+            "tags"
+          ],
+          "ruleId": "Post.required_when.tags",
+          "key": "rules.tags_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-007",
+      "description": "non-empty list is not blank",
+      "rules": [
+        {
+          "id": "Post.required_when.tags",
+          "kind": "required_when",
+          "field": "tags",
+          "when": {
+            "eq": {
+              "field": "status",
+              "value": "published"
+            }
+          },
+          "message": {
+            "key": "rules.tags_required"
+          }
+        }
+      ],
+      "data": {
+        "status": "published",
+        "tags": [
+          "news"
+        ]
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-008",
+      "description": "condition false",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "free"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-009",
+      "description": "eq is false when the condition field is missing",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {},
+      "expect": []
+    },
+    {
+      "id": "rw-010",
+      "description": "eq does not fold case",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "Pro"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-011",
+      "description": "eq is false when the condition field is null",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": null
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-012",
+      "description": "number eq: string \"1\" is not 1",
+      "rules": [
+        {
+          "id": "Order.required_when.approver",
+          "kind": "required_when",
+          "field": "approver",
+          "when": {
+            "eq": {
+              "field": "tier",
+              "value": 1
+            }
+          },
+          "message": {
+            "key": "rules.approver_required"
+          }
+        }
+      ],
+      "data": {
+        "tier": "1"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-013",
+      "description": "number eq: 1.0 equals 1",
+      "rules": [
+        {
+          "id": "Order.required_when.approver",
+          "kind": "required_when",
+          "field": "approver",
+          "when": {
+            "eq": {
+              "field": "tier",
+              "value": 1
+            }
+          },
+          "message": {
+            "key": "rules.approver_required"
+          }
+        }
+      ],
+      "data": {
+        "tier": 1.0
+      },
+      "expect": [
+        {
+          "path": [
+            "approver"
+          ],
+          "ruleId": "Order.required_when.approver",
+          "key": "rules.approver_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-014",
+      "description": "boolean eq true",
+      "rules": [
+        {
+          "id": "Signup.required_when.vat_id",
+          "kind": "required_when",
+          "field": "vat_id",
+          "when": {
+            "eq": {
+              "field": "is_business",
+              "value": true
+            }
+          },
+          "message": {
+            "key": "rules.vat_required"
+          }
+        }
+      ],
+      "data": {
+        "is_business": true
+      },
+      "expect": [
+        {
+          "path": [
+            "vat_id"
+          ],
+          "ruleId": "Signup.required_when.vat_id",
+          "key": "rules.vat_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-015",
+      "description": "boolean eq: false is not true",
+      "rules": [
+        {
+          "id": "Signup.required_when.vat_id",
+          "kind": "required_when",
+          "field": "vat_id",
+          "when": {
+            "eq": {
+              "field": "is_business",
+              "value": true
+            }
+          },
+          "message": {
+            "key": "rules.vat_required"
+          }
+        }
+      ],
+      "data": {
+        "is_business": false
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-016",
+      "description": "boolean eq: string \"true\" is not true",
+      "rules": [
+        {
+          "id": "Signup.required_when.vat_id",
+          "kind": "required_when",
+          "field": "vat_id",
+          "when": {
+            "eq": {
+              "field": "is_business",
+              "value": true
+            }
+          },
+          "message": {
+            "key": "rules.vat_required"
+          }
+        }
+      ],
+      "data": {
+        "is_business": "true"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-017",
+      "description": "boolean eq: 1 is not true",
+      "rules": [
+        {
+          "id": "Signup.required_when.vat_id",
+          "kind": "required_when",
+          "field": "vat_id",
+          "when": {
+            "eq": {
+              "field": "is_business",
+              "value": true
+            }
+          },
+          "message": {
+            "key": "rules.vat_required"
+          }
+        }
+      ],
+      "data": {
+        "is_business": 1
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-018",
+      "description": "ne is true when the condition field is missing",
+      "rules": [
+        {
+          "id": "Address.required_when.postcode",
+          "kind": "required_when",
+          "field": "postcode",
+          "when": {
+            "ne": {
+              "field": "country",
+              "value": "IE"
+            }
+          },
+          "message": {
+            "key": "rules.postcode_required"
+          }
+        }
+      ],
+      "data": {},
+      "expect": [
+        {
+          "path": [
+            "postcode"
+          ],
+          "ruleId": "Address.required_when.postcode",
+          "key": "rules.postcode_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-019",
+      "description": "ne false when values are equal",
+      "rules": [
+        {
+          "id": "Address.required_when.postcode",
+          "kind": "required_when",
+          "field": "postcode",
+          "when": {
+            "ne": {
+              "field": "country",
+              "value": "IE"
+            }
+          },
+          "message": {
+            "key": "rules.postcode_required"
+          }
+        }
+      ],
+      "data": {
+        "country": "IE"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-020",
+      "description": "in matches one of the values",
+      "rules": [
+        {
+          "id": "Signup.required_when.company_in",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "in": {
+              "field": "plan",
+              "values": [
+                "pro",
+                "team"
+              ]
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "team"
+      },
+      "expect": [
+        {
+          "path": [
+            "company"
+          ],
+          "ruleId": "Signup.required_when.company_in",
+          "key": "rules.company_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-021",
+      "description": "in matches none of the values",
+      "rules": [
+        {
+          "id": "Signup.required_when.company_in",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "in": {
+              "field": "plan",
+              "values": [
+                "pro",
+                "team"
+              ]
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "free"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-022",
+      "description": "present: filled condition field",
+      "rules": [
+        {
+          "id": "Signup.required_when.referrer_name",
+          "kind": "required_when",
+          "field": "referrer_name",
+          "when": {
+            "present": {
+              "field": "referrer_code"
+            }
+          },
+          "message": {
+            "key": "rules.referrer_name_required"
+          }
+        }
+      ],
+      "data": {
+        "referrer_code": "X7"
+      },
+      "expect": [
+        {
+          "path": [
+            "referrer_name"
+          ],
+          "ruleId": "Signup.required_when.referrer_name",
+          "key": "rules.referrer_name_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-023",
+      "description": "present: empty string counts as blank",
+      "rules": [
+        {
+          "id": "Signup.required_when.referrer_name",
+          "kind": "required_when",
+          "field": "referrer_name",
+          "when": {
+            "present": {
+              "field": "referrer_code"
+            }
+          },
+          "message": {
+            "key": "rules.referrer_name_required"
+          }
+        }
+      ],
+      "data": {
+        "referrer_code": ""
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-024",
+      "description": "absent: both missing",
+      "rules": [
+        {
+          "id": "Contact.required_when.phone",
+          "kind": "required_when",
+          "field": "phone",
+          "when": {
+            "absent": {
+              "field": "email"
+            }
+          },
+          "message": {
+            "key": "rules.phone_required"
+          }
+        }
+      ],
+      "data": {},
+      "expect": [
+        {
+          "path": [
+            "phone"
+          ],
+          "ruleId": "Contact.required_when.phone",
+          "key": "rules.phone_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-025",
+      "description": "absent: email given",
+      "rules": [
+        {
+          "id": "Contact.required_when.phone",
+          "kind": "required_when",
+          "field": "phone",
+          "when": {
+            "absent": {
+              "field": "email"
+            }
+          },
+          "message": {
+            "key": "rules.phone_required"
+          }
+        }
+      ],
+      "data": {
+        "email": "a@example.test"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-026",
+      "description": "all: every condition true",
+      "rules": [
+        {
+          "id": "Signup.required_when.tax_id",
+          "kind": "required_when",
+          "field": "tax_id",
+          "when": {
+            "all": [
+              {
+                "eq": {
+                  "field": "plan",
+                  "value": "pro"
+                }
+              },
+              {
+                "eq": {
+                  "field": "country",
+                  "value": "US"
+                }
+              }
+            ]
+          },
+          "message": {
+            "key": "rules.tax_id_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "pro",
+        "country": "US"
+      },
+      "expect": [
+        {
+          "path": [
+            "tax_id"
+          ],
+          "ruleId": "Signup.required_when.tax_id",
+          "key": "rules.tax_id_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-027",
+      "description": "all: one condition false",
+      "rules": [
+        {
+          "id": "Signup.required_when.tax_id",
+          "kind": "required_when",
+          "field": "tax_id",
+          "when": {
+            "all": [
+              {
+                "eq": {
+                  "field": "plan",
+                  "value": "pro"
+                }
+              },
+              {
+                "eq": {
+                  "field": "country",
+                  "value": "US"
+                }
+              }
+            ]
+          },
+          "message": {
+            "key": "rules.tax_id_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "pro",
+        "country": "CA"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-028",
+      "description": "any: second condition true",
+      "rules": [
+        {
+          "id": "Signup.required_when.billing_email",
+          "kind": "required_when",
+          "field": "billing_email",
+          "when": {
+            "any": [
+              {
+                "eq": {
+                  "field": "plan",
+                  "value": "pro"
+                }
+              },
+              {
+                "present": {
+                  "field": "seats"
+                }
+              }
+            ]
+          },
+          "message": {
+            "key": "rules.billing_email_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "free",
+        "seats": 3
+      },
+      "expect": [
+        {
+          "path": [
+            "billing_email"
+          ],
+          "ruleId": "Signup.required_when.billing_email",
+          "key": "rules.billing_email_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-029",
+      "description": "any: no condition true",
+      "rules": [
+        {
+          "id": "Signup.required_when.billing_email",
+          "kind": "required_when",
+          "field": "billing_email",
+          "when": {
+            "any": [
+              {
+                "eq": {
+                  "field": "plan",
+                  "value": "pro"
+                }
+              },
+              {
+                "present": {
+                  "field": "seats"
+                }
+              }
+            ]
+          },
+          "message": {
+            "key": "rules.billing_email_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "free"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-030",
+      "description": "not: inner false when the field is missing, so not is true",
+      "rules": [
+        {
+          "id": "Signup.required_when.company_not_free",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "not": {
+              "eq": {
+                "field": "plan",
+                "value": "free"
+              }
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {},
+      "expect": [
+        {
+          "path": [
+            "company"
+          ],
+          "ruleId": "Signup.required_when.company_not_free",
+          "key": "rules.company_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-031",
+      "description": "not: inner true",
+      "rules": [
+        {
+          "id": "Signup.required_when.company_not_free",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "not": {
+              "eq": {
+                "field": "plan",
+                "value": "free"
+              }
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "free"
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-032",
+      "description": "eq against a list value is false",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": [
+          "pro"
+        ]
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-033",
+      "description": "eq against an object value is false",
+      "rules": [
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": {
+          "name": "pro"
+        }
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-034",
+      "description": "zero is not blank",
+      "rules": [
+        {
+          "id": "Order.required_when.qty",
+          "kind": "required_when",
+          "field": "qty",
+          "when": {
+            "present": {
+              "field": "sku"
+            }
+          },
+          "message": {
+            "key": "rules.qty_required"
+          }
+        }
+      ],
+      "data": {
+        "sku": "A1",
+        "qty": 0
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-035",
+      "description": "false is not blank",
+      "rules": [
+        {
+          "id": "Signup.required_when.accepted_terms",
+          "kind": "required_when",
+          "field": "accepted_terms",
+          "when": {
+            "present": {
+              "field": "email"
+            }
+          },
+          "message": {
+            "key": "rules.terms_required"
+          }
+        }
+      ],
+      "data": {
+        "email": "a@example.test",
+        "accepted_terms": false
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-036",
+      "description": "empty object is not blank",
+      "rules": [
+        {
+          "id": "Order.required_when.shipping",
+          "kind": "required_when",
+          "field": "shipping",
+          "when": {
+            "eq": {
+              "field": "delivery",
+              "value": "post"
+            }
+          },
+          "message": {
+            "key": "rules.shipping_required"
+          }
+        }
+      ],
+      "data": {
+        "delivery": "post",
+        "shipping": {}
+      },
+      "expect": []
+    },
+    {
+      "id": "rw-037",
+      "description": "two failing rules give two issues in rule order",
+      "rules": [
+        {
+          "id": "Contact.required_when.phone",
+          "kind": "required_when",
+          "field": "phone",
+          "when": {
+            "absent": {
+              "field": "email"
+            }
+          },
+          "message": {
+            "key": "rules.phone_required"
+          }
+        },
+        {
+          "id": "Signup.required_when.company",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          }
+        }
+      ],
+      "data": {
+        "plan": "pro"
+      },
+      "expect": [
+        {
+          "path": [
+            "phone"
+          ],
+          "ruleId": "Contact.required_when.phone",
+          "key": "rules.phone_required",
+          "params": {}
+        },
+        {
+          "path": [
+            "company"
+          ],
+          "ruleId": "Signup.required_when.company",
+          "key": "rules.company_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-038",
+      "description": "explicit path is where the issue lands",
+      "rules": [
+        {
+          "id": "Signup.required_when.company_pathed",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          },
+          "path": "company_section"
+        }
+      ],
+      "data": {
+        "plan": "pro"
+      },
+      "expect": [
+        {
+          "path": [
+            "company_section"
+          ],
+          "ruleId": "Signup.required_when.company_pathed",
+          "key": "rules.company_required",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "rw-039",
+      "description": "message params pass through unchanged",
+      "rules": [
+        {
+          "id": "Signup.required_when.company_params",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required_for",
+            "params": {
+              "plan": "pro",
+              "min": 1
+            }
+          }
+        }
+      ],
+      "data": {
+        "plan": "pro"
+      },
+      "expect": [
+        {
+          "path": [
+            "company"
+          ],
+          "ruleId": "Signup.required_when.company_params",
+          "key": "rules.company_required_for",
+          "params": {
+            "plan": "pro",
+            "min": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "rw-040",
+      "description": "server_only rule: server reports it, clients skip it",
+      "rules": [
+        {
+          "id": "Signup.required_when.company_checked",
+          "kind": "required_when",
+          "field": "company",
+          "when": {
+            "eq": {
+              "field": "plan",
+              "value": "pro"
+            }
+          },
+          "message": {
+            "key": "rules.company_required"
+          },
+          "server_only": true
+        }
+      ],
+      "data": {
+        "plan": "pro"
+      },
+      "expect": [
+        {
+          "path": [
+            "company"
+          ],
+          "ruleId": "Signup.required_when.company_checked",
+          "key": "rules.company_required",
+          "params": {}
+        }
+      ]
+    }
+  ]
+}

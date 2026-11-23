@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+name: publish-nuget
+# Publishes the .NET packages to nuget.org through trusted publishing (no stored API key).
+# Run by hand only. "placeholders/dotnet" publishes the name-holding placeholders.
+# Needs the repository variable NUGET_USER (the nuget.org account name; not a secret).
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Folder to pack
+        type: choice
+        options: [placeholders/dotnet, dotnet]
+        default: placeholders/dotnet
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Pack
+        working-directory: ${{ inputs.source }}
+        run: |
+          for proj in $(find . -name '*.csproj' -not -path '*/tests/*'); do
+            dotnet pack "$proj" -c Release -o "$GITHUB_WORKSPACE/out"
+          done
+      - name: Log in to nuget.org
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+      - name: Push
+        run: dotnet nuget push "out/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

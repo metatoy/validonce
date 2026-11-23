@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Validonce/Validonce.csproj" />
+  <Project Path="tests/Validonce.Tests/Validonce.Tests.csproj" />
+</Solution>

@@ -1,0 +1,88 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: ["10.0.x", "11.0.x"]
+    defaults:
+      run:
+        working-directory: dotnet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.sdk }}
+      - run: dotnet build -c Release
+      - run: dotnet test -c Release
+
+  js:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        working-directory: js
+      - run: pnpm typecheck
+        working-directory: js
+      - run: pnpm test
+        working-directory: js
+      - run: pnpm lint
+        working-directory: js
+
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.13"]
+        pydantic: [lowest, highest]
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Test (lowest direct dependencies)
+        if: matrix.pydantic == 'lowest'
+        run: uv run --resolution lowest-direct pytest -q
+      - name: Test (highest dependencies)
+        if: matrix.pydantic == 'highest'
+        run: uv run pytest -q
+      - name: Ruff check
+        if: matrix.python == '3.13' && matrix.pydantic == 'highest'
+        run: uv run ruff check .
+      - name: Ruff format check
+        if: matrix.python == '3.13' && matrix.pydantic == 'highest'
+        run: uv run ruff format --check .
+
+  conformance-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv run --project python pytest -q python/tests/test_conformance_schema.py

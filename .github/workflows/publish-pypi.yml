@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+name: publish-pypi
+# Publishes the Python package to PyPI through trusted publishing (no stored token).
+# Run by hand only. "placeholders/python" publishes the name-holding placeholder.
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Folder to build
+        type: choice
+        options: [placeholders/python, python]
+        default: placeholders/python
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv build --out-dir "$GITHUB_WORKSPACE/dist"
+        working-directory: ${{ inputs.source }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

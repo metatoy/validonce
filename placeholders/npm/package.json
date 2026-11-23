@@ -1,0 +1,20 @@
+{
+  "name": "validonce",
+  "version": "0.0.2-placeholder",
+  "description": "Placeholder for validonce: write validation rules once on the server, enforce them in React and Angular forms. Not usable yet.",
+  "license": "Apache-2.0",
+  "author": "Metatoy LLC",
+  "homepage": "https://github.com/metatoy/validonce",
+  "keywords": [
+    "validation",
+    "zod",
+    "forms",
+    "fluentvalidation",
+    "pydantic"
+  ],
+  "files": [
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ]
+}

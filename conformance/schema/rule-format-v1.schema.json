@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/metatoy/validonce/conformance/schema/rule-format-v1.schema.json",
+  "title": "validonce rule format v1 (the x-validonce object)",
+  "type": "object",
+  "required": ["version", "rules"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "rules": { "type": "array", "items": { "$ref": "#/$defs/rule" } }
+  },
+  "$defs": {
+    "fieldName": { "type": "string", "minLength": 1 },
+    "scalar": { "type": ["string", "number", "boolean"] },
+    "fieldRef": {
+      "type": "object",
+      "required": ["field"],
+      "additionalProperties": false,
+      "properties": { "field": { "$ref": "#/$defs/fieldName" } }
+    },
+    "message": {
+      "type": "object",
+      "required": ["key"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "params": {
+          "type": "object",
+          "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+        }
+      }
+    },
+    "common": {
+      "type": "object",
+      "required": ["id", "kind", "message"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9_.:-]+$" },
+        "kind": { "enum": ["required_when", "compare", "at_least_one_of", "exactly_one_of", "all_or_none"] },
+        "path": { "$ref": "#/$defs/fieldName" },
+        "message": { "$ref": "#/$defs/message" },
+        "server_only": { "type": "boolean" }
+      }
+    },
+    "condition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["eq"],
+          "additionalProperties": false,
+          "properties": { "eq": { "$ref": "#/$defs/fieldValue" } }
+        },
+        {
+          "type": "object",
+          "required": ["ne"],
+          "additionalProperties": false,
+          "properties": { "ne": { "$ref": "#/$defs/fieldValue" } }
+        },
+        {
+          "type": "object",
+          "required": ["in"],
+          "additionalProperties": false,
+          "properties": {
+            "in": {
+              "type": "object",
+              "required": ["field", "values"],
+              "additionalProperties": false,
+              "properties": {
+                "field": { "$ref": "#/$defs/fieldName" },
+                "values": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/scalar" } }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["present"],
+          "additionalProperties": false,
+          "properties": { "present": { "$ref": "#/$defs/fieldRef" } }
+        },
+        {
+          "type": "object",
+          "required": ["absent"],
+          "additionalProperties": false,
+          "properties": { "absent": { "$ref": "#/$defs/fieldRef" } }
+        },
+        {
+          "type": "object",
+          "required": ["all"],
+          "additionalProperties": false,
+          "properties": { "all": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/condition" } } }
+        },
+        {
+          "type": "object",
+          "required": ["any"],
+          "additionalProperties": false,
+          "properties": { "any": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/condition" } } }
+        },
+        {
+          "type": "object",
+          "required": ["not"],
+          "additionalProperties": false,
+          "properties": { "not": { "$ref": "#/$defs/condition" } }
+        }
+      ]
+    },
+    "fieldValue": {
+      "type": "object",
+      "required": ["field", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "field": { "$ref": "#/$defs/fieldName" },
+        "value": { "$ref": "#/$defs/scalar" }
+      }
+    },
+    "fieldList": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/fieldName" } },
+    "rule": {
+      "allOf": [{ "$ref": "#/$defs/common" }],
+      "oneOf": [
+        {
+          "properties": {
+            "kind": { "const": "required_when" },
+            "id": true, "path": true, "message": true, "server_only": true,
+            "field": { "$ref": "#/$defs/fieldName" },
+            "when": { "$ref": "#/$defs/condition" }
+          },
+          "required": ["field", "when"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "kind": { "const": "compare" },
+            "id": true, "path": true, "message": true, "server_only": true,
+            "left": { "$ref": "#/$defs/fieldRef" },
+            "op": { "enum": ["lt", "le", "gt", "ge", "eq", "ne"] },
+            "right": {
+              "oneOf": [
+                { "$ref": "#/$defs/fieldRef" },
+                {
+                  "type": "object",
+                  "required": ["value"],
+                  "additionalProperties": false,
+                  "properties": { "value": { "type": ["string", "number"] } }
+                }
+              ]
+            },
+            "type": { "enum": ["number", "string", "date", "datetime"] }
+          },
+          "required": ["left", "op", "right", "type"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "kind": { "enum": ["at_least_one_of", "exactly_one_of", "all_or_none"] },
+            "id": true, "path": true, "message": true, "server_only": true,
+            "fields": { "$ref": "#/$defs/fieldList" }
+          },
+          "required": ["fields"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

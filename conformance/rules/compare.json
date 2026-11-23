@@ -1,0 +1,1013 @@
+{
+  "version": 1,
+  "suite": "compare",
+  "description": "compare rules across number, date, datetime and string.",
+  "cases": [
+    {
+      "id": "cmp-001",
+      "description": "number: left below right",
+      "rules": [
+        {
+          "id": "Order.compare.qty",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "le",
+          "right": {
+            "field": "max_qty"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_over_max"
+          }
+        }
+      ],
+      "data": {
+        "qty": 3,
+        "max_qty": 5
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-002",
+      "description": "number: left above right",
+      "rules": [
+        {
+          "id": "Order.compare.qty",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "le",
+          "right": {
+            "field": "max_qty"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_over_max"
+          }
+        }
+      ],
+      "data": {
+        "qty": 7,
+        "max_qty": 5
+      },
+      "expect": [
+        {
+          "path": [
+            "qty"
+          ],
+          "ruleId": "Order.compare.qty",
+          "key": "rules.qty_over_max",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-003",
+      "description": "number: equal values pass le",
+      "rules": [
+        {
+          "id": "Order.compare.qty",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "le",
+          "right": {
+            "field": "max_qty"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_over_max"
+          }
+        }
+      ],
+      "data": {
+        "qty": 5,
+        "max_qty": 5
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-004",
+      "description": "number: fractional value above an integer",
+      "rules": [
+        {
+          "id": "Order.compare.qty",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "le",
+          "right": {
+            "field": "max_qty"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_over_max"
+          }
+        }
+      ],
+      "data": {
+        "qty": 2.5,
+        "max_qty": 2
+      },
+      "expect": [
+        {
+          "path": [
+            "qty"
+          ],
+          "ruleId": "Order.compare.qty",
+          "key": "rules.qty_over_max",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-005",
+      "description": "number: a value written with a fraction part (100.0)",
+      "rules": [
+        {
+          "id": "Order.compare.qty",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "le",
+          "right": {
+            "field": "max_qty"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_over_max"
+          }
+        }
+      ],
+      "data": {
+        "qty": 100.0,
+        "max_qty": 50
+      },
+      "expect": [
+        {
+          "path": [
+            "qty"
+          ],
+          "ruleId": "Order.compare.qty",
+          "key": "rules.qty_over_max",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-006",
+      "description": "left missing passes",
+      "rules": [
+        {
+          "id": "Order.compare.qty",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "le",
+          "right": {
+            "field": "max_qty"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_over_max"
+          }
+        }
+      ],
+      "data": {
+        "max_qty": 5
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-007",
+      "description": "right null passes",
+      "rules": [
+        {
+          "id": "Order.compare.qty",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "le",
+          "right": {
+            "field": "max_qty"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_over_max"
+          }
+        }
+      ],
+      "data": {
+        "qty": 7,
+        "max_qty": null
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-008",
+      "description": "left empty string passes",
+      "rules": [
+        {
+          "id": "Order.compare.qty",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "le",
+          "right": {
+            "field": "max_qty"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_over_max"
+          }
+        }
+      ],
+      "data": {
+        "qty": "",
+        "max_qty": 5
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-009",
+      "description": "number type: a numeric string fails the type check, so the rule passes",
+      "rules": [
+        {
+          "id": "Order.compare.qty",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "le",
+          "right": {
+            "field": "max_qty"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_over_max"
+          }
+        }
+      ],
+      "data": {
+        "qty": "7",
+        "max_qty": 5
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-010",
+      "description": "number type: a boolean is not a number",
+      "rules": [
+        {
+          "id": "Order.compare.qty",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "le",
+          "right": {
+            "field": "max_qty"
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_over_max"
+          }
+        }
+      ],
+      "data": {
+        "qty": true,
+        "max_qty": 0
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-011",
+      "description": "constant right: below the minimum",
+      "rules": [
+        {
+          "id": "Order.compare.qty_min",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "ge",
+          "right": {
+            "value": 1
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_min"
+          }
+        }
+      ],
+      "data": {
+        "qty": 0
+      },
+      "expect": [
+        {
+          "path": [
+            "qty"
+          ],
+          "ruleId": "Order.compare.qty_min",
+          "key": "rules.qty_min",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-012",
+      "description": "constant right: at the minimum",
+      "rules": [
+        {
+          "id": "Order.compare.qty_min",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "ge",
+          "right": {
+            "value": 1
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_min"
+          }
+        }
+      ],
+      "data": {
+        "qty": 1
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-013",
+      "description": "constant right: negative value",
+      "rules": [
+        {
+          "id": "Order.compare.qty_min",
+          "kind": "compare",
+          "left": {
+            "field": "qty"
+          },
+          "op": "ge",
+          "right": {
+            "value": 1
+          },
+          "type": "number",
+          "message": {
+            "key": "rules.qty_min"
+          }
+        }
+      ],
+      "data": {
+        "qty": -1
+      },
+      "expect": [
+        {
+          "path": [
+            "qty"
+          ],
+          "ruleId": "Order.compare.qty_min",
+          "key": "rules.qty_min",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-014",
+      "description": "date: end after start",
+      "rules": [
+        {
+          "id": "Booking.compare.end",
+          "kind": "compare",
+          "left": {
+            "field": "end"
+          },
+          "op": "ge",
+          "right": {
+            "field": "start"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.end_after_start"
+          }
+        }
+      ],
+      "data": {
+        "start": "2026-02-28",
+        "end": "2026-03-01"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-015",
+      "description": "date: end before start",
+      "rules": [
+        {
+          "id": "Booking.compare.end",
+          "kind": "compare",
+          "left": {
+            "field": "end"
+          },
+          "op": "ge",
+          "right": {
+            "field": "start"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.end_after_start"
+          }
+        }
+      ],
+      "data": {
+        "start": "2026-02-28",
+        "end": "2026-02-01"
+      },
+      "expect": [
+        {
+          "path": [
+            "end"
+          ],
+          "ruleId": "Booking.compare.end",
+          "key": "rules.end_after_start",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-016",
+      "description": "date: equal dates pass ge",
+      "rules": [
+        {
+          "id": "Booking.compare.end",
+          "kind": "compare",
+          "left": {
+            "field": "end"
+          },
+          "op": "ge",
+          "right": {
+            "field": "start"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.end_after_start"
+          }
+        }
+      ],
+      "data": {
+        "start": "2026-02-28",
+        "end": "2026-02-28"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-017",
+      "description": "date: equal dates fail gt",
+      "rules": [
+        {
+          "id": "Booking.compare.end_strict",
+          "kind": "compare",
+          "left": {
+            "field": "end"
+          },
+          "op": "gt",
+          "right": {
+            "field": "start"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.end_after_start"
+          }
+        }
+      ],
+      "data": {
+        "start": "2026-02-28",
+        "end": "2026-02-28"
+      },
+      "expect": [
+        {
+          "path": [
+            "end"
+          ],
+          "ruleId": "Booking.compare.end_strict",
+          "key": "rules.end_after_start",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-018",
+      "description": "date: an impossible date fails the type check, so the rule passes",
+      "rules": [
+        {
+          "id": "Booking.compare.end",
+          "kind": "compare",
+          "left": {
+            "field": "end"
+          },
+          "op": "ge",
+          "right": {
+            "field": "start"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.end_after_start"
+          }
+        }
+      ],
+      "data": {
+        "start": "2026-03-01",
+        "end": "2026-02-30"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-019",
+      "description": "date: unpadded month and day fail the type check",
+      "rules": [
+        {
+          "id": "Booking.compare.end",
+          "kind": "compare",
+          "left": {
+            "field": "end"
+          },
+          "op": "ge",
+          "right": {
+            "field": "start"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.end_after_start"
+          }
+        }
+      ],
+      "data": {
+        "start": "2026-03-01",
+        "end": "2026-2-1"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-020",
+      "description": "date: a datetime string is not a date",
+      "rules": [
+        {
+          "id": "Booking.compare.end",
+          "kind": "compare",
+          "left": {
+            "field": "end"
+          },
+          "op": "ge",
+          "right": {
+            "field": "start"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.end_after_start"
+          }
+        }
+      ],
+      "data": {
+        "start": "2026-03-01",
+        "end": "2026-02-01T00:00:00Z"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-021",
+      "description": "date: leap day in a leap year is valid",
+      "rules": [
+        {
+          "id": "Booking.compare.end",
+          "kind": "compare",
+          "left": {
+            "field": "end"
+          },
+          "op": "ge",
+          "right": {
+            "field": "start"
+          },
+          "type": "date",
+          "message": {
+            "key": "rules.end_after_start"
+          }
+        }
+      ],
+      "data": {
+        "start": "2028-03-01",
+        "end": "2028-02-29"
+      },
+      "expect": [
+        {
+          "path": [
+            "end"
+          ],
+          "ruleId": "Booking.compare.end",
+          "key": "rules.end_after_start",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-022",
+      "description": "datetime: later instant despite a smaller clock reading",
+      "rules": [
+        {
+          "id": "Event.compare.ends_at",
+          "kind": "compare",
+          "left": {
+            "field": "ends_at"
+          },
+          "op": "gt",
+          "right": {
+            "field": "starts_at"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.ends_after_starts"
+          }
+        }
+      ],
+      "data": {
+        "starts_at": "2026-01-01T10:00:00+02:00",
+        "ends_at": "2026-01-01T09:00:00Z"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-023",
+      "description": "datetime: the same instant in two offsets fails gt",
+      "rules": [
+        {
+          "id": "Event.compare.ends_at",
+          "kind": "compare",
+          "left": {
+            "field": "ends_at"
+          },
+          "op": "gt",
+          "right": {
+            "field": "starts_at"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.ends_after_starts"
+          }
+        }
+      ],
+      "data": {
+        "starts_at": "2026-01-01T10:00:00+02:00",
+        "ends_at": "2026-01-01T08:00:00Z"
+      },
+      "expect": [
+        {
+          "path": [
+            "ends_at"
+          ],
+          "ruleId": "Event.compare.ends_at",
+          "key": "rules.ends_after_starts",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-024",
+      "description": "datetime: no offset fails the type check, so the rule passes",
+      "rules": [
+        {
+          "id": "Event.compare.ends_at",
+          "kind": "compare",
+          "left": {
+            "field": "ends_at"
+          },
+          "op": "gt",
+          "right": {
+            "field": "starts_at"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.ends_after_starts"
+          }
+        }
+      ],
+      "data": {
+        "starts_at": "2026-01-01T10:00:00",
+        "ends_at": "2026-01-01T09:00:00Z"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-025",
+      "description": "datetime: lowercase z fails the type check",
+      "rules": [
+        {
+          "id": "Event.compare.ends_at",
+          "kind": "compare",
+          "left": {
+            "field": "ends_at"
+          },
+          "op": "gt",
+          "right": {
+            "field": "starts_at"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.ends_after_starts"
+          }
+        }
+      ],
+      "data": {
+        "starts_at": "2026-01-01T10:00:00z",
+        "ends_at": "2026-01-01T09:00:00Z"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-026",
+      "description": "datetime: digits after milliseconds are ignored",
+      "rules": [
+        {
+          "id": "Event.compare.ends_at",
+          "kind": "compare",
+          "left": {
+            "field": "ends_at"
+          },
+          "op": "gt",
+          "right": {
+            "field": "starts_at"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.ends_after_starts"
+          }
+        }
+      ],
+      "data": {
+        "starts_at": "2026-01-01T00:00:00.1239Z",
+        "ends_at": "2026-01-01T00:00:00.1231Z"
+      },
+      "expect": [
+        {
+          "path": [
+            "ends_at"
+          ],
+          "ruleId": "Event.compare.ends_at",
+          "key": "rules.ends_after_starts",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-027",
+      "description": "datetime: millisecond difference counts",
+      "rules": [
+        {
+          "id": "Event.compare.ends_at",
+          "kind": "compare",
+          "left": {
+            "field": "ends_at"
+          },
+          "op": "gt",
+          "right": {
+            "field": "starts_at"
+          },
+          "type": "datetime",
+          "message": {
+            "key": "rules.ends_after_starts"
+          }
+        }
+      ],
+      "data": {
+        "starts_at": "2026-01-01T00:00:00.123Z",
+        "ends_at": "2026-01-01T00:00:00.124Z"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-028",
+      "description": "string eq: identical strings pass",
+      "rules": [
+        {
+          "id": "Signup.compare.confirm_email",
+          "kind": "compare",
+          "left": {
+            "field": "confirm_email"
+          },
+          "op": "eq",
+          "right": {
+            "field": "email"
+          },
+          "type": "string",
+          "message": {
+            "key": "rules.emails_match"
+          }
+        }
+      ],
+      "data": {
+        "email": "a@example.test",
+        "confirm_email": "a@example.test"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-029",
+      "description": "string eq: case differs",
+      "rules": [
+        {
+          "id": "Signup.compare.confirm_email",
+          "kind": "compare",
+          "left": {
+            "field": "confirm_email"
+          },
+          "op": "eq",
+          "right": {
+            "field": "email"
+          },
+          "type": "string",
+          "message": {
+            "key": "rules.emails_match"
+          }
+        }
+      ],
+      "data": {
+        "email": "a@example.test",
+        "confirm_email": "A@example.test"
+      },
+      "expect": [
+        {
+          "path": [
+            "confirm_email"
+          ],
+          "ruleId": "Signup.compare.confirm_email",
+          "key": "rules.emails_match",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-030",
+      "description": "string eq: no Unicode normalization",
+      "rules": [
+        {
+          "id": "Signup.compare.confirm_email",
+          "kind": "compare",
+          "left": {
+            "field": "confirm_email"
+          },
+          "op": "eq",
+          "right": {
+            "field": "email"
+          },
+          "type": "string",
+          "message": {
+            "key": "rules.emails_match"
+          }
+        }
+      ],
+      "data": {
+        "email": "café",
+        "confirm_email": "café"
+      },
+      "expect": [
+        {
+          "path": [
+            "confirm_email"
+          ],
+          "ruleId": "Signup.compare.confirm_email",
+          "key": "rules.emails_match",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-031",
+      "description": "string ne: unchanged password",
+      "rules": [
+        {
+          "id": "Account.compare.new_password",
+          "kind": "compare",
+          "left": {
+            "field": "new_password"
+          },
+          "op": "ne",
+          "right": {
+            "field": "old_password"
+          },
+          "type": "string",
+          "message": {
+            "key": "rules.password_unchanged"
+          }
+        }
+      ],
+      "data": {
+        "old_password": "hunter2!",
+        "new_password": "hunter2!"
+      },
+      "expect": [
+        {
+          "path": [
+            "new_password"
+          ],
+          "ruleId": "Account.compare.new_password",
+          "key": "rules.password_unchanged",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-032",
+      "description": "string order is by code point, not UTF-16 code unit",
+      "rules": [
+        {
+          "id": "Range.compare.to",
+          "kind": "compare",
+          "left": {
+            "field": "to"
+          },
+          "op": "gt",
+          "right": {
+            "field": "from"
+          },
+          "type": "string",
+          "message": {
+            "key": "rules.to_after_from"
+          }
+        }
+      ],
+      "data": {
+        "from": "�",
+        "to": "😀"
+      },
+      "expect": []
+    },
+    {
+      "id": "cmp-033",
+      "description": "string order: plain ASCII",
+      "rules": [
+        {
+          "id": "Range.compare.to",
+          "kind": "compare",
+          "left": {
+            "field": "to"
+          },
+          "op": "gt",
+          "right": {
+            "field": "from"
+          },
+          "type": "string",
+          "message": {
+            "key": "rules.to_after_from"
+          }
+        }
+      ],
+      "data": {
+        "from": "b",
+        "to": "a"
+      },
+      "expect": [
+        {
+          "path": [
+            "to"
+          ],
+          "ruleId": "Range.compare.to",
+          "key": "rules.to_after_from",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "cmp-034",
+      "description": "string type: a number fails the type check, so the rule passes",
+      "rules": [
+        {
+          "id": "Signup.compare.confirm_email",
+          "kind": "compare",
+          "left": {
+            "field": "confirm_email"
+          },
+          "op": "eq",
+          "right": {
+            "field": "email"
+          },
+          "type": "string",
+          "message": {
+            "key": "rules.emails_match"
+          }
+        }
+      ],
+      "data": {
+        "email": "a@example.test",
+        "confirm_email": 5
+      },
+      "expect": []
+    }
+  ]
+}

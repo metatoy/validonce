@@ -1,0 +1,18 @@
+# dotnet
+bin/
+obj/
+# node
+node_modules/
+dist/
+coverage/
+*.gen.ts
+# python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+# os
+.DS_Store
