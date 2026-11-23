@@ -29,10 +29,14 @@
     "./openapi": {
       "types": "./dist/openapi.d.ts",
       "import": "./dist/openapi.js"
+    },
+    "./server-errors": {
+      "types": "./dist/server-errors.d.ts",
+      "import": "./dist/server-errors.js"
     }
   },
   "scripts": {
-    "build": "esbuild src/index.ts src/zod.ts src/openapi.ts --bundle --splitting --format=esm --platform=neutral --target=es2022 --external:zod --outdir=dist && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "build": "esbuild src/index.ts src/zod.ts src/openapi.ts src/server-errors.ts --bundle --splitting --format=esm --platform=neutral --target=es2022 --external:zod --outdir=dist && tsc -p tsconfig.build.json --emitDeclarationOnly",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "biome check ."
