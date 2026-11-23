@@ -4,7 +4,7 @@ Thanks for helping. A few things make reviews quick.
 
 ## The rule format is the contract
 
-`spec/rule-format-v1.md` defines what every rule means, and `conformance/rules/` holds the cases that prove it. If you change behavior, change both, and make sure the C#, TypeScript and Python implementations all pass.
+`docs/rule-format-v1.md` defines what every rule means, and `conformance/rules/` holds the cases that prove it. If you change behavior, change both, and make sure the C#, TypeScript and Python implementations all pass.
 
 ## Running the checks
 

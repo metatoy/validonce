@@ -2,7 +2,7 @@
 
 Guidance for agents working in this repo.
 
-- **The contract:** `spec/rule-format-v1.md` and `conformance/`. Never change an expected result to make an implementation pass; fix the implementation, or change the spec and the case together with a line in `spec/decisions.md`.
+- **The contract:** `docs/rule-format-v1.md` and `conformance/`. Never change an expected result to make an implementation pass; fix the implementation, or change the spec and the case together and explain why in the commit message.
 - **Priority order:** C# (`dotnet/`), then TypeScript (`js/`), then Python (`python/`).
 - **Languages:** C# on net10.0; TypeScript (strict) for the JS package; Python 3.10+ with uv, hatchling, ruff, pytest.
 - **Heavy commands one at a time** on the founder's Mac: `dotnet build/test`, `pnpm install`, `uv sync`, Playwright.

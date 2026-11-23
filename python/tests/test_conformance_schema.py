@@ -57,7 +57,7 @@ def test_regex_fixtures_conform_and_findings_resolve() -> None:
             assert case["id"] not in case_ids, f"duplicate case id {case['id']}"
             case_ids.add(case["id"])
     assert not failures, "\n".join(failures)
-    findings = _load(ROOT / "spec" / "regex-findings.json")["findings"]
+    findings = _load(ROOT / "docs" / "regex-findings.json")["findings"]
     referenced = {cid for f in findings for cid in f["cases"]}
     assert referenced <= case_ids, f"findings cite missing cases: {sorted(referenced - case_ids)}"
     assert case_ids <= referenced, f"cases in no finding: {sorted(case_ids - referenced)}"

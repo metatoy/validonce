@@ -22,3 +22,6 @@ examples/react-form/e2e/screenshots/
 examples/react-form/test-results/
 examples/react-form/playwright-report/
 examples/*/backend.log
+
+# Private notes live outside this repository
+spec/

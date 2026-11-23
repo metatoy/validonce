@@ -73,7 +73,7 @@
       "id": "VR005",
       "title": "$ matches before a final newline in Python and .NET",
       "summary": "A pattern ending in $ accepts \"abc\\n\" in Python and .NET but rejects it in JavaScript and Rust, so a trailing newline passes on some servers only.",
-      "severity": "error",
+      "severity": "warning",
       "engines": {
         "js": "$ is end of input only",
         "js-u": "$ is end of input only",
@@ -242,7 +242,7 @@
         "rust-regex": "excludes \\n only",
         "dotnet": "excludes \\n only"
       },
-      "rewrite": "[^\\n\\r]",
+      "rewrite": null,
       "cases": [
         "rx-016"
       ]

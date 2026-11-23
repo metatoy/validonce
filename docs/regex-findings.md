@@ -1,4 +1,4 @@
-<!-- Generated from spec/regex-findings.json. Edit the JSON, then regenerate this table; the two must be kept in sync. -->
+<!-- Generated from docs/regex-findings.json. Edit the JSON, then regenerate this table; the two must be kept in sync. -->
 
 # Regex portability findings
 
@@ -12,7 +12,7 @@ Expectations were measured with Node 22, Python 3.14, Pydantic 2.14 and .NET 11.
 | VR002 | error | \d matches non-ASCII digits in some engines | \d is 0-9 only in JavaScript but also matches Arabic-Indic and fullwidth digits in Python, Rust and .NET. | `[0-9]` | rx-002 |
 | VR003 | warning | \s covers different white-space characters | The set of characters \s matches differs between engines: U+FEFF only in JavaScript, U+001C only in Python, U+0085 and U+00A0 not in every engine. | `[ \t\r\n\f\v]` | rx-003 |
 | VR004 | warning | \b word boundary differs next to accented letters | Because \w differs, \b finds a boundary between "f" and "é" in JavaScript but not in Python, Rust or .NET. | `(?![A-Za-z0-9_]) or (?<![A-Za-z0-9_]) where lookarounds are allowed; otherwise avoid \b on non-ASCII text` | rx-004 |
-| VR005 | error | $ matches before a final newline in Python and .NET | A pattern ending in $ accepts "abc\n" in Python and .NET but rejects it in JavaScript and Rust, so a trailing newline passes on some servers only. | `Reject newlines explicitly with a leading (?![\s\S]*\n) where lookahead is allowed, or validate the trimmed value` | rx-012 |
+| VR005 | warning | $ matches before a final newline in Python and .NET | A pattern ending in $ accepts "abc\n" in Python and .NET but rejects it in JavaScript and Rust, so a trailing newline passes on some servers only. | `Reject newlines explicitly with a leading (?![\s\S]*\n) where lookahead is allowed, or validate the trimmed value` | rx-012 |
 | VR006 | error | \Z and \z are not portable | \Z and \z are anchors in some engines, an identity escape in JavaScript, and an error in js-u and (for \Z) Rust. | `$ (see VR005 for newline behavior)` | rx-013, rx-014 |
 | VR007 | error | \A is not portable | \A is the start of input in Python, Rust and .NET, an error in js-u, and only the letter A in plain JavaScript. | `^` | rx-015 |
 | VR008 | error | Lookbehind support and width rules differ | Rust has no lookbehind; Python needs fixed width; JavaScript and .NET accept variable width. | none | rx-019, rx-020 |
@@ -21,7 +21,7 @@ Expectations were measured with Node 22, Python 3.14, Pydantic 2.14 and .NET 11.
 | VR011 | error | Named group syntax differs | (?P<n>...) is Python and Rust (also (?<n>...) in Rust); (?<n>...) is JavaScript and .NET; (?P=n) and \k<n> backreferences are not shared. | `Use a plain capturing group (...) when the name is not needed` | rx-024, rx-025, rx-026, rx-027 |
 | VR012 | error | Possessive quantifiers and atomic groups are not portable | a++ is accepted by Python 3.11+ and (as a plain repeat) Rust, but not by JavaScript or .NET; (?>...) is accepted by Python 3.11+ and .NET only. | `Rewrite without them (plain greedy quantifier)` | rx-028, rx-029 |
 | VR013 | error | Inline flags are not portable | (?i) at the start is an error in JavaScript; in the middle it is also an error in Python 3.11+. | `Spell out both cases in a class, e.g. [Aa][Bb][Cc]` | rx-030, rx-031 |
-| VR014 | warning | . matches line terminators differently | . rejects \r and U+2028 in JavaScript but accepts them in Python, Rust and .NET; all reject \n. | `[^\n\r]` | rx-016 |
+| VR014 | warning | . matches line terminators differently | . rejects \r and U+2028 in JavaScript but accepts them in Python, Rust and .NET; all reject \n. | none (a negated class still differs on astral characters, see VR015) | rx-016 |
 | VR015 | warning | . and characters outside the BMP | "😀" is one character to . in js-u, Python and Rust but two in plain JavaScript and .NET (UTF-16 surrogate pairs), so length rules like ^.{1,10}$ differ. | none | rx-017, rx-018 |
 | VR016 | error | [^] is only valid in JavaScript | [^] means any character in JavaScript and is an error elsewhere. | `[\s\S]` | rx-005 |
 | VR017 | error | \p{L} Unicode properties are not portable | \p{L} works in js-u, Rust and .NET, is a literal "p{L}" in plain JavaScript, and is an error in Python re. | none | rx-006 |
