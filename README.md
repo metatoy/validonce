@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/banner/readme-banner-dark.png">
+    <img alt="validonce: write rules once, enforce them everywhere" src="assets/brand/banner/readme-banner-light.png" width="640">
+  </picture>
+</p>
+
 # validonce
 
 Write your validation rules once, on the server, and enforce the same rules in the browser.
@@ -28,3 +35,5 @@ It also includes a **regex portability linter**, which flags `pattern` rules tha
 ## Copyright and license
 
 validonce is Copyright 2026 Metatoy LLC, licensed under the [Apache License, Version 2.0](LICENSE). See [NOTICE](NOTICE).
+
+The validonce name and logo are not part of the code license; see [assets/brand/LICENSE](assets/brand/LICENSE).
