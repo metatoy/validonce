@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Metatoy LLC
 
+import { type Catalog, formatMessage, type RuleKinds } from "./messages";
 import type { Issue } from "./types";
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -57,22 +58,22 @@ export function issuesFromResponse(body: unknown): Issue[] {
   return [];
 }
 
-/** Dotted-path -> message map (first issue per path wins); message from the catalog, else the key. */
+/**
+ * Dotted-path -> message map (first issue per path wins). Text comes from
+ * `formatMessage`: the catalog, else (when `rules` is given) the default for
+ * the rule's kind, else the key. Pass the same `rules` as `withRules` for
+ * identical text.
+ */
 export function fieldErrorsFromIssues(
   issues: readonly Issue[],
-  messages?: Record<string, string>,
+  messages?: Catalog,
+  rules?: RuleKinds,
 ): Record<string, string> {
   const out: Record<string, string> = {};
   for (const issue of issues) {
     const name = issue.path.join(".");
     if (Object.hasOwn(out, name)) continue;
-    const template = messages?.[issue.key];
-    out[name] =
-      template === undefined
-        ? issue.key
-        : template.replace(/\{(\w+)\}/g, (whole, n: string) =>
-            Object.hasOwn(issue.params, n) ? String(issue.params[n]) : whole,
-          );
+    out[name] = formatMessage(issue, messages, rules);
   }
   return out;
 }

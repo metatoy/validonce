@@ -106,9 +106,9 @@ describe("withRules", () => {
     });
   });
 
-  test("message falls back to the key without a catalog", () => {
+  test("message falls back to the kind default without a catalog", () => {
     const r = withRules(base, ruleSet).safeParse({ plan: "pro", qty: 1 });
-    expect(r.error?.issues[0]?.message).toBe("rules.company_required");
+    expect(r.error?.issues[0]?.message).toBe("This field is required.");
   });
 
   test("unknown: Standard Schema output", async () => {

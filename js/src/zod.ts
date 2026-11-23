@@ -3,14 +3,16 @@
 
 import { z } from "zod";
 import { evaluate } from "./evaluate";
-import type { Condition, Issue, Rule } from "./types";
+import { type Catalog, formatMessage } from "./messages";
+import type { Condition, Rule } from "./types";
 
 export interface WithRulesOptions {
   /**
    * Message catalog: rule message key -> text. `{name}` placeholders are
-   * replaced from the issue params. A key with no entry falls back to the key.
+   * replaced from the issue params. A key with no entry falls back to the
+   * default message for the rule's kind (see `formatMessage`).
    */
-  messages?: Record<string, string>;
+  messages?: Catalog;
 }
 
 /** The ruleId, key and params carried on every Zod issue made by a rule. */
@@ -44,17 +46,6 @@ function ruleFields(rule: Rule): string[] {
     for (const f of rule.fields) out.add(f);
   }
   return [...out];
-}
-
-function format(
-  issue: Issue,
-  messages: Record<string, string> | undefined,
-): string {
-  const template = messages?.[issue.key];
-  if (template === undefined) return issue.key;
-  return template.replace(/\{(\w+)\}/g, (whole, name: string) =>
-    Object.hasOwn(issue.params, name) ? String(issue.params[name]) : whole,
-  );
 }
 
 /**
@@ -106,7 +97,7 @@ export function withRules<T extends z.ZodObject>(
       payload.issues.push({
         code: "custom",
         path: issue.path,
-        message: format(issue, options?.messages),
+        message: formatMessage(issue, options?.messages, list),
         input: value,
         params,
       });
