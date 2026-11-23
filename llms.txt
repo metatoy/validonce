@@ -1,0 +1,22 @@
+# validonce
+
+> Write cross-field validation rules once on the server (ASP.NET Core or FastAPI) and enforce the same rules in the browser (React, Angular, Zod). Rules travel in the OpenAPI document under `x-validonce`. Five rule kinds: required_when, compare, at_least_one_of, exactly_one_of, all_or_none.
+
+## Docs
+
+- [README](https://github.com/metatoy/validonce/blob/main/README.md): overview, install, status
+- [How it works](https://github.com/metatoy/validonce/blob/main/docs/how-it-works.md): the flow from server rules to browser feedback
+- [Rule format v1](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md): the rule kinds, conditions, and exact semantics
+
+## Getting started
+
+- [ASP.NET Core](https://github.com/metatoy/validonce/blob/main/docs/getting-started-aspnet.md): write a ValidonceValidator<T>
+- [FastAPI](https://github.com/metatoy/validonce/blob/main/docs/getting-started-fastapi.md): write a ValidonceModel
+- [React client](https://github.com/metatoy/validonce/blob/main/docs/client-react.md): react-hook-form and Zod
+- [Angular client](https://github.com/metatoy/validonce/blob/main/docs/client-angular.md): Signal and Reactive Forms
+
+## Optional
+
+- [AGENTS.md](https://github.com/metatoy/validonce/blob/main/AGENTS.md): guidance for coding agents
+- [MCP server](https://github.com/metatoy/validonce/blob/main/mcp/README.md): read-only tools to read, check and evaluate rules
+- [Comparison](https://github.com/metatoy/validonce/blob/main/docs/comparison.md): how validonce differs from other approaches

@@ -1,0 +1,81 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+# Plan C Part 4b: measures the validonce migration agent. LOCAL ONLY. Never run `promptfoo share`.
+description: validonce migration agent (Claude and Copilot, tuning set)
+
+# Nothing leaves this machine: no sharing, no cloud sync. The npm scripts also set PROMPTFOO_DISABLE_TELEMETRY=1.
+sharing: false
+
+prompts:
+  - file://prompt.txt
+
+providers:
+  # Real agents: spend tokens / credits. Refuse to run unless VALIDONCE_EVAL_APPROVED=1 (budget gate).
+  - id: file://providers/claude.mjs
+    label: claude
+    config:
+      model: opus          # override with EVAL_CLAUDE_MODEL
+      maxTurns: 60
+      maxBudgetUsd: 5
+  - id: file://providers/copilot.mjs
+    label: copilot
+    config:
+      model: gpt-5.3-codex
+  # Free, no model: scores a folder you ran by hand in VS Code Copilot (prepare-vscode.mjs, then score-vscode.mjs <run-id>).
+  - id: file://providers/vscode-score.mjs
+    label: copilot-vscode
+  # Free: replays a recorded migration, calls no model (dry run of the assertions).
+  - id: file://providers/replay.mjs
+    label: replay-good
+    config: { mode: good }
+  - id: file://providers/replay.mjs
+    label: replay-bad
+    config: { mode: bad }
+
+evaluateOptions:
+  repeat: 3            # agents are not deterministic
+  maxConcurrency: 1    # heavy commands (dotnet) one at a time; one agent run at a time
+  cache: false         # never reuse an agent run
+
+defaultTest:
+  vars:
+    variant: "{{ env.SKILL_VARIANT | default('baseline') }}"   # skill variant directory (see README)
+  assert:
+    - type: javascript
+      value: file://assertions/differential.mjs
+      metric: differential
+    - type: javascript
+      value: file://assertions/rules.mjs
+      metric: rules
+    - type: javascript
+      value: file://assertions/keep.mjs
+      metric: keep
+    - type: javascript
+      value: file://assertions/scope.mjs
+      metric: scope
+    - type: javascript
+      value: file://assertions/builds.mjs
+      metric: builds
+    - type: javascript
+      value: file://assertions/report.mjs
+      metric: report
+    - type: javascript
+      value: file://assertions/metrics.mjs
+      weight: 0
+    - type: javascript         # report clarity: DISABLED unless VALIDONCE_EVAL_RUBRIC=1 (spends tokens)
+      value: file://assertions/rubric.mjs
+      metric: report_clarity
+      weight: 0.1
+
+tests:
+  - { description: "before/zod", vars: { case: zod } }
+  - { description: "before/yup", vars: { case: yup } }
+  - { description: "before/angular", vars: { case: angular } }
+  - { description: "before/pydantic", vars: { case: pydantic } }
+  - { description: "before/fluentvalidation", vars: { case: fluentvalidation } }
+  - { description: "tricky/arithmetic-ts", vars: { case: tricky-arithmetic } }
+  - { description: "tricky/nested-ts", vars: { case: tricky-nested } }
+  - { description: "tricky/coercion-py", vars: { case: tricky-coercion } }
+  - { description: "tricky/conditional-format-py", vars: { case: tricky-conditional-format } }
+  - { description: "tricky/async-db-cs", vars: { case: tricky-async-db } }

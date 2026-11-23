@@ -1,0 +1,51 @@
+{
+  "name": "validonce-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for validonce: read, check and evaluate shared validation rules. Read-only.",
+  "license": "Apache-2.0",
+  "author": "Metatoy LLC",
+  "repository": "github:metatoy/validonce",
+  "homepage": "https://github.com/metatoy/validonce#readme",
+  "bugs": "https://github.com/metatoy/validonce/issues",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "validonce-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --format=esm --platform=node --target=node20 --outfile=dist/index.js \"--banner:js=#!/usr/bin/env node\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.4.0",
+    "fast-check": "4.11.0",
+    "validonce": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
+    "@types/node": "22.20.5",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2",
+    "vitest": "5.1.1"
+  },
+  "keywords": [
+    "mcp",
+    "validation",
+    "validonce",
+    "openapi"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
