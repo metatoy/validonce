@@ -41,3 +41,23 @@ def test_schemas_are_valid_and_cases_conform() -> None:
         for err in validator.iter_errors(_load(case)):
             failures.append(f"{case.name}: {err.json_path}: {err.message}")
     assert not failures, "\n".join(failures)
+
+
+def test_regex_fixtures_conform_and_findings_resolve() -> None:
+    schema = _load(SCHEMA_DIR / "regex-case.schema.json")
+    Draft202012Validator.check_schema(schema)
+    validator = Draft202012Validator(schema)
+    fixtures = sorted((ROOT / "conformance" / "regex").glob("*.json"))
+    assert fixtures, "no regex fixtures"
+    failures, case_ids = [], set()
+    for path in fixtures:
+        doc = _load(path)
+        failures += [f"{path.name}: {e.json_path}: {e.message}" for e in validator.iter_errors(doc)]
+        for case in doc["cases"]:
+            assert case["id"] not in case_ids, f"duplicate case id {case['id']}"
+            case_ids.add(case["id"])
+    assert not failures, "\n".join(failures)
+    findings = _load(ROOT / "spec" / "regex-findings.json")["findings"]
+    referenced = {cid for f in findings for cid in f["cases"]}
+    assert referenced <= case_ids, f"findings cite missing cases: {sorted(referenced - case_ids)}"
+    assert case_ids <= referenced, f"cases in no finding: {sorted(case_ids - referenced)}"

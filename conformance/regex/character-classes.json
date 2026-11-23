@@ -1,0 +1,454 @@
+{
+  "version": 1,
+  "topic": "character-classes",
+  "cases": [
+    {
+      "id": "rx-001",
+      "finding": "VR001",
+      "description": "\\w with accented and CJK letters",
+      "pattern": "^\\w+$",
+      "inputs": [
+        {
+          "text": "Cafe",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "Café",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "日本",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-002",
+      "finding": "VR002",
+      "description": "\\d with Arabic-Indic and fullwidth digits",
+      "pattern": "^\\d+$",
+      "inputs": [
+        {
+          "text": "123",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "٣",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "１２",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-003",
+      "finding": "VR003",
+      "description": "\\s with unusual space characters",
+      "pattern": "^\\s$",
+      "inputs": [
+        {
+          "text": " ",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": " ",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "\u001c",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "​",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "﻿",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": " ",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "᠎",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-004",
+      "finding": "VR004",
+      "description": "\\b next to an accented letter",
+      "pattern": "caf\\b",
+      "inputs": [
+        {
+          "text": "café",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "caf",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "caf!",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-005",
+      "finding": "VR016",
+      "description": "[^] empty negated class",
+      "pattern": "^[^]$",
+      "inputs": [
+        {
+          "text": "a",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "error",
+            "rust-regex": "error",
+            "dotnet": "error"
+          }
+        },
+        {
+          "text": "\n",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "error",
+            "rust-regex": "error",
+            "dotnet": "error"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-006",
+      "finding": "VR017",
+      "description": "\\p{L} Unicode property",
+      "pattern": "^\\p{L}+$",
+      "inputs": [
+        {
+          "text": "abc",
+          "expect": {
+            "js": "no-match",
+            "js-u": "match",
+            "python-re": "error",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "é",
+          "expect": {
+            "js": "no-match",
+            "js-u": "match",
+            "python-re": "error",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "p{L}",
+          "expect": {
+            "js": "match",
+            "js-u": "no-match",
+            "python-re": "error",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-007",
+      "finding": "VR020",
+      "description": "class subtraction .NET style",
+      "pattern": "^[a-z-[aeiou]]$",
+      "inputs": [
+        {
+          "text": "b",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "a",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "-",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "[",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-008",
+      "finding": "VR020",
+      "description": "class subtraction double hyphen",
+      "pattern": "^[a-z--[aeiou]]$",
+      "inputs": [
+        {
+          "text": "b",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "a",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-009",
+      "finding": "VR020",
+      "description": "class intersection &&",
+      "pattern": "^[[a-z]&&[^aeiou]]$",
+      "inputs": [
+        {
+          "text": "b",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "a",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "&",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-010",
+      "finding": "VR022",
+      "description": "shorthand class as range end",
+      "pattern": "^[\\w-.]+$",
+      "inputs": [
+        {
+          "text": "a-b.c",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "error",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "abc",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "error",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-011",
+      "finding": "VR023",
+      "description": "POSIX bracket class",
+      "pattern": "^[[:alpha:]]+$",
+      "inputs": [
+        {
+          "text": "abc",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "a:",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "123",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    }
+  ]
+}

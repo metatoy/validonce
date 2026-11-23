@@ -1,0 +1,324 @@
+{
+  "version": 1,
+  "topic": "groups-and-assertions",
+  "cases": [
+    {
+      "id": "rx-019",
+      "finding": "VR008",
+      "description": "fixed-width lookbehind",
+      "pattern": "(?<=a)b",
+      "inputs": [
+        {
+          "text": "ab",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "b",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "cb",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-020",
+      "finding": "VR008",
+      "description": "variable-width lookbehind",
+      "pattern": "(?<=a+)b",
+      "inputs": [
+        {
+          "text": "aab",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "error",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "b",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "error",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-021",
+      "finding": "VR009",
+      "description": "lookahead password check",
+      "pattern": "^(?=.*\\d)[a-z0-9]+$",
+      "inputs": [
+        {
+          "text": "abc1",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "abc",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-022",
+      "finding": "VR009",
+      "description": "negative lookahead",
+      "pattern": "^(?!admin)[a-z]+$",
+      "inputs": [
+        {
+          "text": "user",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "admin",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-023",
+      "finding": "VR010",
+      "description": "backreference",
+      "pattern": "^(a)\\1$",
+      "inputs": [
+        {
+          "text": "aa",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "ab",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-024",
+      "finding": "VR011",
+      "description": "Python-style named group",
+      "pattern": "^(?P<x>a)$",
+      "inputs": [
+        {
+          "text": "a",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "error"
+          }
+        },
+        {
+          "text": "b",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "error"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-025",
+      "finding": "VR011",
+      "description": ".NET/JS-style named group",
+      "pattern": "^(?<x>a)$",
+      "inputs": [
+        {
+          "text": "a",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "error",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "b",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "error",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-026",
+      "finding": "VR011",
+      "description": "named backreference (?P=x)",
+      "pattern": "^(?P<x>a)(?P=x)$",
+      "inputs": [
+        {
+          "text": "aa",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "error",
+            "dotnet": "error"
+          }
+        },
+        {
+          "text": "ab",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "error"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-027",
+      "finding": "VR011",
+      "description": "named backreference \\k<x>",
+      "pattern": "^(?<x>a)\\k<x>$",
+      "inputs": [
+        {
+          "text": "aa",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "error",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "ab",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "error",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-028",
+      "finding": "VR012",
+      "description": "possessive quantifier",
+      "pattern": "^a++b$",
+      "inputs": [
+        {
+          "text": "aab",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "error"
+          }
+        },
+        {
+          "text": "b",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "error"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-029",
+      "finding": "VR012",
+      "description": "atomic group",
+      "pattern": "^(?>a+)b$",
+      "inputs": [
+        {
+          "text": "aab",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "b",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,360 @@
+{
+  "version": 1,
+  "topic": "flags-and-escapes",
+  "cases": [
+    {
+      "id": "rx-030",
+      "finding": "VR013",
+      "description": "inline flag at the start",
+      "pattern": "(?i)abc",
+      "inputs": [
+        {
+          "text": "ABC",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "abc",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "xyz",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-031",
+      "finding": "VR013",
+      "description": "inline flag in the middle",
+      "pattern": "x(?i)abc",
+      "inputs": [
+        {
+          "text": "xABC",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "error",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "xabc",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "error",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-032",
+      "finding": "VR021",
+      "description": "Kelvin sign with (?i)",
+      "pattern": "(?i)k",
+      "inputs": [
+        {
+          "text": "K",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "k",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "K",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-033",
+      "finding": "VR021",
+      "description": "long s with (?i)",
+      "pattern": "(?i)s",
+      "inputs": [
+        {
+          "text": "S",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "ſ",
+          "expect": {
+            "js": "error",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-034",
+      "finding": "VR018",
+      "description": "{,3} quantifier",
+      "pattern": "^a{,3}$",
+      "inputs": [
+        {
+          "text": "aa",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "a{,3}",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-035",
+      "finding": "VR025",
+      "description": "unterminated brace",
+      "pattern": "^a{2$",
+      "inputs": [
+        {
+          "text": "a{2",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "aa",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-036",
+      "finding": "VR025",
+      "description": "lone closing bracket",
+      "pattern": "^a]$",
+      "inputs": [
+        {
+          "text": "a]",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-037",
+      "finding": "VR019",
+      "description": "\\x{263A} escape",
+      "pattern": "^\\x{263A}$",
+      "inputs": [
+        {
+          "text": "☺",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "error",
+            "rust-regex": "match",
+            "dotnet": "error"
+          }
+        },
+        {
+          "text": "x{263A}",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "error",
+            "rust-regex": "no-match",
+            "dotnet": "error"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-038",
+      "finding": "VR019",
+      "description": "\\u263A escape",
+      "pattern": "^\\u263A$",
+      "inputs": [
+        {
+          "text": "☺",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "u263A",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-039",
+      "finding": "VR019",
+      "description": "\\U0001F600 escape",
+      "pattern": "^\\U0001F600$",
+      "inputs": [
+        {
+          "text": "😀",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "error"
+          }
+        },
+        {
+          "text": "U0001F600",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "error"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-040",
+      "finding": "VR019",
+      "description": "\\u{1F600} escape",
+      "pattern": "^\\u{1F600}$",
+      "inputs": [
+        {
+          "text": "😀",
+          "expect": {
+            "js": "no-match",
+            "js-u": "match",
+            "python-re": "error",
+            "rust-regex": "match",
+            "dotnet": "error"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-041",
+      "finding": "VR026",
+      "description": "escaped punctuation that needs no escape",
+      "pattern": "^a\\@b\\_c$",
+      "inputs": [
+        {
+          "text": "a@b_c",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "error"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-042",
+      "finding": "VR026",
+      "description": "escaped hyphen outside class",
+      "pattern": "^a\\-b$",
+      "inputs": [
+        {
+          "text": "a-b",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        }
+      ]
+    }
+  ]
+}

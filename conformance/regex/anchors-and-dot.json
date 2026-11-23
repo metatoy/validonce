@@ -1,0 +1,272 @@
+{
+  "version": 1,
+  "topic": "anchors-and-dot",
+  "cases": [
+    {
+      "id": "rx-012",
+      "finding": "VR005",
+      "description": "$ before a final newline",
+      "pattern": "^abc$",
+      "inputs": [
+        {
+          "text": "abc",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "abc\n",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "match",
+            "rust-regex": "no-match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "abc\n\n",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-013",
+      "finding": "VR006",
+      "description": "\\Z end anchor",
+      "pattern": "abc\\Z",
+      "inputs": [
+        {
+          "text": "abc",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "abc\n",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "Z",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "abcZ",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "error",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-014",
+      "finding": "VR006",
+      "description": "\\z end anchor",
+      "pattern": "abc\\z",
+      "inputs": [
+        {
+          "text": "abc",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "abc\n",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "abcz",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-015",
+      "finding": "VR007",
+      "description": "\\A start anchor",
+      "pattern": "\\Aabc",
+      "inputs": [
+        {
+          "text": "abc",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "xabc",
+          "expect": {
+            "js": "no-match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "Aabc",
+          "expect": {
+            "js": "match",
+            "js-u": "error",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-016",
+      "finding": "VR014",
+      "description": "dot and line terminators",
+      "pattern": "^.$",
+      "inputs": [
+        {
+          "text": "a",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "\r",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "\n",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": " ",
+          "expect": {
+            "js": "no-match",
+            "js-u": "no-match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        },
+        {
+          "text": "",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-017",
+      "finding": "VR015",
+      "description": "dot and a non-BMP character",
+      "pattern": "^.$",
+      "inputs": [
+        {
+          "text": "😀",
+          "expect": {
+            "js": "no-match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "no-match"
+          }
+        },
+        {
+          "text": "a",
+          "expect": {
+            "js": "match",
+            "js-u": "match",
+            "python-re": "match",
+            "rust-regex": "match",
+            "dotnet": "match"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rx-018",
+      "finding": "VR015",
+      "description": "two dots and a non-BMP character",
+      "pattern": "^..$",
+      "inputs": [
+        {
+          "text": "😀",
+          "expect": {
+            "js": "match",
+            "js-u": "no-match",
+            "python-re": "no-match",
+            "rust-regex": "no-match",
+            "dotnet": "match"
+          }
+        }
+      ]
+    }
+  ]
+}
