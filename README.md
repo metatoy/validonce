@@ -17,7 +17,7 @@ Try it without installing anything: the button opens a ready-to-run demo (ASP.NE
 
 <p align="center"><img alt="A sign-up form: the browser shows 'Company is required on the Pro plan'; with browser checks off, the server answers 422 and the same error appears under the same field" src="assets/demo/validonce-demo.gif" width="420"></p>
 
-> **Status: v0.2.** Adds the rule-sharing core: ASP.NET Core, FastAPI, TypeScript with Zod, React and Angular helpers. v0.1 was the regex linter.
+> **Status: v0.3.** Adds `validonce wrap` for orval and kubb output, a one-click Codespaces demo, and Zod date helpers. v0.2 added the rule-sharing core (ASP.NET Core, FastAPI, TypeScript with Zod, React and Angular); v0.1 was the regex linter.
 
 ## How it works
 

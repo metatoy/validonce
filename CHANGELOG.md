@@ -2,14 +2,20 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
-## Unreleased
+## 0.3.0 (2026-11-23)
 
 ### Added
+- TypeScript: `validonce wrap` attaches a server's `x-validonce` rules to the Zod schemas that orval or kubb generate, writing a companion module. It matches exports by schema name (including FastAPI's `Signup-Input`), fails at generation time on unknown fields, ambiguous or unmatched schemas, and takes `--map` and `--style`. Recipes for orval's `afterAllFilesWrite` hook and for kubb are in the README; both run in CI against real generator output.
 - TypeScript: `isoDate()` and `isoDateTime()` in `validonce/zod`: Zod date and datetime schemas that accept exactly what validonce's `date` and `datetime` types and the servers accept (`z.iso.date()` also allows year `0000`).
 - C#: `.AtPath(...)` on `RequiredWhen` and `Compare` (as on the group rules), so every rule kind can report on another property. `RequiredWhen` and `Compare` now return `RuleBuilder<T>` (a subclass of `ValidonceRuleBuilder`).
+- A one-click GitHub Codespaces demo (ASP.NET backend and React form); the example forms now call their backend through a same-origin `/api` proxy.
 
 ### Docs
+- New: how validonce compares with the alternatives (`docs/comparison.md`), loading rules at runtime (`docs/live-rules.md`), and a README demo GIF recorded by `scripts/record-demo.mjs`.
 - Rule format: year `0000` is not a valid `date` (Zod's `z.iso.date()` accepts it); use `isoDate()`.
+
+### In the repository, not yet published
+- `validonce-mcp` (an MCP server) and the `validonce-migrate` agent skill and Claude Code plugin, for migrating existing hand-written validation to validonce with a differential proof. They will be released separately after agent evaluation. See `docs/agentic-migration.md`.
 
 ## 0.2.0 (2026-11-22)
 

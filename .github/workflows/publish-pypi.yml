@@ -2,10 +2,13 @@
 # Copyright 2026 Metatoy LLC
 name: publish-pypi
 # Publishes the Python package to PyPI through trusted publishing (no stored token).
-# Run by hand only, after the founder approves the release.
+# Runs when a GitHub Release is published (the tag must be v<version in python/pyproject.toml>),
+# or by hand:
 #   source = python:               the real package (tests run first; version from pyproject.toml)
 #   source = placeholders/python:  the name-holding placeholder
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       source:
@@ -21,12 +24,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
+      - name: Check the release tag matches python/pyproject.toml
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' python/pyproject.toml | head -1)
+          [ "$TAG" = "v$version" ] || { echo "release tag $TAG does not match pyproject.toml version $version"; exit 1; }
       - name: Test before building
-        if: inputs.source == 'python'
+        if: (inputs.source || 'python') == 'python'
         working-directory: python
         run: uv run pytest -q
       - run: uv build --out-dir "$GITHUB_WORKSPACE/dist"
-        working-directory: ${{ inputs.source }}
+        working-directory: ${{ inputs.source || 'python' }}
       - uses: actions/upload-artifact@v4
         with:
           name: dist
