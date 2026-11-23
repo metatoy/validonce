@@ -5,6 +5,11 @@
 // (the agent must NOT migrate anything). Eval mechanics live here; the answers live in each
 // fixture's expected.json (which is never copied to the agent's working directory).
 
+// JSON Schema properties of the Signup wire model (dates are format: date), given to generate_inputs.
+const SIGNUP_PROPERTIES = {
+  plan: { type: "string" }, company: { type: "string" }, email: { type: "string" },
+  start: { type: "string", format: "date" }, end: { type: "string", format: "date" }, quantity: { type: "integer" },
+};
 const SIGNUP_BASE = { plan: "free", email: "a@example.test", start: "2026-05-10", quantity: 1 };
 // The old validators also enforce checks that are not migrated (required plan/email/start/quantity).
 // Inputs that trip those would show as divergences that are not the migration's fault, so the
@@ -32,6 +37,7 @@ const JS_BEFORE = (kind, exportName) => ({
   runner: { script: "run-js.mjs", kind, entry: "signup.mjs", exportName },
   build: { cmd: "node", args: ["-e", "import('./signup.mjs').then(() => process.exit(0), (e) => { console.error(e); process.exit(1); })"] },
   base: SIGNUP_BASE,
+  properties: SIGNUP_PROPERTIES,
   wellFormed: signupWellFormed,
 });
 
@@ -47,6 +53,8 @@ export const CASES = {
     build: { cmd: ".venv/bin/python", args: ["-c", "import signup"] },
     export: { kind: "python", module: "signup", className: "Signup" },
     base: SIGNUP_BASE,
+    properties: SIGNUP_PROPERTIES,
+  properties: SIGNUP_PROPERTIES,
     wellFormed: signupWellFormed,
   },
   fluentvalidation: {
@@ -57,6 +65,8 @@ export const CASES = {
     build: { cmd: "dotnet", args: ["build", "-c", "Release", "-v", "q", "-nologo"] },
     export: { kind: "dotnet", assembly: "Before.Fluent.dll", validator: "Before.SignupValidator" },
     base: SIGNUP_BASE,
+    properties: SIGNUP_PROPERTIES,
+  properties: SIGNUP_PROPERTIES,
     wellFormed: signupWellFormed,
   },
   "tricky-arithmetic": {

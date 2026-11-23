@@ -42,10 +42,11 @@ export function listFiles(root, dir = root) {
 
 const DEFAULT_PATH = { required_when: (r) => r.field, compare: (r) => r.left?.field, at_least_one_of: (r) => r.fields?.[0], exactly_one_of: (r) => r.fields?.[0], all_or_none: (r) => r.fields?.[0] };
 const sortKeys = (v) => (Array.isArray(v) ? v.map(sortKeys) : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortKeys(v[k])])) : v);
-/** Semantic identity of a rule: ignores id and message, and a path equal to the default. */
-export function ruleKey(r) {
+/** Semantic identity of a rule: ignores id and message, and a path equal to the default. withType: false also ignores compare.type. */
+export function ruleKey(r, { withType = true } = {}) {
   const { kind, field, fields, when, left, op, right, type, path } = r ?? {};
-  const o = { kind, field, fields: fields && [...fields].sort(), when, left, op, right, type };
+  const o = { kind, field, fields: fields && [...fields].sort(), when, left, op, right };
+  if (withType) o.type = type;
   if (path !== undefined && path !== DEFAULT_PATH[kind]?.(r)) o.path = path;
   return JSON.stringify(sortKeys(o));
 }
