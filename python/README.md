@@ -41,6 +41,38 @@ class Signup(ValidonceModel):
   rejected when the class is defined (they would not compare on the wire); pass `type=` to
   override for `str` fields that carry dates.
 
+## Group rules
+
+Three builders take two or more fields. A field is blank when it is missing, `None`, `""` or `[]`.
+
+```python
+from validonce import F, ValidonceModel, all_or_none, at_least_one_of, exactly_one_of
+
+
+class Checkout(ValidonceModel):
+    email: str | None = None
+    phone: str | None = None
+    card: str | None = None
+    invoice: str | None = None
+    street: str | None = None
+    city: str | None = None
+    postcode: str | None = None
+
+    __rules__ = [
+        at_least_one_of(F.email, F.phone, key="rules.contact_required"),
+        exactly_one_of(F.card, F.invoice, key="rules.one_payment"),
+        all_or_none(F.street, F.city, F.postcode, key="rules.address_complete"),
+    ]
+```
+
+- `at_least_one_of` fails when every field is blank; `exactly_one_of` fails unless exactly one
+  is non-blank; `all_or_none` fails when some, but not all, are blank.
+- The error lands on the first field unless `path=F.other` is given. The default id is
+  `ClassName.kind.first_wire_field`. `params=`, `id=`, `server_only=` and `message=` work as
+  on the other builders.
+- Fewer than two fields, a repeated field or an unknown field raises
+  `ValidonceDefinitionError` when the class is defined.
+
 ## FastAPI
 
 ```python

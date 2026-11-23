@@ -4,7 +4,7 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from .test_pydantic import BAD, Signup, Trip
+from .test_pydantic import BAD, Contact, Signup, Trip
 
 app = FastAPI()
 
@@ -22,6 +22,11 @@ def trip(body: Trip) -> dict:
 @app.post("/echo", response_model=Signup)
 def echo(body: Signup) -> Signup:
     return body
+
+
+@app.post("/contact")
+def contact(body: Contact) -> dict:
+    return {"ok": True}
 
 
 client = TestClient(app)
@@ -94,3 +99,13 @@ def test_openapi_split_input_output_schemas() -> None:
         return body
 
     assert _schemas(merged)["Signup"]["x-validonce"] == Signup.export_rules()
+
+
+def test_group_rule_422_loc() -> None:
+    r = client.post("/contact", json={})
+    assert r.status_code == 422
+    (d,) = r.json()["detail"]
+    assert d["loc"] == ["body", "email"]
+    assert d["type"] == "validonce.at_least_one_of"
+    assert d["ctx"]["ruleId"] == "Contact.at_least_one_of.email"
+    assert client.post("/contact", json={"phone": "+1 555 0100"}).status_code == 200

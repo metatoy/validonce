@@ -18,7 +18,10 @@ from validonce import (
     ValidonceDefinitionError,
     ValidonceModel,
     all_of,
+    all_or_none,
+    at_least_one_of,
     evaluate,
+    exactly_one_of,
     not_,
     parse_rule_set,
     when,
@@ -274,3 +277,96 @@ def test_no_rules_model_has_no_extension() -> None:
 
     assert "x-validonce" not in Plain.model_json_schema()
     assert Plain.export_rules() == {"version": 1, "rules": []}
+
+
+class Contact(ValidonceModel):
+    email: str | None = None
+    phone: str | None = None
+    __rules__ = [at_least_one_of(F.email, F.phone, key="rules.contact_required")]
+
+
+class Payment(ValidonceModel):
+    card: str | None = None
+    invoice: str | None = None
+    __rules__ = [
+        exactly_one_of(F.card, F.invoice, key="rules.one_payment", path=F.invoice, id="Pay.one")
+    ]
+
+
+class Address(ValidonceModel):
+    street: str | None = Field(None, alias="streetLine")
+    city: str | None = None
+    postcode: str | None = None
+    __rules__ = [
+        all_or_none(F.street, F.city, F.postcode, key="rules.address_complete", server_only=True)
+    ]
+
+
+def test_group_export_and_schema() -> None:
+    assert Contact.export_rules()["rules"] == [
+        {
+            "id": "Contact.at_least_one_of.email",
+            "kind": "at_least_one_of",
+            "fields": ["email", "phone"],
+            "message": {"key": "rules.contact_required"},
+        }
+    ]
+    (pay,) = Payment.export_rules()["rules"]
+    assert pay["id"] == "Pay.one" and pay["path"] == "invoice"
+    (addr,) = Address.export_rules()["rules"]
+    assert addr["fields"] == ["streetLine", "city", "postcode"]
+    assert addr["id"] == "Address.all_or_none.streetLine"
+    assert addr["server_only"] is True
+    docs = [json.loads(p.read_text()) for p in sorted(SCHEMA_PATH.glob("*.schema.json"))]
+    registry = Registry().with_resources(
+        (d["$id"], Resource.from_contents(d, default_specification=DRAFT202012))
+        for d in docs
+        if "$id" in d
+    )
+    schema = json.loads((SCHEMA_PATH / "rule-format-v1.schema.json").read_text())
+    validator = Draft202012Validator(schema, registry=registry)
+    for model in (Contact, Payment, Address):
+        errors = list(validator.iter_errors(model.export_rules()))
+        assert not errors, [e.message for e in errors]
+
+
+def test_group_errors_land_on_first_field_or_path() -> None:
+    with pytest.raises(ValidationError) as exc:
+        Contact()
+    (e,) = exc.value.errors()
+    assert e["loc"] == ("email",)
+    assert e["type"] == "validonce.at_least_one_of"
+    assert e["ctx"]["key"] == "rules.contact_required"
+    Contact(phone="+1 555 0100")
+
+    with pytest.raises(ValidationError) as exc:
+        Payment(card="c", invoice="i")
+    assert exc.value.errors()[0]["loc"] == ("invoice",)
+    with pytest.raises(ValidationError):
+        Payment()
+    Payment(card="c")
+
+    with pytest.raises(ValidationError) as exc:
+        Address.model_validate({"streetLine": "1 Main St"})
+    assert exc.value.errors()[0]["loc"] == ("streetLine",)
+    Address.model_validate({})
+
+
+def test_group_definition_errors() -> None:
+    with pytest.raises(ValidonceDefinitionError, match="at least two"):
+
+        class One(ValidonceModel):
+            a: str | None = None
+            __rules__ = [at_least_one_of(F.a, key="k")]
+
+    with pytest.raises(ValidonceDefinitionError, match="twice"):
+
+        class Dup(ValidonceModel):
+            a: str | None = None
+            __rules__ = [exactly_one_of(F.a, F.a, key="k")]
+
+    with pytest.raises(ValidonceDefinitionError, match="unknown field"):
+
+        class Unknown(ValidonceModel):
+            a: str | None = None
+            __rules__ = [all_or_none(F.a, F.nope, key="k")]

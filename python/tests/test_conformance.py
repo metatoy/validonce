@@ -28,7 +28,7 @@ PARAMS = [pytest.param(c, s, id=f"{c['id']}-{s}") for c in CASES for s in ("serv
 
 
 def test_case_count() -> None:
-    assert len(CASES) == 95
+    assert len(CASES) == 125
 
 
 @pytest.mark.parametrize(("case", "side"), PARAMS)
@@ -52,22 +52,22 @@ def test_bool_version_rejected() -> None:
         parse_rule_set({"version": True, "rules": []})
 
 
-def test_unimplemented_kind() -> None:
-    rs = parse_rule_set(
-        {
-            "version": 1,
-            "rules": [
+def test_group_rule_needs_two_distinct_fields() -> None:
+    for fields in (["x"], ["x", "x"], "xy"):
+        with pytest.raises(ValidonceFormatError):
+            parse_rule_set(
                 {
-                    "id": "a",
-                    "kind": "at_least_one_of",
-                    "fields": ["x", "y"],
-                    "message": {"key": "k"},
+                    "version": 1,
+                    "rules": [
+                        {
+                            "id": "a",
+                            "kind": "all_or_none",
+                            "fields": fields,
+                            "message": {"key": "k"},
+                        }
+                    ],
                 }
-            ],
-        }
-    )
-    with pytest.raises(NotImplementedError, match="at_least_one_of is not implemented yet"):
-        evaluate(rs, {})
+            )
 
 
 def test_evaluate_accepts_a_rule_list() -> None:

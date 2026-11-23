@@ -24,15 +24,18 @@ from pydantic.fields import FieldInfo
 from pydantic_core import PydanticCustomError
 
 from .evaluate import _parse_date, _parse_datetime, evaluate
-from .rules import FORMAT_VERSION, RuleSet, parse_rule_set
+from .rules import FORMAT_VERSION, GROUP_KINDS, RuleSet, parse_rule_set
 
 __all__ = [
     "F",
     "FieldRef",
     "ValidonceDefinitionError",
     "ValidonceModel",
+    "all_or_none",
     "all_of",
     "any_of",
+    "at_least_one_of",
+    "exactly_one_of",
     "not_",
     "when",
 ]
@@ -244,6 +247,60 @@ def when(condition: dict[str, Any]) -> _When:
     return _When(condition)
 
 
+def _group(
+    kind: str,
+    fields: tuple[Any, ...],
+    key: str,
+    params: Mapping[str, Any] | None,
+    id: str | None,
+    server_only: bool,
+    path: FieldRef | str | None,
+    message: str | None,
+) -> dict[str, Any]:
+    rule: dict[str, Any] = {"kind": kind, "fields": [_name(f) for f in fields]}
+    rule.update(_message(key, params, message))
+    return _common(rule, id=id, server_only=server_only, path=path)
+
+
+def at_least_one_of(
+    *fields: FieldRef | str,
+    key: str,
+    params: Mapping[str, Any] | None = None,
+    id: str | None = None,
+    server_only: bool = False,
+    path: FieldRef | str | None = None,
+    message: str | None = None,
+) -> dict[str, Any]:
+    """Fails when every listed field is blank."""
+    return _group("at_least_one_of", fields, key, params, id, server_only, path, message)
+
+
+def exactly_one_of(
+    *fields: FieldRef | str,
+    key: str,
+    params: Mapping[str, Any] | None = None,
+    id: str | None = None,
+    server_only: bool = False,
+    path: FieldRef | str | None = None,
+    message: str | None = None,
+) -> dict[str, Any]:
+    """Fails unless exactly one listed field is non-blank."""
+    return _group("exactly_one_of", fields, key, params, id, server_only, path, message)
+
+
+def all_or_none(
+    *fields: FieldRef | str,
+    key: str,
+    params: Mapping[str, Any] | None = None,
+    id: str | None = None,
+    server_only: bool = False,
+    path: FieldRef | str | None = None,
+    message: str | None = None,
+) -> dict[str, Any]:
+    """Fails when some, but not all, listed fields are blank."""
+    return _group("all_or_none", fields, key, params, id, server_only, path, message)
+
+
 # ------------------------------------------------------------------- field inspection
 
 
@@ -423,11 +480,19 @@ class _Resolver:
                 self._check_value(right["value"], ctype, where)
             out.update(kind=kind, left={"field": left}, op=draft.get("op"), right=right, type=ctype)
             default_path = left
+        elif kind in GROUP_KINDS:
+            raw = draft.get("fields") or []
+            if len(raw) < 2:
+                raise ValidonceDefinitionError(
+                    f"{self.name}: {where}: {kind} needs at least two fields"
+                )
+            if len(set(raw)) != len(raw):
+                raise ValidonceDefinitionError(f"{self.name}: {where}: {kind} lists a field twice")
+            wires = [self.field(a, where) for a in raw]
+            out.update(kind=kind, fields=wires)
+            default_path = wires[0]
         else:
-            raise ValidonceDefinitionError(
-                f"{self.name}: {where}: rule kind {kind!r} is not supported by the Python "
-                "authoring API yet (supported: required_when, compare)"
-            )
+            raise ValidonceDefinitionError(f"{self.name}: {where}: unknown rule kind {kind!r}")
         path = default_path
         if draft.get("path") is not None:
             path = self.field(draft["path"], where)

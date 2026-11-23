@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2026 Metatoy LLC
 
-"""Evaluator for rule format v1 (required_when and compare kinds)."""
+"""Evaluator for rule format v1 (all five rule kinds)."""
 
 from __future__ import annotations
 
@@ -155,6 +155,19 @@ def _compare(rule: Rule, data: Mapping[str, Any]) -> bool:
     return not ok
 
 
+def _group(rule: Rule, data: Mapping[str, Any]) -> bool:
+    """Return True when a group rule fails."""
+    if len(rule.fields) < 2:
+        raise ValidonceFormatError(f"{rule.kind} rule {rule.id!r} needs at least two fields")
+    blanks = sum(1 for f in rule.fields if _is_blank(data.get(f)))
+    total = len(rule.fields)
+    if rule.kind == "at_least_one_of":
+        return blanks == total
+    if rule.kind == "exactly_one_of":
+        return total - blanks != 1
+    return 0 < blanks < total
+
+
 def evaluate(
     rules: RuleSet | Sequence[Rule],
     data: Mapping[str, Any],
@@ -171,6 +184,8 @@ def evaluate(
             failed = _cond(rule.when, data) and _is_blank(data.get(rule.field))
         elif rule.kind == "compare":
             failed = _compare(rule, data)
+        elif rule.kind in ("at_least_one_of", "exactly_one_of", "all_or_none"):
+            failed = _group(rule, data)
         else:
             raise NotImplementedError(f"{rule.kind} is not implemented yet")
         if failed:

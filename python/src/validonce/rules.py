@@ -12,6 +12,8 @@ FORMAT_VERSION = 1
 
 KINDS = ("required_when", "compare", "at_least_one_of", "exactly_one_of", "all_or_none")
 
+GROUP_KINDS = ("at_least_one_of", "exactly_one_of", "all_or_none")
+
 
 class ValidonceFormatError(ValueError):
     """Raised when rule data is not a valid version 1 rule set."""
@@ -78,6 +80,17 @@ def _parse_rule(r: Any) -> Rule:
     if not isinstance(rid, str) or not isinstance(msg, dict) or not isinstance(msg.get("key"), str):
         raise ValidonceFormatError("rule needs id and message.key")
     params = msg.get("params")
+    fields = r.get("fields")
+    if kind in GROUP_KINDS:
+        if (
+            not isinstance(fields, list)
+            or len(fields) < 2
+            or not all(isinstance(f, str) for f in fields)
+            or len(set(fields)) != len(fields)
+        ):
+            raise ValidonceFormatError(
+                f"{kind} rule {rid!r} needs fields: at least two distinct field names"
+            )
     return Rule(
         id=rid,
         kind=kind,
@@ -90,5 +103,5 @@ def _parse_rule(r: Any) -> Rule:
         op=r.get("op"),
         right=r.get("right"),
         type=r.get("type"),
-        fields=tuple(r.get("fields") or ()),
+        fields=tuple(fields or ()),
     )
