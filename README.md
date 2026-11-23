@@ -11,6 +11,12 @@ Write cross-field validation rules once, on the server, and enforce the same rul
 
 Field rules such as types, lengths and patterns already travel from a backend's OpenAPI document to the frontend. Rules that involve more than one field do not: "company is required when the plan is Pro", "the end date must be on or after the start date". Teams write those twice, once in the backend and once in the form, and the two copies drift. validonce exports the rules from FluentValidation (C#) or Pydantic (Python) as data in your OpenAPI document, and a small TypeScript runtime applies them to your Zod schema, so React and Angular forms check the same rules and show each error on the right field.
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/metatoy/validonce)
+
+Try it without installing anything: the button opens a ready-to-run demo (ASP.NET backend and React form, with the shared rules enforced in the browser and on the server). It runs in a GitHub Codespace and uses your own free Codespaces hours.
+
+<p align="center"><img alt="A sign-up form: the browser shows 'Company is required on the Pro plan'; with browser checks off, the server answers 422 and the same error appears under the same field" src="assets/demo/validonce-demo.gif" width="420"></p>
+
 > **Status: v0.2.** Adds the rule-sharing core: ASP.NET Core, FastAPI, TypeScript with Zod, React and Angular helpers. v0.1 was the regex linter.
 
 ## How it works
@@ -149,6 +155,9 @@ More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.m
 - [Getting started: FastAPI](docs/getting-started-fastapi.md)
 - [Client: React](docs/client-react.md)
 - [Client: Angular](docs/client-angular.md)
+- [Loading rules at runtime](docs/live-rules.md)
+- [How validonce compares](docs/comparison.md)
+- [Migrating an existing project with an agent](docs/agentic-migration.md)
 - [Rule format v1](docs/rule-format-v1.md)
 - [Regex findings](docs/regex-findings.md)
 - Packages: [TypeScript](js/README.md), [Python](python/README.md), [.NET](dotnet/README.md)
