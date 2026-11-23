@@ -21,8 +21,8 @@ jobs:
       run:
         working-directory: dotnet
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ matrix.sdk }}
       - run: dotnet build -c Release
@@ -35,11 +35,11 @@ jobs:
       matrix:
         node: [20, 22]
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
       - run: pnpm install --frozen-lockfile
@@ -71,8 +71,8 @@ jobs:
       run:
         working-directory: python
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python }}
       - name: Test (lowest direct dependencies)
@@ -91,8 +91,8 @@ jobs:
   conformance-schema:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
       - run: uv run --project python pytest -q python/tests/test_conformance_schema.py
 
   golden:
@@ -100,11 +100,11 @@ jobs:
     # committed copy, then checks the two backends export identical Signup rules.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - name: Export ASP.NET OpenAPI
         working-directory: examples/aspnet-app
         run: dotnet run --no-launch-profile -- --export-openapi ../../conformance/golden/aspnet.openapi.json
@@ -127,18 +127,18 @@ jobs:
     env:
       CI: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.15.0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         if: matrix.backend == 'aspnet'
         with:
           dotnet-version: 10.0.x
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
         if: matrix.backend == 'fastapi'
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
@@ -177,7 +177,7 @@ jobs:
       - name: Backend log
         if: failure()
         run: cat examples/*-app/backend.log || true
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: screenshots-${{ matrix.framework }}-${{ matrix.backend }}
@@ -188,14 +188,14 @@ jobs:
     # through Pydantic, .NET) and fails when any engine's result differs from a fixture's expectation.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - name: Run the fixtures on every engine
         run: |
           node conformance/regex/runners/js.mjs conformance/regex > "$RUNNER_TEMP/js.json"
@@ -213,7 +213,7 @@ jobs:
           uv run --python 3.14 --project python python conformance/regex/runners/py_runner.py conformance/regex/runners/testdata > "$RUNNER_TEMP/self-py.json"
           dotnet run --project conformance/regex/runners/dotnet -c Release -- conformance/regex/runners/testdata > "$RUNNER_TEMP/self-dotnet.json"
           uv run --project python python scripts/check_regex_oracle.py --fixtures conformance/regex/runners/testdata "$RUNNER_TEMP/self-js.json" "$RUNNER_TEMP/self-py.json" "$RUNNER_TEMP/self-dotnet.json"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: regex-oracle-results
