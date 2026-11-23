@@ -55,6 +55,8 @@ jobs:
         run: pnpm typecheck && pnpm build
         working-directory: examples/react-form
       - name: Angular example builds
+        # Angular 22's CLI needs Node 22.22.3 or later; the library itself supports Node 20.
+        if: matrix.node == 22
         run: pnpm typecheck && pnpm build
         working-directory: examples/angular-form
 
