@@ -2,6 +2,11 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
+## Unreleased
+
+### Added
+- C#: `.AtPath(...)` on `RequiredWhen` and `Compare` (as on the group rules), so every rule kind can report on another property. `RequiredWhen` and `Compare` now return `RuleBuilder<T>` (a subclass of `ValidonceRuleBuilder`).
+
 ## 0.2.0 (2026-11-22)
 
 ### Added
