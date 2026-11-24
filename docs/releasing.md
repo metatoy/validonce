@@ -26,7 +26,7 @@ For an older release, run it by hand with the release tag. CI's `java` job build
 
 | Secret | What |
 |---|---|
-| `MAVEN_SIGNING_KEY` | ASCII-armored secret key of the **CI signing key** (`validonce CI <oss@metatoy.com>`, ed25519, signing only, 2-year expiry). It is not the founder's personal key. Its public key is on keyserver.ubuntu.com and keys.openpgp.org. |
+| `MAVEN_SIGNING_KEY` | ASCII-armored secret key of the **CI signing key** (`validonce CI <oss@metatoy.com>`, ed25519, signing only, 2-year expiry). It is not the founder's personal key. Fingerprint `E99C AF89 14E0 7E01 A9E9 8782 2CC3 5EBA 34E4 BF91`, expires 2028-11-23. Its public key is on keyserver.ubuntu.com and keys.openpgp.org. |
 | `MAVEN_SIGNING_PASSWORD` | Its passphrase |
 | `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD` | A Central Portal **user token** (central.sonatype.com, Account, Generate User Token), not the account login |
 
