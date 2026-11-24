@@ -6,7 +6,7 @@
 // commit, tag or publish: review the diff, open a release PR, merge it, then publish the GitHub Release
 // v<version> (that runs the npm, PyPI and NuGet publish workflows).
 //
-// Usage, from the repo root:  node scripts/prepare-release.mjs 0.3.2 [--date 2026-12-01]
+// Usage, from the repo root:  node scripts/prepare-release.mjs X.Y.Z [--date YYYY-MM-DD]
 // (validonce-mcp has its own version in mcp/package.json and its own release; see publish-npm.yml.)
 
 import { execFileSync } from "node:child_process";
@@ -24,7 +24,7 @@ const die = (msg) => {
   process.exit(1);
 };
 
-if (!next || !/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(next)) die("usage: node scripts/prepare-release.mjs <version, e.g. 0.3.2> [--date YYYY-MM-DD]");
+if (!next || !/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(next)) die("usage: node scripts/prepare-release.mjs <version X.Y.Z> [--date YYYY-MM-DD]");
 if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) die(`--date must be YYYY-MM-DD, got ${date}`);
 const current = JSON.parse(readFileSync(join(root, "js/package.json"), "utf8")).version;
 if (current === next) die(`already at ${next}`);
@@ -80,7 +80,7 @@ try {
 // Nothing may still carry the old version (the CHANGELOG history and lockfiles excepted).
 const leftover = (() => {
   try {
-    return execFileSync("git", ["grep", "-n", "-F", current, "--", ".", ":!CHANGELOG.md", ":!pnpm-lock.yaml", ":!python/uv.lock", ":!mcp/**"], { cwd: root, encoding: "utf8" });
+    return execFileSync("git", ["grep", "-n", "-F", current, "--", ".", ":!CHANGELOG.md", ":!pnpm-lock.yaml", ":!python/uv.lock", ":!mcp/**", ":!scripts/prepare-release.mjs"], { cwd: root, encoding: "utf8" });
   } catch {
     return ""; // git grep exits 1 when nothing matches
   }
