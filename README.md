@@ -155,6 +155,7 @@ More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.m
 - [Getting started: Go](docs/getting-started-go.md)
 - [Client: React](docs/client-react.md)
 - [Client: Angular](docs/client-angular.md)
+- [Client: plain HTML and web components](docs/client-dom.md)
 - [Loading rules at runtime](docs/live-rules.md)
 - [How validonce compares](docs/comparison.md)
 - [Migrating an existing project with an agent](docs/agentic-migration.md)

@@ -221,6 +221,6 @@ const issues = evaluate(parseRuleSet(raw).rules, data, { side: "client" });
 
 ## More
 
-Guides for [React](https://github.com/metatoy/validonce/blob/main/docs/client-react.md) and [Angular](https://github.com/metatoy/validonce/blob/main/docs/client-angular.md), the [rule format](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md), and the C# and Python server packages: [github.com/metatoy/validonce](https://github.com/metatoy/validonce).
+Guides for [React](https://github.com/metatoy/validonce/blob/main/docs/client-react.md) [Angular](https://github.com/metatoy/validonce/blob/main/docs/client-angular.md) and [plain HTML and web components](https://github.com/metatoy/validonce/blob/main/docs/client-dom.md), the [rule format](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md), and the C# and Python server packages: [github.com/metatoy/validonce](https://github.com/metatoy/validonce).
 
 Copyright 2026 Metatoy LLC. Licensed under the Apache License, Version 2.0.

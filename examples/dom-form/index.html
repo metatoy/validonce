@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>validonce dom form</title>
+    <style>
+      body { background: #e8e2d2; color: #231f20; font-family: system-ui, sans-serif; margin: 0; }
+      main { max-width: 420px; margin: 2rem auto; padding: 0 1rem; }
+      form { display: grid; gap: .75rem; }
+      label { display: grid; gap: .25rem; font-weight: 600; }
+      label.check { display: flex; gap: .5rem; align-items: center; font-weight: 400; }
+      input, select { padding: .4rem; font: inherit; }
+      button { background: #4f7a17; color: #fff; border: 0; padding: .6rem; font: inherit; cursor: pointer; }
+      .error { color: #9b2c1d; margin: 0; }
+      [hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Sign up</h1>
+      <p data-testid="backend" id="backend"></p>
+      <p class="error" id="load-error" hidden></p>
+      <p id="loading">Loading rules…</p>
+      <!-- Plain HTML. validonce/dom adds the checks once the rules have loaded. -->
+      <form id="signup" novalidate hidden>
+        <label>
+          Plan
+          <select name="plan" data-testid="plan">
+            <option value="free">free</option>
+            <option value="pro">pro</option>
+          </select>
+        </label>
+        <p class="error" id="error-plan" data-validonce-error="plan" data-testid="error-plan" hidden></p>
+        <label>
+          Company
+          <!-- A form-associated custom element (see src/vo-text-field.ts). -->
+          <vo-text-field name="company" data-testid="company"></vo-text-field>
+        </label>
+        <p class="error" id="error-company" data-validonce-error="company" data-testid="error-company" hidden></p>
+        <label>
+          Email
+          <input type="email" name="email" data-testid="email" />
+        </label>
+        <p class="error" id="error-email" data-validonce-error="email" data-testid="error-email" hidden></p>
+        <label>
+          Start date
+          <input type="date" name="start" data-testid="start" />
+        </label>
+        <p class="error" id="error-start" data-validonce-error="start" data-testid="error-start" hidden></p>
+        <label>
+          End date
+          <input type="date" name="end" data-testid="end" />
+        </label>
+        <p class="error" id="error-end" data-validonce-error="end" data-testid="error-end" hidden></p>
+        <label>
+          Quantity
+          <input type="number" name="quantity" value="1" data-testid="quantity" />
+        </label>
+        <p class="error" id="error-quantity" data-validonce-error="quantity" data-testid="error-quantity" hidden></p>
+        <label class="check">
+          <input type="checkbox" id="skip-client" data-testid="skip-client" />
+          Skip browser checks
+        </label>
+        <button type="submit" data-testid="submit">Sign up</button>
+        <p data-testid="result" id="result" hidden>Saved</p>
+      </form>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
