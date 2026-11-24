@@ -1,0 +1,7 @@
+# Cloudflare Pages headers for schemas.metatoy.com (published from the validonce repo).
+/*
+  Access-Control-Allow-Origin: *
+  X-Content-Type-Options: nosniff
+/*.json
+  Content-Type: application/schema+json; charset=utf-8
+  Cache-Control: public, max-age=3600, must-revalidate

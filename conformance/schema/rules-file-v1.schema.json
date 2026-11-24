@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.metatoy.com/validonce/rules-file-v1.json",
+  "title": "validonce rules file (validonce extract --format json)",
+  "description": "A standalone file of validonce rules: one rule set (rule format v1) per schema name. Conventionally named *.validonce.json.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" }
+  },
+  "additionalProperties": { "$ref": "rules-v1.json" }
+}

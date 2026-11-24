@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>validonce schemas</title>
+<style>body{font:16px/1.55 system-ui,sans-serif;max-width:44rem;margin:3rem auto;padding:0 1rem;color:#231f20;background:#f7f4ec}code{font-size:.92em}a{color:#4f7a17}@media (prefers-color-scheme:dark){body{color:#f2efe6;background:#231f20}a{color:#8dc63f}}</style>
+</head>
+<body>
+<h1>validonce schemas</h1>
+<p>Canonical, versioned schemas for <a href="https://github.com/metatoy/validonce">validonce</a>, which carries cross-field validation rules in OpenAPI and JSON Schema under <code>x-validonce</code>. A published version never changes; a new version gets a new file.</p>
+<ul>
+<li><a href="rules-v1.json"><code>rules-v1.json</code></a>: the rule format v1 (the value of <code>x-validonce</code>)</li>
+<li><a href="rules-file-v1.json"><code>rules-file-v1.json</code></a>: a standalone rules file (<code>validonce extract --format json</code>), conventionally <code>*.validonce.json</code></li>
+<li><a href="dialect-v1.json"><code>dialect-v1.json</code></a>: JSON Schema 2020-12 plus the validonce vocabulary</li>
+<li><a href="vocab/rules-v1"><code>vocab/rules-v1</code></a>: the vocabulary</li>
+<li><a href="conformance-case-v1.json"><code>conformance-case-v1.json</code></a>: the shared conformance case files, for other implementations</li>
+<li><a href="regex-case-v1.json"><code>regex-case-v1.json</code></a>: the regex portability fixtures</li>
+</ul>
+<p>Source of truth: <code>conformance/schema/</code> and <code>schemas/</code> in the repository; this site is built from it on every change to <code>main</code>.</p>
+</body>
+</html>

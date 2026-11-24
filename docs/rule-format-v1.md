@@ -33,6 +33,8 @@ On each object schema in an OpenAPI document (or a plain JSON Schema), under the
 
 The machine-readable schema for this object is `conformance/schema/rule-format-v1.schema.json`.
 
+**Canonical URL:** <https://schemas.metatoy.com/validonce/rules-v1.json> (the schema's `$id`). Evaluators never fetch it; the URL is a stable name, so offline use is unaffected.
+
 ## Common rule fields
 
 | Field | Required | Meaning |
@@ -108,7 +110,7 @@ Server responses carry the same list: FastAPI's 422 body through each error's `c
 
 ## Conformance cases
 
-`conformance/rules/*.json` files follow `conformance/schema/case.schema.json`:
+`conformance/rules/*.json` files follow `conformance/schema/case.schema.json` (published as <https://schemas.metatoy.com/validonce/conformance-case-v1.json>, so another implementation can run the same cases):
 
 ```json
 {
@@ -121,6 +123,25 @@ Server responses carry the same list: FastAPI's 422 body through each error's `c
 ```
 
 `expect` is the server-side result: every rule evaluated. The client-side result is `expect` with the issues of `server_only` rules removed. Every runner checks both.
+
+## Using the validonce dialect
+
+`x-validonce` is also declared as a JSON Schema 2020-12 vocabulary, so tools that understand vocabularies know what the keyword is:
+
+- Vocabulary: `https://schemas.metatoy.com/validonce/vocab/rules-v1`, one keyword, `x-validonce`, whose value must validate against `rules-v1.json` and whose meaning is this document.
+- Dialect: <https://schemas.metatoy.com/validonce/dialect-v1.json>, the standard 2020-12 vocabularies plus this one, marked optional (`false`). A validator that does not implement it still processes the schema and treats `x-validonce` as an annotation. Validating a schema against the dialect checks the shape of its rules, in nested schemas too.
+
+Using it is opt-in. In OpenAPI 3.1, point the document's `jsonSchemaDialect` at the dialect:
+
+```json
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://schemas.metatoy.com/validonce/dialect-v1.json",
+  "components": { "schemas": { "Signup": { "type": "object", "x-validonce": { "version": 1, "rules": [] } } } }
+}
+```
+
+The exporters do not set it for you; the rules work the same with or without it.
 
 ## Versioning
 

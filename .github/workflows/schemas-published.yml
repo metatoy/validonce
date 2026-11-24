@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+
+# Drift guard for https://schemas.metatoy.com/validonce/ (Cloudflare Pages, built from this repo by
+# scripts/build-schemas.mjs). Fails when a served file differs from what the repo builds, or is served
+# without the schema content type or CORS. The repo is the source of truth. Not a required check, so a
+# site outage never blocks merges. Runs only once the site is live (repo variable SCHEMAS_PUBLISHED=true).
+
+name: schemas-published
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  push:
+    branches: [main]
+    paths: ["conformance/schema/**", "schemas/**", "scripts/build-schemas.mjs"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    if: vars.SCHEMAS_PUBLISHED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: node scripts/build-schemas.mjs
+      - name: Served files match the repo
+        run: |
+          # A push to main also starts a Pages deploy: retry for up to 10 minutes before failing.
+          for attempt in $(seq 1 20); do
+            failed=0
+            for f in dist/schemas/validonce/*.json; do
+              name=$(basename "$f")
+              url="https://schemas.metatoy.com/validonce/$name"
+              curl -fsS -D headers.txt -o served.json "$url" || { echo "::warning::fetch failed: $url"; failed=1; continue; }
+              cmp -s "$f" served.json || { echo "::warning::differs from the repo: $url"; failed=1; }
+              grep -qi '^content-type: application/schema+json' headers.txt || { echo "::warning::wrong content type: $url"; failed=1; }
+              grep -qi '^access-control-allow-origin: \*' headers.txt || { echo "::warning::no CORS header: $url"; failed=1; }
+            done
+            [ "$failed" = 0 ] && { echo "all served schemas match"; exit 0; }
+            [ "${{ github.event_name }}" = "push" ] || break
+            sleep 30
+          done
+          echo "::error::schemas.metatoy.com does not match the repo"
+          exit 1

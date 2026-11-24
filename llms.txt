@@ -7,6 +7,7 @@
 - [README](https://github.com/metatoy/validonce/blob/main/README.md): overview, install, status
 - [How it works](https://github.com/metatoy/validonce/blob/main/docs/how-it-works.md): the flow from server rules to browser feedback
 - [Rule format v1](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md): the rule kinds, conditions, and exact semantics
+- [Rule format JSON Schema](https://schemas.metatoy.com/validonce/rules-v1.json): canonical schema of the `x-validonce` value; [dialect](https://schemas.metatoy.com/validonce/dialect-v1.json) for JSON Schema 2020-12 / OpenAPI 3.1 `jsonSchemaDialect`
 
 ## Getting started
 

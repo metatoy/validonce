@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/metatoy/validonce/conformance/schema/regex-case.schema.json",
+  "$id": "https://schemas.metatoy.com/validonce/regex-case-v1.json",
   "title": "validonce regex oracle fixture",
   "type": "object",
   "required": ["version", "topic", "cases"],

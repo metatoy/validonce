@@ -147,7 +147,7 @@ npx validonce extract openapi.json -o src/rules.gen.ts
 npx validonce extract openapi.json --schema Signup --format json
 ```
 
-Writes every schema's `x-validonce` (or only the `--schema` names; `Name-Input` is used for `Name`) as a TypeScript module, `export const rules = { Signup: { version: 1, rules: [...] } } as const satisfies Record<string, RuleSet>`, or as plain JSON. Output goes to standard output without `-o`. It is deterministic: names and keys are sorted. Exit codes: 0 done, 1 no `x-validonce` found, 2 usage error or unreadable input.
+Writes every schema's `x-validonce` (or only the `--schema` names; `Name-Input` is used for `Name`) as a TypeScript module, `export const rules = { Signup: { version: 1, rules: [...] } } as const satisfies Record<string, RuleSet>`, or as plain JSON. The JSON form's schema is <https://schemas.metatoy.com/validonce/rules-file-v1.json>. The command does not write a `$schema` line (every top-level key is a schema name). For editor validation, map the file to that URL in your editor (in VS Code, `json.schemas` with `"fileMatch": ["*.validonce.json"]`), or add `"$schema": "https://schemas.metatoy.com/validonce/rules-file-v1.json"` yourself; the schema allows it. Naming the file `*.validonce.json` (for example `-o rules.validonce.json --format json`) keeps it ready for that mapping. Output goes to standard output without `-o`. It is deterministic: names and keys are sorted. Exit codes: 0 done, 1 no `x-validonce` found, 2 usage error or unreadable input.
 
 The npm `validonce` command is this TypeScript tool. The .NET and Python `validonce` commands are separate tools with their own options.
 
