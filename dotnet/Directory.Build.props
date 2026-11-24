@@ -13,7 +13,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageIcon>icon.png</PackageIcon>
     <!-- The release workflow passes -p:Version; this is the version for local packs. -->
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
   </PropertyGroup>
   <!-- Every package ships the license, the NOTICE file and the icon. -->
   <ItemGroup Condition="'$(IsPackable)' != 'false'">

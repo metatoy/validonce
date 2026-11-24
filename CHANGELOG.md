@@ -2,6 +2,18 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
+## 0.3.1 (2026-11-24)
+
+### Fixed
+- TypeScript and Python: the rule parsers now check conditions and compare rules the way the C# parser and the format schema already did. A malformed condition (for example `{ "op": "eq", "field": "plan", "value": "pro" }` instead of `{ "eq": { "field": "plan", "value": "pro" } }`), an unknown `op` or `type`, or a `right` side with both or neither of `field` and `value` is now a format error when the rules are loaded. Before, it passed parsing and failed later, or the rule silently never fired.
+- TypeScript and Python: a compare constant must be a string or a number. A boolean constant used to pass parsing and then make the rule skip every input.
+
+### Docs
+- Correction to 0.3.0: the NuGet build provenance attestation covers the `.nupkg` our release workflow built. nuget.org re-signs every package it serves, so a copy downloaded from nuget.org does not verify with `gh attestation verify`. Attaching the built packages to the GitHub Release, so there is a copy that does verify, is planned.
+
+### In the repository, not yet published
+- `validonce-mcp`: `generate_inputs` produces well-typed inputs by default (`properties` and the new `required` list; real calendar dates; formats inside `anyOf`), keeps each rule's boundary cases when other rules have required fields, and the `validonce-migrate` skill is tuned from agent evaluations (Claude and Copilot).
+
 ## 0.3.0 (2026-11-23)
 
 ### Added
