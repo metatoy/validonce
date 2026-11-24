@@ -37,6 +37,8 @@ const edits = [
   ["python/src/validonce/__init__.py", /__version__ = "([^"]+)"/, `__version__ = "${next}"`],
   ["deploy/helm/validonce-demo/Chart.yaml", /^appVersion: "([^"]+)"/m, `appVersion: "${next}"`],
   [".github/ISSUE_TEMPLATE/bug_report.yml", /validonce (\d+\.\d+\.\d+[^,]*),/, `validonce ${next},`],
+  ["java/gradle.properties", /^version=(.+)$/m, `version=${next}`],
+  ["README.md", /com\.metatoy:validonce-spring:([^"]+)"/, `com.metatoy:validonce-spring:${next}"`],
 ];
 
 for (const [file, re, replacement] of edits) {
@@ -44,7 +46,7 @@ for (const [file, re, replacement] of edits) {
   const text = readFileSync(path, "utf8");
   const m = re.exec(text);
   if (!m) die(`${file}: no version found (${re})`);
-  if (m[1] !== current) die(`${file}: has ${m[1]}, expected the current version ${current}; fix it by hand first`);
+  if (m[1] !== current && m[1] !== next) die(`${file}: has ${m[1]}, expected the current version ${current}; fix it by hand first`);
   writeFileSync(path, text.replace(re, replacement));
   console.log(`${file}: ${current} -> ${next}`);
 }

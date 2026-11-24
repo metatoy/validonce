@@ -2,7 +2,7 @@
 # Copyright 2026 Metatoy LLC
 
 FORMAT_VERSION = 1
-__version__ = "0.3.3"
+__version__ = "0.4.0"
 
 from .evaluate import Issue, evaluate  # noqa: E402
 from .pydantic import (  # noqa: E402

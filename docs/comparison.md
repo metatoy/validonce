@@ -35,5 +35,5 @@ The usual approach: a FluentValidation or Pydantic rule on the server, and a han
 - **Arbitrary logic.** There are five rule kinds and no expression language. Arithmetic between fields (`a + b == total`), a format that depends on another field, and rules across nested objects stay hand-written. A rule marked `server_only` runs on the server and is skipped by clients.
 - **Async or database checks** (uniqueness, "user exists"). These belong on the server only.
 - **Field-level rules.** Type, length, enum and `pattern` travel as standard JSON Schema keywords; validonce only lints `pattern` regexes for portability.
-- **Other stacks, for now.** Servers: ASP.NET Core and FastAPI. Clients: Zod 4 (with react-hook-form or Angular Signal Forms) and Angular Reactive Forms.
+- **Other stacks, for now.** Servers: ASP.NET Core, FastAPI, Fastify, NestJS, Go (Huma) and Spring Boot. Clients: Zod 4 (with react-hook-form, Angular Signal Forms or VeeValidate), Angular Reactive Forms, and plain HTML or web components.
 - **Messages.** The rule carries a message key and parameters, not text. Your app maps keys to text.

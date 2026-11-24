@@ -37,14 +37,31 @@ The server always enforces the rules. The browser runs them first to give fast f
 - One shared conformance suite (125 cases) that every evaluator (C#, Python, TypeScript, Go, Java) passes.
 - Regex portability linter for `pattern` rules.
 
+## Supported stacks
+
+| Side | Stack | Package | Guide |
+|---|---|---|---|
+| Server | ASP.NET Core + FluentValidation | `Validonce.AspNetCore` (NuGet) | [ASP.NET Core](docs/getting-started-aspnet.md) |
+| Server | FastAPI + Pydantic | `validonce` (PyPI) | [FastAPI](docs/getting-started-fastapi.md) |
+| Server | Fastify | `validonce/fastify` (npm) | [Fastify](docs/getting-started-fastify.md) |
+| Server | NestJS | `validonce/nestjs` (npm) | [NestJS](docs/getting-started-nestjs.md) |
+| Server | Go + Huma | `github.com/metatoy/validonce/go` | [Go](docs/getting-started-go.md) |
+| Server | Spring Boot (Java, Kotlin) | `com.metatoy:validonce-spring` (Maven Central) | [Spring Boot](docs/getting-started-spring.md) |
+| Client | React + react-hook-form | `validonce/zod`, `validonce/react-hook-form` | [React](docs/client-react.md) |
+| Client | Angular (Signal or Reactive Forms) | `validonce/zod`, `validonce/angular` | [Angular](docs/client-angular.md) |
+| Client | Vue + VeeValidate | `validonce/vue` | [Vue](docs/client-vue.md) |
+| Client | Plain HTML, web components | `validonce/dom` | [HTML and web components](docs/client-dom.md) |
+
 ## Install
 
 ```sh
 dotnet add package Validonce.AspNetCore   # ASP.NET Core (brings Validonce.FluentValidation and Validonce)
 pip install validonce                     # FastAPI / Pydantic (Python 3.10+, pydantic>=2.9)
 go get github.com/metatoy/validonce/go    # Go / Huma (Go 1.26+)
-pnpm add validonce zod                    # browser (npm install works too)
+pnpm add validonce zod                    # browser and TypeScript servers (npm install works too)
 ```
+
+Maven (Gradle Kotlin DSL): `implementation("com.metatoy:validonce-spring:0.4.0")`.
 
 ## Quick start
 
