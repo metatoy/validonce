@@ -30,7 +30,7 @@ The server always enforces the rules. The browser runs them first to give fast f
 - Five rule kinds: `required_when`, `compare`, `at_least_one_of`, `exactly_one_of`, `all_or_none`. See [the rule format](docs/rule-format-v1.md).
 - C# (primary): FluentValidation validators, ASP.NET Core minimal APIs and MVC, OpenAPI export.
 - Python: Pydantic models and FastAPI.
-- TypeScript client: Zod 4, react-hook-form helpers, Angular Signal Forms and Reactive Forms, server-error mapping.
+- TypeScript client: Zod 4, react-hook-form helpers, Angular Signal Forms and Reactive Forms, Vue with VeeValidate, server-error mapping.
 - One shared conformance suite (125 cases) that all three evaluators pass.
 - Regex portability linter for `pattern` rules.
 
@@ -140,7 +140,7 @@ import { form, validateStandardSchema } from "@angular/forms/signals";
 const f = form(model, (path) => validateStandardSchema(path, schema));
 ```
 
-More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.md).
+More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.md), [Vue guide](docs/client-vue.md).
 
 ## Docs
 
@@ -149,6 +149,7 @@ More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.m
 - [Getting started: FastAPI](docs/getting-started-fastapi.md)
 - [Client: React](docs/client-react.md)
 - [Client: Angular](docs/client-angular.md)
+- [Client: Vue](docs/client-vue.md)
 - [Loading rules at runtime](docs/live-rules.md)
 - [How validonce compares](docs/comparison.md)
 - [Migrating an existing project with an agent](docs/agentic-migration.md)
