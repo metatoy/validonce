@@ -17,7 +17,7 @@
   "devDependencies": {
     "@kubb/adapter-oas": "5.23.4",
     "@kubb/plugin-zod": "5.11.1",
-    "@types/node": "22.20.5",
+    "@types/node": "26.6.6",
     "kubb": "5.23.4",
     "orval": "8.49.0",
     "typescript": "7.0.2",
