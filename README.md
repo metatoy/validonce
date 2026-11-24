@@ -1,5 +1,8 @@
 <p align="center">
-  <img alt="validonce: write rules once, enforce them everywhere. Rules written in ASP.NET Core, FastAPI, Fastify or NestJS, Go, or Spring Boot travel through the OpenAPI document to React, Angular, Vue and web component forms. 125 shared conformance cases in C#, Python, TypeScript, Go and Java." src="assets/brand/banner/readme-banner-dark.png" width="830">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/banner/readme-banner-dark.png">
+    <img alt="validonce: write rules once, enforce them everywhere. Rules written in ASP.NET Core, FastAPI, Fastify or NestJS, Go, or Spring Boot travel through the OpenAPI document to React, Angular, Vue and web component forms. 125 shared conformance cases in C#, Python, TypeScript, Go and Java." src="assets/brand/banner/readme-banner-light.png" width="830">
+  </picture>
 </p>
 
 # validonce
@@ -18,7 +21,7 @@ Try it without installing anything: the button opens a ready-to-run demo (ASP.NE
 
 ## How it works
 
-<p align="center"><img src="assets/diagram/how-it-works-dark.png" alt="How validonce works. 1, server rules: C# with FluentValidation (RequiredWhen, Compare), Python with Pydantic (__rules__), TypeScript with Fastify or NestJS (validonce/rules), Go with Huma (struct rules), and Java or Kotlin with Spring Boot (Bean Validation). 2, the OpenAPI document: the rules travel as data under x-validonce on components.schemas, five rule kinds in one format. 3, the browser: the validonce runtime, withRules for Zod, with React (react-hook-form), Angular (Signal and Reactive Forms), Vue (VeeValidate) and web components (validonce/dom). The server always enforces every request; a broken rule returns 422 with the same issue shape, mapped back onto each field." width="760"></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/diagram/how-it-works-dark.png"><img src="assets/diagram/how-it-works.png" alt="How validonce works. 1, server rules: C# with FluentValidation (RequiredWhen, Compare), Python with Pydantic (__rules__), TypeScript with Fastify or NestJS (validonce/rules), Go with Huma (struct rules), and Java or Kotlin with Spring Boot (Bean Validation). 2, the OpenAPI document: the rules travel as data under x-validonce on components.schemas, five rule kinds in one format. 3, the browser: the validonce runtime, withRules for Zod, with React (react-hook-form), Angular (Signal and Reactive Forms), Vue (VeeValidate) and web components (validonce/dom). The server always enforces every request; a broken rule returns 422 with the same issue shape, mapped back onto each field." width="760"></picture></p>
 
 The server always enforces the rules. The browser runs them first to give fast feedback. If the browser is skipped or out of date, the server's 422 response uses the same issue shape, and the client maps it back onto the form fields.
 
