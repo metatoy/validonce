@@ -1,6 +1,6 @@
 {
   "name": "validonce",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Validate once, enforce everywhere: shared validation rules.",
   "license": "Apache-2.0",
   "author": "Metatoy LLC",

@@ -2,7 +2,9 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
-## 0.3.2 (2026-11-24)
+## 0.3.3 (2026-11-24)
+
+Version 0.3.2 was skipped: its GitHub Release was published before the version bump, so the publish workflows stopped at their version check and published nothing. 0.3.3 is the release with these changes.
 
 ### Added
 - The rule format has a permanent home: https://schemas.metatoy.com/validonce/. The schemas' `$id`s are now their canonical URLs: `rules-v1.json` (the value of `x-validonce`), `conformance-case-v1.json` and `regex-case-v1.json`. Evaluators never fetch them.
