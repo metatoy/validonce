@@ -1,10 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2026 Metatoy LLC
 
-"""Tricky fixture: comparisons that rely on coercion (a string "1" equals the number 1; dates in two formats).
-
-validonce never coerces ("1" is not 1, a date must be YYYY-MM-DD), so the agent must keep these.
-"""
+"""Booking request models."""
 
 from datetime import datetime
 

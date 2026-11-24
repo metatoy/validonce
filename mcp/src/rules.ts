@@ -148,6 +148,25 @@ export function propertiesFor(
   throw new ToolError(`Schema "${schemaName}" has no properties in the document.`);
 }
 
+/** The `required` list of the same schema, when it comes from a document. */
+export function requiredFor(
+  document: unknown,
+  schemaName: string | undefined,
+  required: string[] | undefined,
+): string[] | undefined {
+  if (required) return required;
+  if (document === undefined || schemaName === undefined) return undefined;
+  const schemas =
+    (document as { components?: { schemas?: Record<string, unknown> } })
+      ?.components?.schemas ?? {};
+  for (const n of [schemaName, `${schemaName}-Input`]) {
+    const s = Object.hasOwn(schemas, n) ? schemas[n] : undefined;
+    const r = (s as { required?: unknown } | undefined)?.required;
+    if (Array.isArray(r)) return r.filter((x): x is string => typeof x === "string");
+  }
+  return undefined;
+}
+
 export function checkRules(rules: unknown, properties: Props | undefined) {
   const problems: Problem[] = [];
   let set: RuleSet;
