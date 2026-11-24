@@ -68,10 +68,14 @@
     "./nestjs": {
       "types": "./dist/nestjs.d.ts",
       "import": "./dist/nestjs.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.js"
     }
   },
   "scripts": {
-    "build": "esbuild src/index.ts src/zod.ts src/openapi.ts src/server-errors.ts src/messages.ts src/deps.ts src/react-hook-form.ts src/angular.ts src/rules.ts src/fastify.ts src/nestjs.ts src/dom.ts src/dom-element.ts --bundle --splitting --format=esm --platform=neutral --target=es2022 --external:zod --external:react-hook-form --external:react --external:@angular/core --external:@angular/forms --external:fastify --external:@nestjs/common --external:@nestjs/core --external:@nestjs/swagger --external:reflect-metadata --external:rxjs --outdir=dist && esbuild src/cli.ts --bundle --format=esm --platform=node --target=node20 --external:zod --outfile=dist/cli.js \"--banner:js=#!/usr/bin/env node\" && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "build": "esbuild src/index.ts src/zod.ts src/openapi.ts src/server-errors.ts src/messages.ts src/deps.ts src/react-hook-form.ts src/angular.ts src/rules.ts src/fastify.ts src/nestjs.ts src/dom.ts src/dom-element.ts src/vue.ts --bundle --splitting --format=esm --platform=neutral --target=es2022 --external:zod --external:react-hook-form --external:react --external:@angular/core --external:@angular/forms --external:fastify --external:@nestjs/common --external:@nestjs/core --external:@nestjs/swagger --external:reflect-metadata --external:rxjs --external:vue --external:vee-validate --outdir=dist && esbuild src/cli.ts --bundle --format=esm --platform=node --target=node20 --external:zod --outfile=dist/cli.js \"--banner:js=#!/usr/bin/env node\" && tsc -p tsconfig.build.json --emitDeclarationOnly",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "biome check ."
@@ -92,26 +96,30 @@
     "@nestjs/swagger": "12.1.2",
     "@sinclair/typebox": "0.34.52",
     "@types/node": "22.20.5",
-    "happy-dom": "21.0.4",
     "esbuild": "0.28.2",
     "fastify": "5.12.8",
+    "happy-dom": "21.0.4",
     "react": "19.3.1",
     "react-hook-form": "7.92.0",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
     "typescript": "7.0.2",
+    "vee-validate": "4.15.1",
     "vitest": "5.1.1",
+    "vue": "3.5.46",
     "zod": "4.6.7"
   },
   "peerDependencies": {
     "@angular/core": ">=21.0.0",
     "@angular/forms": ">=21.0.0",
-    "react-hook-form": "^7.55.0",
-    "zod": "^4.0.0",
-    "fastify": ">=5.0.0",
     "@nestjs/common": ">=11.0.0",
     "@nestjs/swagger": ">=11.0.0",
-    "reflect-metadata": ">=0.2.0"
+    "fastify": ">=5.0.0",
+    "react-hook-form": "^7.55.0",
+    "reflect-metadata": ">=0.2.0",
+    "vee-validate": "^4.12.0 || ^5.0.0-beta.0",
+    "vue": "^3.5.0",
+    "zod": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "zod": {
@@ -137,6 +145,12 @@
     },
     "reflect-metadata": {
       "optional": true
+    },
+    "vue": {
+      "optional": true
+    },
+    "vee-validate": {
+      "optional": true
     }
   },
   "bin": {
@@ -157,7 +171,8 @@
     "fluentvalidation",
     "pydantic",
     "fastify",
-    "nestjs"
+    "nestjs",
+    "vue"
   ],
   "publishConfig": {
     "access": "public",

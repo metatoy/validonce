@@ -68,6 +68,9 @@ jobs:
         if: matrix.node == 22
         run: pnpm typecheck && pnpm build
         working-directory: examples/angular-form
+      - name: Vue example builds
+        run: pnpm typecheck && pnpm build
+        working-directory: examples/vue-form
 
   python:
     runs-on: ubuntu-latest
@@ -193,13 +196,13 @@ jobs:
         run: uv run --project python python scripts/check_golden.py
 
   e2e:
-    # The React, Angular and DOM example forms against each backend, in a real browser. The DOM
+    # The React, Angular, DOM and Vue example forms against each backend, in a real browser. The DOM
     # form (native validity, ElementInternals) also runs on Firefox and WebKit.
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        framework: [react, angular, dom]
+        framework: [react, angular, dom, vue]
         backend: [aspnet, fastapi]
         # React runs against every backend; each other frontend only against ASP.NET and FastAPI.
         browser: [chromium]

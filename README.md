@@ -33,7 +33,7 @@ The server always enforces the rules. The browser runs them first to give fast f
 - TypeScript servers: Fastify (TypeBox) and NestJS, with `validonce/rules` builders.
 - Go: struct rules with Huma and go-playground/validator.
 - Java and Kotlin: Spring Boot with Bean Validation and springdoc (`com.metatoy:validonce-spring`).
-- TypeScript client: Zod 4, react-hook-form helpers, Angular Signal Forms and Reactive Forms, server-error mapping.
+- TypeScript client: Zod 4, react-hook-form helpers, Angular Signal Forms and Reactive Forms, Vue with VeeValidate, plain HTML and web components (`validonce/dom`), server-error mapping.
 - One shared conformance suite (125 cases) that every evaluator (C#, Python, TypeScript, Go, Java) passes.
 - Regex portability linter for `pattern` rules.
 
@@ -144,7 +144,7 @@ import { form, validateStandardSchema } from "@angular/forms/signals";
 const f = form(model, (path) => validateStandardSchema(path, schema));
 ```
 
-More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.md).
+More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.md), [Vue guide](docs/client-vue.md).
 
 ## Docs
 
@@ -158,6 +158,7 @@ More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.m
 - [Client: React](docs/client-react.md)
 - [Client: Angular](docs/client-angular.md)
 - [Client: plain HTML and web components](docs/client-dom.md)
+- [Client: Vue](docs/client-vue.md)
 - [Loading rules at runtime](docs/live-rules.md)
 - [How validonce compares](docs/comparison.md)
 - [Migrating an existing project with an agent](docs/agentic-migration.md)
