@@ -126,6 +126,9 @@ export function watchDependents(
         () => {
           for (const dep of dependents) void form.validateField(dep as never);
         },
+        // Deep: an array field changed in place (push, splice, an indexed set) must
+        // re-check too, since `present` / `absent` read whether it is empty.
+        { deep: true },
       ),
     );
   }

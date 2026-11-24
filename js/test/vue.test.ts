@@ -148,4 +148,26 @@ describe("watchDependents", () => {
     await nextTick();
     expect(validateField).not.toHaveBeenCalled();
   });
+
+  test("in-place array changes re-validate (present on an array field)", async () => {
+    const values = reactive<Record<string, unknown>>({
+      tags: [],
+      company: null,
+    });
+    const validateField = vi.fn(async () => ({}));
+    const arrayRule: Rule = {
+      id: "S.required_when.company",
+      kind: "required_when",
+      field: "company",
+      when: { present: { field: "tags" } },
+      message: { key: "k" },
+    };
+    watchDependents({ values, validateField }, [arrayRule]);
+    (values.tags as string[]).push("a");
+    await nextTick();
+    expect(validateField.mock.calls).toEqual([["company"]]);
+    (values.tags as string[]).splice(0);
+    await nextTick();
+    expect(validateField.mock.calls).toEqual([["company"], ["company"]]);
+  });
 });
