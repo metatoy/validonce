@@ -20,6 +20,9 @@ const TYPES = ["number", "string", "date", "datetime"];
 const isScalar = (v: unknown) =>
   typeof v === "string" || typeof v === "number" || typeof v === "boolean";
 const isField = (v: unknown) => typeof v === "string" && v !== "";
+// A compare constant is a string or a number (the schema and the C# parser allow nothing else).
+const isConstant = (v: unknown) =>
+  typeof v === "string" || (typeof v === "number" && Number.isFinite(v));
 
 // Conditions are checked here, like the C# parser does, so a malformed one is a format error at parse time and
 // never a crash inside evaluate(). Shapes: rule-format-v1 "Conditions".
@@ -124,11 +127,12 @@ export function parseRuleSet(value: unknown): RuleSet {
       if (
         !(
           Object.keys(right).length === 1 &&
-          (isField(right.field) || ("value" in right && isScalar(right.value)))
+          (isField(right.field) ||
+            ("value" in right && isConstant(right.value)))
         )
       )
         throw new ValidonceFormatError(
-          `rules[${i}].right needs exactly one of field or value`,
+          `rules[${i}].right needs exactly one of field or a string/number value`,
         );
     } else if (!Array.isArray(r.fields) || r.fields.length < 2) {
       throw new ValidonceFormatError(

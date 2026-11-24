@@ -46,7 +46,12 @@
           "min": 1
         }
       },
-      "optional": true
+      "optional": true,
+      "keptIf": {
+        "file": "Signup.cs",
+        "flags": "i",
+        "marker": "quantity[^\\n]*(<\\s*1\\b|>=\\s*1\\b|\\.min\\(\\s*1\\b|GreaterThanOrEqualTo\\(\\s*1\\b|\\bge\\s*=\\s*1\\b)"
+      }
     }
   ],
   "keep": [],

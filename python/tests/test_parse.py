@@ -77,6 +77,8 @@ def test_accepts_every_condition_shape():
         {"right": {"field": "start", "value": 1}},
         {"right": {}},
         {"right": {"value": None}},
+        {"right": {"value": True}},
+        {"right": {"value": [1]}},
     ],
 )
 def test_rejects_bad_compare(extra):
@@ -86,3 +88,4 @@ def test_rejects_bad_compare(extra):
 
 def test_accepts_compare_with_constant():
     parse_rule_set(cmp(right={"value": "2024-01-01"}))
+    parse_rule_set(cmp(right={"value": 1}))

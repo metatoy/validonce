@@ -445,26 +445,55 @@ function coupleRequired(rec: Rec, rule: Extract<Rule, { kind: "required_when" }>
 // generated for a field whose JSON Schema type allows it, and a `required` field is never missing.
 // includeInvalid turns this off.
 
-function jsonTypes(prop: unknown, out = new Set<string>()): Set<string> {
-  if (!prop || typeof prop !== "object") return out;
-  const p = prop as { type?: unknown; nullable?: unknown; anyOf?: unknown; oneOf?: unknown };
+// The JSON types one schema object allows itself (its own `type` and `nullable`), ignoring anyOf/oneOf.
+function ownTypes(p: { type?: unknown; nullable?: unknown }): Set<string> {
+  const out = new Set<string>();
   for (const t of Array.isArray(p.type) ? p.type : [p.type]) if (typeof t === "string") out.add(t);
   if (p.nullable === true) out.add("null");
-  for (const k of [p.anyOf, p.oneOf]) if (Array.isArray(k)) for (const sub of k) jsonTypes(sub, out);
   return out;
 }
 
-function valueFitsSchema(prop: unknown, v: V): boolean {
-  const types = jsonTypes(prop);
-  if (types.size === 0) return true; // no type information: anything goes
-  const format = (prop as { format?: unknown }).format;
+// A date is YYYY-MM-DD on a real calendar day; a date-time is RFC 3339 with an offset, on a real day and time.
+function fitsFormat(format: unknown, v: string): boolean {
+  if (format === "date") {
+    const ms = dateMs(v);
+    return ms !== undefined && dateStr(ms) === v;
+  }
+  if (format === "date-time") {
+    const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+)?(Z|[+-](\d{2}):(\d{2}))$/.exec(v);
+    if (!m) return false;
+    const ms = dateMs(m[1] as string);
+    if (ms === undefined || dateStr(ms) !== m[1]) return false;
+    const [h, min, sec] = [m[2], m[3], m[4]].map(Number) as [number, number, number];
+    const [oh, om] = [m[7] ?? "0", m[8] ?? "0"].map(Number) as [number, number];
+    return h < 24 && min < 60 && sec < 61 && oh < 24 && om < 60;
+  }
+  return true;
+}
+
+function fitsOne(prop: { type?: unknown; nullable?: unknown; format?: unknown }, v: V): boolean {
+  const types = ownTypes(prop);
+  if (types.size === 0) return typeof v !== "string" || fitsFormat(prop.format, v); // no type information
   if (v === null) return types.has("null");
-  if (typeof v === "string") return types.has("string") && !((format === "date" || format === "date-time") && v.trim() === "");
+  if (typeof v === "string") return types.has("string") && fitsFormat(prop.format, v);
   if (typeof v === "number") return types.has("number") || (types.has("integer") && Number.isInteger(v));
   if (typeof v === "boolean") return types.has("boolean");
   if (Array.isArray(v)) return types.has("array");
   if (typeof v === "object") return types.has("object");
   return true;
+}
+
+// Whether a value is well typed for a property schema. A union (anyOf/oneOf, as FastAPI writes `str | None`) is
+// checked branch by branch, so a format inside a branch still applies.
+function valueFitsSchema(prop: unknown, v: V): boolean {
+  if (!prop || typeof prop !== "object") return true;
+  const p = prop as { type?: unknown; nullable?: unknown; format?: unknown; anyOf?: unknown; oneOf?: unknown };
+  const branches = [p.anyOf, p.oneOf].flatMap((k) => (Array.isArray(k) ? (k as unknown[]) : []));
+  if (branches.length === 0) return fitsOne(p, v);
+  if (v === null && p.nullable === true) return true;
+  if (branches.some((b) => valueFitsSchema(b, v))) return true;
+  // an outer `type` next to the union also admits values on its own
+  return ownTypes(p).size > 0 && fitsOne(p, v);
 }
 
 function wellTypedFilter(
@@ -506,22 +535,57 @@ export function generateInputs(opts: GenerateOptions): Generated {
     });
 
   const typed = invalid ? () => true : wellTypedFilter(opts.properties, opts.required, fields.map((f) => f.name));
-  const matrix = dedupe(rules.flatMap((r) => matrixFor(r, byName)).filter(typed));
-  const seeds = dedupe(conformanceSeeds(rules).filter(typed));
+  const props = opts.properties;
+  const requiredSet = new Set((opts.required ?? []).filter((k) => byName.has(k)));
+  // whether one field value can appear in a well-typed input (MISSING: the field is left out)
+  const fits = (f: FieldInfo, v: V): boolean =>
+    invalid ||
+    (v === MISSING ? !requiredSet.has(f.name) : !props || !Object.hasOwn(props, f.name) || valueFitsSchema(props[f.name], v));
+  // A matrix record or seed varies only its own rule's fields. Another rule's required field gets a type-correct
+  // baseline value, so the record is not dropped for missing it.
+  const baseline = new Map<string, V>();
+  for (const name of requiredSet) {
+    const f = info(name);
+    const v = [...typicals(f), ...typedPool(f, false), ...NEAR].find((x) => x !== MISSING && fits(f, x));
+    if (v !== undefined) baseline.set(name, v);
+  }
+  const fillOthers = (rule: Rule) => {
+    const own = new Set(fieldsOf(rule));
+    return (r: Rec): Rec => {
+      if (invalid) return r;
+      const out: Rec = { ...r };
+      for (const [k, v] of baseline) if (!own.has(k) && !Object.hasOwn(out, k)) out[k] = v;
+      return out;
+    };
+  };
+  const matrix = dedupe(rules.flatMap((r) => matrixFor(r, byName).map(fillOthers(r))).filter(typed));
+  const seeds = dedupe(rules.flatMap((r) => conformanceSeeds([r]).map(fillOthers(r))).filter(typed));
 
   // random part: per-field draws + one integer per coupled rule
   const coupled = rules.filter((r) => r.kind === "compare" || r.kind === "required_when");
+  // Each field draws only values that fit its schema (and never MISSING when required), so the filter after coupling
+  // drops few tuples however many fields there are. A field with no fitting value leaves no random part.
+  let impossible = false;
   const fieldArbs = fields.map((f) => {
     const pool = typedPool(f, false);
-    const opts2: Array<{ weight: number; arbitrary: fc.Arbitrary<V> }> = [
-      { weight: 3, arbitrary: fc.constantFrom(...BLANKS) },
-      { weight: 2, arbitrary: fc.constantFrom(...NEAR) },
-      { weight: 6, arbitrary: fc.constantFrom(...pool) },
-      { weight: 2, arbitrary: randomTyped(f) },
-    ];
+    const blanks = BLANKS.filter((v) => fits(f, v));
+    const near = NEAR.filter((v) => fits(f, v));
+    const typedOk = pool.filter((v) => fits(f, v));
+    const opts2: Array<{ weight: number; arbitrary: fc.Arbitrary<V> }> = [];
+    if (blanks.length) opts2.push({ weight: 3, arbitrary: fc.constantFrom(...blanks) });
+    if (near.length) opts2.push({ weight: 2, arbitrary: fc.constantFrom(...near) });
+    if (typedOk.length) {
+      opts2.push({ weight: 6, arbitrary: fc.constantFrom(...typedOk) });
+      const fallback = typedOk[0] as V;
+      opts2.push({ weight: 2, arbitrary: randomTyped(f).map((v) => (fits(f, v) ? v : fallback)) });
+    }
     if (invalid) {
       const bad = typedPool(f, true).filter((v) => !pool.some((p) => JSON.stringify(p) === JSON.stringify(v)));
       if (bad.length) opts2.push({ weight: 1, arbitrary: fc.constantFrom(...bad) });
+    }
+    if (opts2.length === 0) {
+      impossible = true;
+      return fc.constant(MISSING as V);
     }
     return fc.oneof(...opts2);
   });
@@ -545,7 +609,9 @@ export function generateInputs(opts: GenerateOptions): Generated {
   const random =
     fields.length === 0
       ? Array.from({ length: opts.count }, () => ({}) as Rec)
-      : fc.sample(arb, { seed: opts.seed, numRuns: opts.count });
+      : impossible
+        ? []
+        : fc.sample(arb, { seed: opts.seed, numRuns: opts.count });
 
   return {
     inputs: [...matrix, ...seeds, ...random],

@@ -7,9 +7,9 @@
 // inputs generated from the agent's own rules, so a legitimate rule variant (e.g. compare type "string") is still
 // exercised with realistic values. The input set must exercise the expected rules (floor), and the agent's rules
 // must pass compare_results on it.
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { loadRun, readAgentRules } from "../lib/run.mjs";
+import { loadRun, readAgentRules, ruleKey } from "../lib/run.mjs";
 import { withMcp } from "../lib/mcp.mjs";
 import { runOld } from "../lib/oldvalidator.mjs";
 
@@ -62,6 +62,16 @@ export default async function (_output, context) {
       // A partial migration keeps some checks hand-written. Those checks still reject inputs in the old validator, so
       // compare the agent's rules only with the old verdicts on the fields its rules report on (old-scoped.jsonl).
       const agentPaths = new Set(agent.rules.map(reportPath));
+      // The scoped proof cannot see a check the agent deleted without a rule in its place. An optional rule (a check
+      // that may stay field-level) the agent did not migrate must still be in the source as a hand-written check.
+      const proposed = new Set(agent.rules.map((r) => ruleKey(r, { withType: false })));
+      for (const r of run.expected.migrate.filter((x) => x.optional && x.keptIf)) {
+        if (proposed.has(ruleKey(r, { withType: false }))) continue;
+        const src = join(run.work, r.keptIf.file);
+        const text = existsSync(src) ? readFileSync(src, "utf8") : "";
+        if (!new RegExp(r.keptIf.marker, r.keptIf.flags ?? "").test(text))
+          return { pass: false, score: 0, reason: `${r.id} was neither migrated nor kept as a hand-written check in ${r.keptIf.file}` };
+      }
       const scoped = readJsonl(join(diff, "old.jsonl")).map((o) => {
         const paths = (o.paths ?? []).filter((p) => agentPaths.has(p));
         return { ...o, accept: o.error ? o.accept : paths.length === 0, paths };

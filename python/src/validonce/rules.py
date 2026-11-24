@@ -27,6 +27,11 @@ def _is_scalar(v: Any) -> bool:
     return isinstance(v, (str, int, float, bool)) and v is not None
 
 
+def _is_constant(v: Any) -> bool:
+    """A compare constant: a string or a number, never a bool (as the schema and C# parser say)."""
+    return isinstance(v, str) or (isinstance(v, (int, float)) and not isinstance(v, bool))
+
+
 def _is_field(v: Any) -> bool:
     return isinstance(v, str) and v != ""
 
@@ -158,10 +163,12 @@ def _parse_rule(r: Any) -> Rule:
         if not (
             isinstance(right, dict)
             and len(right) == 1
-            and (_is_field(right.get("field")) or ("value" in right and _is_scalar(right["value"])))
+            and (
+                _is_field(right.get("field")) or ("value" in right and _is_constant(right["value"]))
+            )
         ):
             raise ValidonceFormatError(
-                f"compare rule {rid!r}: right needs exactly one of field or value"
+                f"compare rule {rid!r}: right needs exactly one of field or a string/number value"
             )
     return Rule(
         id=rid,

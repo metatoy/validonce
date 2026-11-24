@@ -94,6 +94,8 @@ describe("parseRuleSet", () => {
       { right: { field: "start", value: 1 } },
       { right: {} },
       { right: { value: null } },
+      { right: { value: true } },
+      { right: { value: [1] } },
     ])
       expect(() => parseRuleSet(cmp(extra)), JSON.stringify(extra)).toThrow(
         ValidonceFormatError,
@@ -101,6 +103,7 @@ describe("parseRuleSet", () => {
     expect(() =>
       parseRuleSet(cmp({ right: { value: "2024-01-01" } })),
     ).not.toThrow();
+    expect(() => parseRuleSet(cmp({ right: { value: 1 } }))).not.toThrow();
   });
 });
 
