@@ -71,7 +71,7 @@ The document has the rules under `components.schemas.Signup["x-validonce"]`. A r
 
 ## Gotchas
 
-- **Field validation is yours.** The pipe only evaluates rules. Put your usual `ValidationPipe` (class-validator) first so rules see well-typed fields.
+- **Two pipes, in this order.** Nest's `ValidationPipe` (class-validator decorators on the class) goes first and answers 400 for a bad field; `ValidonceValidationPipe` goes second and answers 422 for broken rules, which assume well-typed fields. As globals: `app.useGlobalPipes(new ValidationPipe(), new ValidonceValidationPipe())`; per parameter: `@Body(new ValidationPipe(), new ValidonceValidationPipe(Signup))`. See [examples/nestjs-app](../examples/nestjs-app/src/app.ts) for the esbuild variant.
 - **`new ValidonceValidationPipe(Signup)`** names the class. With `emitDecoratorMetadata` (tsc, SWC) a global `new ValidonceValidationPipe()` finds it from the parameter type; esbuild and Vite emit no metadata, so name it. Likewise those builds need `@ApiProperty({ type: … })` and `@ApiBody({ type })`.
 - **Startup errors.** `defineRules` throws `ValidonceDefinitionError` for an unknown field (when you pass `fields`), a duplicate id or an unsupported compare type; `addValidonceToDocument` throws when a class has no rules or no schema in the document.
 - **Schema name** is the class name, so `@ValidonceRules` on `Signup` lands on `components.schemas.Signup`.

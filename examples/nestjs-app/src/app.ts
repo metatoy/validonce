@@ -3,10 +3,19 @@
 
 /** NestJS app enforcing the shared Signup rules (same contract as the other example backends). */
 import "reflect-metadata";
-import { Body, Controller, Module, Post } from "@nestjs/common";
+import {
+  type ArgumentMetadata,
+  Body,
+  Controller,
+  Module,
+  type PipeTransform,
+  Post,
+  ValidationPipe,
+} from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { ApiBody, ApiProperty, DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { IsIn, IsInt, IsOptional, IsString, Matches, MinLength } from "class-validator";
 import { defineRules, fieldRefs, when } from "validonce/rules";
 import {
   addValidonceToDocument,
@@ -41,33 +50,53 @@ const signupRules = defineRules(
   { fields: signupFields },
 );
 
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+// Field checks (class-validator) answer 400 the usual Nest way; the rules answer 422.
 // esbuild emits no decorator metadata, so each property states its type for @nestjs/swagger.
 @ValidonceRules(signupRules)
 export class Signup {
   @ApiProperty({ type: String, enum: ["free", "pro"] })
+  @IsIn(["free", "pro"])
   plan!: "free" | "pro";
 
   @ApiProperty({ type: String, nullable: true, required: false })
+  @IsOptional()
+  @IsString()
   company?: string | null;
 
   @ApiProperty({ type: String, minLength: 1 })
+  @IsString()
+  @MinLength(1)
   email!: string;
 
   @ApiProperty({ type: String, format: "date" })
+  @Matches(DATE)
   start!: string;
 
   @ApiProperty({ type: String, format: "date", nullable: true, required: false })
+  @IsOptional()
+  @Matches(DATE)
   end?: string | null;
 
   @ApiProperty({ type: Number, format: "int32" })
+  @IsInt()
   quantity!: number;
+}
+
+/** Runs Nest's ValidationPipe against `Signup` (no emitted metadata to find the class from). */
+class SignupFieldsPipe implements PipeTransform {
+  private readonly pipe = new ValidationPipe();
+  transform(value: unknown, metadata: ArgumentMetadata): Promise<unknown> {
+    return this.pipe.transform(value, { ...metadata, metatype: Signup });
+  }
 }
 
 @Controller("signups")
 class SignupsController {
   @Post()
   @ApiBody({ type: Signup })
-  create(@Body(new ValidonceValidationPipe(Signup)) _body: Signup): { ok: boolean } {
+  create(@Body(new SignupFieldsPipe(), new ValidonceValidationPipe(Signup)) _body: Signup): { ok: boolean } {
     return { ok: true };
   }
 }

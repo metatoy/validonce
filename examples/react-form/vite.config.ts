@@ -7,10 +7,17 @@ import { defineConfig } from "vite";
 // The form calls the backend through same-origin `/api`, so it works behind a forwarded port
 // (a GitHub codespace) without CORS. VALIDONCE_API picks the backend; default is ASP.NET.
 const target = process.env.VALIDONCE_API ?? "http://localhost:5080";
-// ASP.NET (5080) serves /openapi/v1.json; FastAPI, Fastify and NestJS serve /openapi.json.
-const openapi = ["8010", "8020", "8030"].includes(new URL(target).port)
-  ? "/openapi.json"
-  : "/openapi/v1.json";
+// Where each example backend serves its OpenAPI document; VALIDONCE_OPENAPI overrides.
+const openapiByPort: Record<string, string> = {
+  "5080": "/openapi/v1.json", // ASP.NET
+  "8010": "/openapi.json", // FastAPI
+  "8020": "/openapi.json", // Fastify
+  "8030": "/openapi.json", // NestJS
+  "8040": "/openapi.json", // Go (Huma)
+  "8050": "/v3/api-docs", // Spring (springdoc)
+};
+const openapi =
+  process.env.VALIDONCE_OPENAPI ?? openapiByPort[new URL(target).port] ?? "/openapi/v1.json";
 
 export default defineConfig({
   plugins: [react()],
