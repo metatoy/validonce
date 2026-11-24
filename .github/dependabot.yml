@@ -48,3 +48,7 @@ updates:
     groups:
       actions:
         update-types: [minor, patch, major]
+    ignore:
+      # v2.6.0's container image is broken upstream (ossf/scorecard-action#1752); take the next fix.
+      - dependency-name: ossf/scorecard-action
+        versions: ["2.6.0"]
