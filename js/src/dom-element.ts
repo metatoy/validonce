@@ -26,17 +26,21 @@ export function defineValidonceForm(tag = "validonce-form"): void {
   if (customElements.get(tag)) return;
   class Element extends HTMLElement {
     static observedAttributes = ["rules-url", "schema"];
-    #rules: RulesInput | null = null;
+    // Rules assigned through the property win over rules fetched from `rules-url`.
+    #own: RulesInput | null = null;
+    #fetched: RulesInput | null = null;
     #messages: Catalog | undefined;
     #attached: Attached | undefined;
     #token = 0;
 
     get rules(): RulesInput | null {
-      return this.#rules;
+      return this.#own ?? this.#fetched;
     }
     set rules(v: RulesInput | null) {
-      this.#rules = v;
-      this.#bind();
+      this.#token++; // a pending rules-url fetch must not overwrite what the caller set
+      this.#own = v;
+      if (v === null && this.isConnected) void this.#load();
+      else this.#bind();
     }
     get messages(): Catalog | undefined {
       return this.#messages;
@@ -47,7 +51,7 @@ export function defineValidonceForm(tag = "validonce-form"): void {
     }
 
     connectedCallback(): void {
-      if (this.#rules) this.#bind();
+      if (this.#own) this.#bind();
       else void this.#load();
     }
     disconnectedCallback(): void {
@@ -55,7 +59,7 @@ export function defineValidonceForm(tag = "validonce-form"): void {
       this.#attached = undefined;
     }
     attributeChangedCallback(): void {
-      if (this.isConnected && !this.#rules) void this.#load();
+      if (this.isConnected && !this.#own) void this.#load();
     }
 
     validate() {
@@ -69,8 +73,9 @@ export function defineValidonceForm(tag = "validonce-form"): void {
       this.#attached?.detach();
       this.#attached = undefined;
       const form = this.querySelector("form");
-      if (!form || !this.#rules || !this.isConnected) return;
-      this.#attached = attachRules(form, this.#rules, {
+      const rules = this.#own ?? this.#fetched;
+      if (!form || !rules || !this.isConnected) return;
+      this.#attached = attachRules(form, rules, {
         messages: this.#messages,
       });
       this.dispatchEvent(new CustomEvent("validonce-ready"));
@@ -78,15 +83,17 @@ export function defineValidonceForm(tag = "validonce-form"): void {
 
     async #load(): Promise<void> {
       const url = this.getAttribute("rules-url");
-      if (!url) return;
       const mine = ++this.#token;
+      this.#fetched = null;
+      this.#bind(); // drop the old URL's rules while the new ones load
+      if (!url) return;
       try {
         const doc: unknown = await (await fetch(url)).json();
         if (mine !== this.#token) return;
         const schema = this.getAttribute("schema");
         const set = schema ? rulesFromOpenApi(doc, schema) : parseRuleSet(doc);
         if (!set) throw new Error(`no x-validonce rules for ${schema}`);
-        this.#rules = set;
+        this.#fetched = set;
         this.#bind();
       } catch (e) {
         this.dispatchEvent(new CustomEvent("validonce-error", { detail: e }));

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Metatoy LLC
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { attachRules, readForm } from "../src/dom";
 import type { Rule } from "../src/types";
 
@@ -264,5 +264,71 @@ describe("<validonce-form>", () => {
     plan.dispatchEvent(new Event("input", { bubbles: true }));
     const company = form.querySelector("[name=company]") as HTMLInputElement;
     expect(company.validationMessage).toBe("Company is required");
+  });
+
+  const flush = () => new Promise((r) => setTimeout(r, 0));
+  const other = [
+    {
+      id: "O.company",
+      kind: "required_when",
+      field: "company",
+      when: { eq: { field: "plan", value: "pro" } },
+      message: { key: "other.msg" },
+    },
+  ];
+  const doc = (rs: unknown) => ({ version: 1, rules: rs });
+
+  async function mount(attrs: string) {
+    const { defineValidonceForm } = await import("../src/dom-element");
+    defineValidonceForm();
+    document.body.innerHTML = `<validonce-form ${attrs}><form>
+      <select name="plan"><option value="free">free</option><option value="pro">pro</option></select>
+      <input name="company"></form></validonce-form>`;
+    const host = document.querySelector("validonce-form") as HTMLElement &
+      Record<string, unknown>;
+    const form = document.querySelector("form") as HTMLFormElement;
+    const pick = () => {
+      const plan = form.querySelector("[name=plan]") as HTMLSelectElement;
+      plan.value = "pro";
+      plan.dispatchEvent(new Event("input", { bubbles: true }));
+      return (form.querySelector("[name=company]") as HTMLInputElement)
+        .validationMessage;
+    };
+    return { host, form, pick };
+  }
+
+  it("a rules assignment invalidates a pending rules-url fetch", async () => {
+    let resolve: (v: unknown) => void = () => {};
+    vi.stubGlobal(
+      "fetch",
+      () =>
+        new Promise((r) => {
+          resolve = r;
+        }),
+    );
+    const { host, pick } = await mount('rules-url="/r.json"');
+    host.messages = messages;
+    host.rules = rules;
+    resolve({ json: async () => doc(other) });
+    await flush();
+    expect(pick()).toBe("Company is required");
+    vi.unstubAllGlobals();
+  });
+
+  it("changing rules-url after a load reloads and rebinds", async () => {
+    const urls: Record<string, unknown> = {
+      "/a.json": doc(other),
+      "/b.json": doc(rules),
+    };
+    vi.stubGlobal("fetch", async (u: string) => ({
+      json: async () => urls[u],
+    }));
+    const { host, pick } = await mount('rules-url="/a.json"');
+    host.messages = { ...messages, "other.msg": "From A" };
+    await flush();
+    host.setAttribute("rules-url", "/b.json");
+    await flush();
+    expect(pick()).toBe("Company is required");
+    vi.unstubAllGlobals();
   });
 });
