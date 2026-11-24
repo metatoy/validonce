@@ -4,8 +4,8 @@ apiVersion: v2
 name: validonce-demo
 description: The validonce demo (FastAPI API + React form behind nginx) on Kubernetes.
 type: application
-version: 0.1.1
-appVersion: "0.3.1"
+version: 0.1.2
+appVersion: "0.3.2"
 home: https://github.com/metatoy/validonce
 sources:
   - https://github.com/metatoy/validonce

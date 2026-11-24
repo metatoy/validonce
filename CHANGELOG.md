@@ -2,7 +2,15 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
-## Unreleased
+## 0.3.2 (2026-11-24)
+
+### Added
+- The rule format has a permanent home: https://schemas.metatoy.com/validonce/. The schemas' `$id`s are now their canonical URLs: `rules-v1.json` (the value of `x-validonce`), `conformance-case-v1.json` and `regex-case-v1.json`. Evaluators never fetch them.
+- `rules-file-v1.json`: the schema of a standalone rules file (`validonce extract --format json`), conventionally named `*.validonce.json`. The CLI help and the TypeScript README say how to get editor validation for it.
+- `x-validonce` is declared as a JSON Schema 2020-12 vocabulary (`https://schemas.metatoy.com/validonce/vocab/rules-v1`), with a dialect, `dialect-v1.json`, for OpenAPI 3.1's `jsonSchemaDialect`. Using it is opt-in. See "Using the validonce dialect" in `docs/rule-format-v1.md`.
+
+### In the repository, not in the packages
+- `validonce-mcp` 0.1.1 is published on npm (the MCP server for migrating existing validation to validonce); 0.1.0 could not be installed and is deprecated. Agent evaluation results, including a hold-out set of three public apps, are in `docs/agentic-migration.md`.
 
 ### Release process
 - Every GitHub Release now carries the packages it published: the four `.nupkg` files and the Python wheel and sdist, each with a GitHub build provenance attestation. Check a download with `gh attestation verify <file> -R metatoy/validonce`. nuget.org re-signs the packages it serves, so verify the copy attached to the Release, not one downloaded from nuget.org.
