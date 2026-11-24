@@ -57,5 +57,9 @@ class OpenApiExportTest {
         JsonNode golden = MAPPER.readTree(Files.readString(Path.of(System.getProperty("validonce.golden"))));
         assertThat(actual).as("run ./gradlew :spring-app:exportOpenApi to refresh the golden file").isEqualTo(golden);
         assertThat(actual.at("/components/schemas/Signup/x-validonce/rules")).hasSize(3);
+        // company and end accept an explicit null.
+        assertThat(actual.at("/components/schemas/Signup/properties/company/type").toString()).isEqualTo("[\"string\",\"null\"]");
+        assertThat(actual.at("/components/schemas/Signup/properties/end/type").toString()).isEqualTo("[\"string\",\"null\"]");
+        assertThat(actual.at("/components/schemas/Signup/properties/end/format").asText()).isEqualTo("date");
     }
 }

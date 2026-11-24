@@ -22,8 +22,8 @@ public class ValidonceAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ValidonceExceptionHandler validonceExceptionHandler() {
-        return new ValidonceExceptionHandler();
+    public ValidonceExceptionHandler validonceExceptionHandler(ObjectMapper mapper) {
+        return new ValidonceExceptionHandler(mapper);
     }
 
     @Bean
