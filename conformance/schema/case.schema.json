@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/metatoy/validonce/conformance/schema/case.schema.json",
+  "$id": "https://schemas.metatoy.com/validonce/conformance-case-v1.json",
   "title": "validonce conformance case file",
   "type": "object",
   "required": ["version", "suite", "cases"],
@@ -22,7 +22,7 @@
           "rules": {
             "type": "array",
             "minItems": 1,
-            "items": { "$ref": "rule-format-v1.schema.json#/$defs/rule" }
+            "items": { "$ref": "rules-v1.json#/$defs/rule" }
           },
           "data": { "type": "object" },
           "expect": {

@@ -61,3 +61,60 @@ def test_regex_fixtures_conform_and_findings_resolve() -> None:
     referenced = {cid for f in findings for cid in f["cases"]}
     assert referenced <= case_ids, f"findings cite missing cases: {sorted(referenced - case_ids)}"
     assert case_ids <= referenced, f"cases in no finding: {sorted(case_ids - referenced)}"
+
+
+def _dialect_validator() -> Draft202012Validator:
+    """The published dialect (2020-12 + x-validonce) with every schema resolvable offline."""
+    from jsonschema_specifications import REGISTRY as SPECS
+
+    docs = [_load(p) for p in sorted(SCHEMA_DIR.glob("*.schema.json"))]
+    dialect = _load(ROOT / "schemas" / "validonce" / "dialect-v1.json")
+    registry = SPECS.with_resources(
+        (d["$id"], Resource.from_contents(d, default_specification=DRAFT202012))
+        for d in [*docs, dialect]
+    )
+    return Draft202012Validator(dialect, registry=registry)
+
+
+def test_golden_openapi_schemas_conform_to_the_dialect() -> None:
+    """Every schema object in the golden OpenAPI documents is valid under the validonce dialect,
+    including its x-validonce rules, and a broken rule anywhere in a schema is caught."""
+    validator = _dialect_validator()
+    golden = sorted((ROOT / "conformance" / "golden").glob("*.openapi.json"))
+    assert golden, "no golden OpenAPI documents"
+    checked = 0
+    for path in golden:
+        for name, schema in _load(path)["components"]["schemas"].items():
+            errors = [
+                f"{path.name} {name}: {e.json_path}: {e.message}"
+                for e in validator.iter_errors(schema)
+            ]
+            assert not errors, "\n".join(errors)
+            checked += "x-validonce" in schema
+    assert checked >= 2, "expected the golden documents to carry x-validonce rules"
+
+    bad_rule = {"id": "x", "kind": "nope", "message": {"key": "k"}}
+    broken = {"type": "object", "x-validonce": {"version": 1, "rules": [bad_rule]}}
+    assert list(validator.iter_errors(broken)), "an unknown rule kind must fail"
+    nested = {"type": "object", "properties": {"inner": broken}}
+    assert list(validator.iter_errors(nested)), "x-validonce is checked in nested schemas too"
+
+
+def test_rules_file_schema_accepts_extract_output() -> None:
+    """The rules-file schema (validonce extract --format json, *.validonce.json) accepts the
+    golden rules keyed by schema name, with an optional $schema, and rejects a broken rule."""
+    docs = [_load(p) for p in sorted(SCHEMA_DIR.glob("*.schema.json"))]
+    registry = Registry().with_resources(
+        (d["$id"], Resource.from_contents(d, default_specification=DRAFT202012)) for d in docs
+    )
+    validator = Draft202012Validator(
+        _load(SCHEMA_DIR / "rules-file-v1.schema.json"), registry=registry
+    )
+    schemas = _load(ROOT / "conformance" / "golden" / "aspnet.openapi.json")["components"][
+        "schemas"
+    ]
+    extracted = {name: s["x-validonce"] for name, s in schemas.items() if "x-validonce" in s}
+    assert extracted
+    extracted["$schema"] = "https://schemas.metatoy.com/validonce/rules-file-v1.json"
+    assert not list(validator.iter_errors(extracted))
+    assert list(validator.iter_errors({"Signup": {"version": 1, "rules": [{"kind": "nope"}]}}))

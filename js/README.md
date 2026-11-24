@@ -147,7 +147,7 @@ npx validonce extract openapi.json -o src/rules.gen.ts
 npx validonce extract openapi.json --schema Signup --format json
 ```
 
-Writes every schema's `x-validonce` (or only the `--schema` names; `Name-Input` is used for `Name`) as a TypeScript module, `export const rules = { Signup: { version: 1, rules: [...] } } as const satisfies Record<string, RuleSet>`, or as plain JSON. Output goes to standard output without `-o`. It is deterministic: names and keys are sorted. Exit codes: 0 done, 1 no `x-validonce` found, 2 usage error or unreadable input.
+Writes every schema's `x-validonce` (or only the `--schema` names; `Name-Input` is used for `Name`) as a TypeScript module, `export const rules = { Signup: { version: 1, rules: [...] } } as const satisfies Record<string, RuleSet>`, or as plain JSON. Name a JSON file `*.validonce.json` (for example `-o rules.validonce.json --format json`): its schema is <https://schemas.metatoy.com/validonce/rules-file-v1.json>, so editors validate it. Output goes to standard output without `-o`. It is deterministic: names and keys are sorted. Exit codes: 0 done, 1 no `x-validonce` found, 2 usage error or unreadable input.
 
 The npm `validonce` command is this TypeScript tool. The .NET and Python `validonce` commands are separate tools with their own options.
 

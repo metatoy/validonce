@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/metatoy/validonce/conformance/schema/rule-format-v1.schema.json",
+  "$id": "https://schemas.metatoy.com/validonce/rules-v1.json",
   "title": "validonce rule format v1 (the x-validonce object)",
   "type": "object",
   "required": ["version", "rules"],

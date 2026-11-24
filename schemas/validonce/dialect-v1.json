@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.metatoy.com/validonce/dialect-v1.json",
+  "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/unevaluated": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-annotation": true,
+    "https://json-schema.org/draft/2020-12/vocab/content": true,
+    "https://schemas.metatoy.com/validonce/vocab/rules-v1": false
+  },
+  "$dynamicAnchor": "meta",
+  "title": "JSON Schema 2020-12 with the validonce rules vocabulary",
+  "description": "The 2020-12 dialect plus one keyword, x-validonce: cross-field validation rules (rule format v1). The vocabulary is optional, so a validator that does not know it still processes schemas and treats x-validonce as an annotation. Spec: https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md",
+  "allOf": [{ "$ref": "https://json-schema.org/draft/2020-12/schema" }],
+  "properties": {
+    "x-validonce": { "$ref": "rules-v1.json" }
+  }
+}
