@@ -83,6 +83,10 @@ jobs:
           npm install -g npm@^11
           npm stage --help >/dev/null 2>&1 || { echo "this npm ($(npm -v)) has no 'npm stage'"; exit 1; }
       - run: pnpm install --frozen-lockfile
+      # validonce-mcp bundles the workspace's validonce package, so build that first (as mcp.yml does).
+      - name: Build validonce
+        working-directory: js
+        run: pnpm build
       - name: Build and test
         working-directory: mcp
         run: pnpm build && pnpm typecheck && pnpm test
