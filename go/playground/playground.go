@@ -9,6 +9,7 @@ import (
 	"errors"
 	"reflect"
 	"sort"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 
@@ -19,7 +20,12 @@ import (
 // (pass a zero value, e.g. Signup{}). Each failing rule is reported as a field error whose tag is
 // the rule id and whose field name is the issue path (the JSON name). Use IssuesFromError to turn
 // the result back into validonce issues, or FromError for a ready problem details error.
+//
+// Register also sets v's tag name function to report fields by their `json` names, so error
+// namespaces (and therefore issue paths for nested values, such as ["items", "0", "company"])
+// use wire names. This replaces any tag name function already set on v.
 func Register(v *validator.Validate, rules *validonce.Rules, sample any) {
+	v.RegisterTagNameFunc(jsonName)
 	v.RegisterStructValidation(func(sl validator.StructLevel) {
 		issues, err := rules.Check(sl.Current().Interface())
 		if err != nil {
@@ -30,6 +36,51 @@ func Register(v *validator.Validate, rules *validonce.Rules, sample any) {
 			sl.ReportError(fieldValue(sl.Current(), i.Path[0]), i.Path[0], i.Path[0], i.RuleID, "")
 		}
 	}, sample)
+}
+
+func jsonName(f reflect.StructField) string {
+	name, _, _ := strings.Cut(f.Tag.Get("json"), ",")
+	if name == "-" {
+		return ""
+	}
+	return name
+}
+
+// pathFromNamespace turns a validator namespace such as "Order.items[0].company" into
+// ["items", "0", "company"]: the root type name is dropped, and every field, index and map key
+// is its own segment.
+func pathFromNamespace(ns string) []string {
+	var out []string
+	var cur strings.Builder
+	flush := func() {
+		if cur.Len() > 0 {
+			out = append(out, cur.String())
+			cur.Reset()
+		}
+	}
+	for i := 0; i < len(ns); i++ {
+		switch ns[i] {
+		case '.':
+			flush()
+		case '[':
+			flush()
+			end := strings.IndexByte(ns[i:], ']')
+			if end < 0 {
+				cur.WriteString(ns[i:])
+				i = len(ns)
+				break
+			}
+			out = append(out, ns[i+1:i+end])
+			i += end
+		default:
+			cur.WriteByte(ns[i])
+		}
+	}
+	flush()
+	if len(out) > 1 {
+		return out[1:]
+	}
+	return out
 }
 
 // fieldValue is only used so the error carries a value; the JSON name need not match a Go field.
@@ -60,7 +111,7 @@ func IssuesFromError(rules *validonce.Rules, err error) ([]validonce.Issue, bool
 		for k, val := range r.Message.Params {
 			params[k] = val
 		}
-		out = append(out, validonce.Issue{Path: []string{fe.Field()}, RuleID: r.ID, Key: r.Message.Key, Params: params})
+		out = append(out, validonce.Issue{Path: pathFromNamespace(fe.Namespace()), RuleID: r.ID, Key: r.Message.Key, Params: params})
 	}
 	// The validator reports struct-level errors in registration order, which is rule order; keep
 	// it stable regardless by sorting on the rule's position.

@@ -63,3 +63,35 @@ func TestRulesRunInsideValidator(t *testing.T) {
 		t.Fatal("no rule failures expected")
 	}
 }
+
+type Order struct {
+	Items  []Signup          `json:"items" validate:"dive"`
+	Main   Signup            `json:"main"`
+	ByName map[string]Signup `json:"byName" validate:"dive"`
+}
+
+func TestNestedPaths(t *testing.T) {
+	v := validator.New()
+	playground.Register(v, rules, Signup{})
+	ok := Signup{Plan: "free", Email: "a@example.test", Start: "2026-02-01", Quantity: 1}
+	bad := Signup{Plan: "pro", Email: "a@example.test", Start: "2026-02-01", Quantity: 1}
+	err := v.Struct(Order{Items: []Signup{ok, bad}, Main: bad, ByName: map[string]Signup{"a.b": bad}})
+	issues, found := playground.IssuesFromError(rules, err)
+	if !found {
+		t.Fatalf("no issues: %v", err)
+	}
+	var got []string
+	for _, i := range issues {
+		b, _ := json.Marshal(i.Path)
+		got = append(got, string(b))
+	}
+	want := map[string]bool{`["items","1","company"]`: true, `["main","company"]`: true, `["byName","a.b","company"]`: true}
+	if len(got) != 3 {
+		t.Fatalf("paths = %v", got)
+	}
+	for _, g := range got {
+		if !want[g] {
+			t.Errorf("unexpected path %s (all: %v)", g, got)
+		}
+	}
+}
