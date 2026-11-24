@@ -1,6 +1,6 @@
 {
   "name": "validonce-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for validonce: read, check and evaluate shared validation rules. Read-only.",
   "license": "Apache-2.0",
   "author": "Metatoy LLC",
@@ -25,18 +25,16 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
-  "dependencies": {
-    "@modelcontextprotocol/server": "2.4.0",
-    "fast-check": "4.11.0",
-    "validonce": "workspace:*",
-    "zod": "4.6.7"
-  },
   "devDependencies": {
     "@modelcontextprotocol/client": "2.4.0",
+    "@modelcontextprotocol/server": "2.4.0",
     "@types/node": "22.20.5",
     "esbuild": "0.28.2",
+    "fast-check": "4.11.0",
     "typescript": "7.0.2",
-    "vitest": "5.1.1"
+    "validonce": "workspace:*",
+    "vitest": "5.1.1",
+    "zod": "4.6.7"
   },
   "keywords": [
     "mcp",
