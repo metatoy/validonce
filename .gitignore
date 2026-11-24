@@ -1,6 +1,9 @@
 # dotnet
 bin/
 obj/
+# gradle
+.gradle/
+build/
 # node
 node_modules/
 dist/

@@ -32,8 +32,9 @@ The server always enforces the rules. The browser runs them first to give fast f
 - Python: Pydantic models and FastAPI.
 - TypeScript servers: Fastify (TypeBox) and NestJS, with `validonce/rules` builders.
 - Go: struct rules with Huma and go-playground/validator.
+- Java and Kotlin: Spring Boot with Bean Validation and springdoc (`com.metatoy:validonce-spring`).
 - TypeScript client: Zod 4, react-hook-form helpers, Angular Signal Forms and Reactive Forms, server-error mapping.
-- One shared conformance suite (125 cases) that every server evaluator (C#, TypeScript, Python, Go) passes.
+- One shared conformance suite (125 cases) that every evaluator (C#, Python, TypeScript, Go, Java) passes.
 - Regex portability linter for `pattern` rules.
 
 ## Install
@@ -153,6 +154,7 @@ More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.m
 - [Getting started: Fastify](docs/getting-started-fastify.md)
 - [Getting started: NestJS](docs/getting-started-nestjs.md)
 - [Getting started: Go](docs/getting-started-go.md)
+- [Getting started: Spring Boot](docs/getting-started-spring.md)
 - [Client: React](docs/client-react.md)
 - [Client: Angular](docs/client-angular.md)
 - [Client: plain HTML and web components](docs/client-dom.md)
@@ -189,8 +191,9 @@ The tool reads an OpenAPI file, so it works for any backend language. The same c
 | `conformance/` | Shared test cases every implementation must pass |
 | `dotnet/` | C#: rule types, evaluator, FluentValidation and ASP.NET Core integration |
 | `js/` | TypeScript: evaluator, Zod integration, form helpers |
+| `java/` | Java and Kotlin: rule model, evaluator, builders and the Spring Boot integration (Gradle) |
 | `python/` | Python: evaluator, Pydantic integration, regex linter |
-| `examples/` | ASP.NET Core, FastAPI, Fastify, NestJS and Go backends with the same rules, and the forms that read them |
+| `examples/` | ASP.NET Core, FastAPI, Fastify, NestJS, Go and Spring Boot backends with the same rules, and the forms that read them |
 | `assets/brand/` | Logo, icons and banners (not covered by the code license) |
 
 ## Copyright and license
