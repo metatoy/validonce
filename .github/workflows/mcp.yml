@@ -35,3 +35,11 @@ jobs:
         working-directory: mcp
       - run: pnpm test
         working-directory: mcp
+      - name: The packed package installs from its tarball and starts (no workspace links, no runtime deps)
+        working-directory: mcp
+        run: |
+          npm pack --pack-destination "$RUNNER_TEMP"
+          mkdir "$RUNNER_TEMP/install" && cd "$RUNNER_TEMP/install"
+          echo '{"name":"smoke-install","private":true}' > package.json
+          npm install --no-audit --no-fund "$RUNNER_TEMP"/validonce-mcp-*.tgz
+          node "$GITHUB_WORKSPACE/mcp/scripts/smoke.mjs" ./node_modules/.bin/validonce-mcp

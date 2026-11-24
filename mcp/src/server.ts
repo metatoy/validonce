@@ -16,8 +16,10 @@ import {
   defineWritingTool,
   listClientRoots,
 } from "./sdk";
+import pkg from "../package.json" with { type: "json" };
 
-const SERVER_VERSION = "0.1.0";
+// The package version, bundled in by esbuild, so the server never reports a stale one.
+const SERVER_VERSION: string = pkg.version;
 
 const obj = z.record(z.string(), z.unknown());
 
