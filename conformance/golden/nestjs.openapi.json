@@ -64,7 +64,7 @@
             "nullable": true
           },
           "quantity": {
-            "type": "number",
+            "type": "integer",
             "format": "int32"
           }
         },

@@ -15,7 +15,14 @@ import {
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { ApiBody, ApiProperty, DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { IsIn, IsInt, IsOptional, IsString, Matches, MinLength } from "class-validator";
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  MinLength,
+  registerDecorator,
+} from "class-validator";
 import { defineRules, fieldRefs, when } from "validonce/rules";
 import {
   addValidonceToDocument,
@@ -50,7 +57,31 @@ const signupRules = defineRules(
   { fields: signupFields },
 );
 
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/** A real calendar date in YYYY-MM-DD form: 2026-02-30 and 2026-13-01 are rejected. */
+function isCalendarDate(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  const m = DATE.exec(value);
+  if (!m) return false;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const t = new Date(Date.UTC(y, mo - 1, d));
+  t.setUTCFullYear(y); // years 0000-0099 would otherwise map to 1900-1999
+  return t.getUTCFullYear() === y && t.getUTCMonth() === mo - 1 && t.getUTCDate() === d;
+}
+
+function IsCalendarDate() {
+  return (target: object, propertyName: string) =>
+    registerDecorator({
+      name: "isCalendarDate",
+      target: target.constructor,
+      propertyName,
+      validator: {
+        validate: isCalendarDate,
+        defaultMessage: () => "$property must be a calendar date (YYYY-MM-DD)",
+      },
+    });
+}
 
 // Field checks (class-validator) answer 400 the usual Nest way; the rules answer 422.
 // esbuild emits no decorator metadata, so each property states its type for @nestjs/swagger.
@@ -71,15 +102,15 @@ export class Signup {
   email!: string;
 
   @ApiProperty({ type: String, format: "date" })
-  @Matches(DATE)
+  @IsCalendarDate()
   start!: string;
 
   @ApiProperty({ type: String, format: "date", nullable: true, required: false })
   @IsOptional()
-  @Matches(DATE)
+  @IsCalendarDate()
   end?: string | null;
 
-  @ApiProperty({ type: Number, format: "int32" })
+  @ApiProperty({ type: "integer", format: "int32" })
   @IsInt()
   quantity!: number;
 }
