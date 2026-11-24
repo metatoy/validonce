@@ -2,9 +2,10 @@
 # Copyright 2026 Metatoy LLC
 """Cross-backend check on the golden OpenAPI exports.
 
-The ASP.NET and FastAPI examples implement the same Signup contract, written once in C# and
-once in Python. Their exported rules must be identical (as JSON values), and every exported
-x-validonce must be valid rule-format v1.
+Every example backend (ASP.NET, FastAPI, and each one added later) implements the same Signup
+contract in its own language and commits its OpenAPI export as conformance/golden/<name>.openapi.json.
+All exports must carry identical Signup rules (as JSON values), and every exported x-validonce must
+be valid rule-format v1.
 
 Usage: uv run --project python python scripts/check_golden.py
 """
@@ -47,8 +48,10 @@ def main() -> int:
         for p in sorted(GOLDEN.glob("*.openapi.json"))
     }
     problems: list[str] = []
-    if set(exports) != {"aspnet", "fastapi"}:
-        problems.append(f"expected aspnet and fastapi exports, found {sorted(exports)}")
+    if len(exports) < 2:
+        problems.append(
+            f"expected at least two golden exports, found {sorted(exports)}"
+        )
 
     for backend, by_schema in exports.items():
         if "Signup" not in by_schema:
@@ -57,20 +60,24 @@ def main() -> int:
             for err in validator.iter_errors(rules):
                 problems.append(f"{backend}/{name}: {err.message}")
 
-    if not problems and exports["aspnet"]["Signup"] != exports["fastapi"]["Signup"]:
-        problems.append(
-            "Signup rules differ between backends:\n"
-            f"  aspnet:  {json.dumps(exports['aspnet']['Signup'], sort_keys=True)}\n"
-            f"  fastapi: {json.dumps(exports['fastapi']['Signup'], sort_keys=True)}"
-        )
+    if not problems:
+        reference = "aspnet" if "aspnet" in exports else next(iter(exports))
+        expected = exports[reference]["Signup"]
+        for backend, by_schema in exports.items():
+            if by_schema["Signup"] != expected:
+                problems.append(
+                    f"Signup rules differ between {reference} and {backend}:\n"
+                    f"  {reference}: {json.dumps(expected, sort_keys=True)}\n"
+                    f"  {backend}: {json.dumps(by_schema['Signup'], sort_keys=True)}"
+                )
 
     for p in problems:
         print(f"FAIL {p}")
     if problems:
         return 1
-    n = len(exports["aspnet"]["Signup"]["rules"])
+    n = len(next(iter(exports.values()))["Signup"]["rules"])
     print(
-        f"ok: Signup rules identical across aspnet and fastapi ({n} rules), all valid v1"
+        f"ok: Signup rules identical across {', '.join(exports)} ({n} rules), all valid v1"
     )
     return 0
 

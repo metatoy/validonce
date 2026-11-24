@@ -96,6 +96,8 @@ const deps = registerDeps(rules);
 
 For each field it lists the other fields where rules that read it report their error. Group rules (`at_least_one_of` and the like) report on their first field, so every other member re-checks that one. Rules marked `server_only` are skipped.
 
+`dependentFields` is also exported from the framework-neutral `validonce/deps`, for other form libraries or plain DOM code.
+
 ## Angular
 
 ### Signal Forms (no adapter)
