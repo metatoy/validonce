@@ -196,6 +196,9 @@ jobs:
         run: uv run --project python python scripts/check_golden.py
 
   e2e:
+    # Chromium jobs keep the plain "e2e (framework, backend)" name: the main branch ruleset requires
+    # those check names. Other browsers get a suffix.
+    name: e2e (${{ matrix.framework }}, ${{ matrix.backend }}${{ matrix.browser != 'chromium' && format(', {0}', matrix.browser) || '' }})
     # The React, Angular, DOM and Vue example forms against each backend, in a real browser. The DOM
     # form (native validity, ElementInternals) also runs on Firefox and WebKit.
     runs-on: ubuntu-latest
