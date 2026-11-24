@@ -53,4 +53,13 @@ For other agents that read Agent Skills, copy `skills/validonce-migrate/` into t
 
 ## What has been tested
 
-The proof tools and runners are tested in CI on hand-written versions of the Signup example for FluentValidation, Pydantic, Zod, yup and Angular: each matches validonce on every test input. Agent results are measured with [promptfoo](https://www.promptfoo.dev), and support for a given agent is claimed here only after it passes that evaluation.
+The proof tools and runners are tested in CI on hand-written versions of the Signup example for FluentValidation, Pydantic, Zod, yup and Angular: each matches validonce on every test input. Agent results are measured with [promptfoo](https://www.promptfoo.dev) (harness in `mcp/evals`), and support for a given agent is claimed here only after it passes that evaluation.
+
+Every run is graded by code, not by a model: the agent's rules must accept and reject exactly what the old validator did on thousands of generated inputs, the migrated validator as a whole must agree with the original, every check that cannot be migrated must still be there with a reason, the project must still build, and only the expected files may change.
+
+| Agent | Tuning set (10 cases: our examples in five libraries, plus five that must not be migrated) | Hold-out (three public apps, measured once: .NET/FluentValidation, FastAPI/Pydantic, React/Zod) |
+|---|---|---|
+| Claude Code (Opus) | 30 of 30 runs pass every check | 6 of 9 pass every check; the other 3 migrated less than they could (rules left hand-written, with reasons) |
+| GitHub Copilot CLI (GPT-5.3-Codex) | 7 of 7 | 2 of 3; one left code that did not import (caught by the build check) |
+
+In all 49 graded runs (final tuning round and hold-out), no migration changed what the validator accepts or rejects. Supported: **Claude Code**. Copilot's results are reported as measured.

@@ -7,7 +7,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { CASES } from "./cases.mjs";
+import { CASES, caseDescription } from "./cases.mjs";
 import { resultsTable } from "./lib/table.mjs";
 import { ensureDir, evalsDir, scratchRoot } from "./lib/util.mjs";
 import { vscodeBase } from "./prepare-vscode.mjs";
@@ -18,7 +18,8 @@ const base = vscodeBase(runId);
 if (!existsSync(base)) { console.error(`no prepared run at ${base}`); process.exit(2); }
 const cases = readdirSync(base).filter((n) => CASES[n]);
 if (!cases.length) { console.error(`no case folders in ${base}`); process.exit(2); }
-const pattern = `^(${cases.map((c) => CASES[c].dir).join("|")})$`; // test descriptions are the fixture dirs
+const esc = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const pattern = `^(${cases.map((c) => esc(caseDescription(c))).join("|")})$`; // the test descriptions tests.mjs builds
 const out = join(ensureDir(join(scratchRoot(), "results")), `${runId}-copilot-vscode.json`);
 const r = spawnSync(join(evalsDir, "node_modules/.bin/promptfoo"), ["eval", "-c", "promptfooconfig.yaml", "--filter-providers", "^copilot-vscode$", "--filter-pattern", pattern, "--repeat", "1", "--output", out, "--no-share", "--no-table"], {
   cwd: evalsDir, stdio: ["ignore", "ignore", "inherit"],

@@ -10,6 +10,7 @@ import { cpSync, existsSync, readdirSync, rmSync, statSync, writeFileSync, mkdir
 import { dirname, join } from "node:path";
 import { prepare } from "../prepare.mjs";
 import { evalsDir, reportHeadings } from "../lib/util.mjs";
+import { CASES } from "../cases.mjs";
 
 function walk(dir, base = dir) {
   return readdirSync(dir).flatMap((n) => {
@@ -20,7 +21,9 @@ function walk(dir, base = dir) {
 
 /** Overlays replay/<case>/<mode>/ on a working directory. */
 export function applyReplay(work, caseId, mode) {
-  const dir = join(evalsDir, "replay", caseId, mode);
+  // a hold-out case keeps its replays in its own folder (outside the repo)
+  const root = CASES[caseId]?.root;
+  const dir = root ? join(root, "replay", mode) : join(evalsDir, "replay", caseId, mode);
   if (!existsSync(dir)) throw new Error(`no replay recorded for ${caseId}/${mode}`);
     for (const f of walk(dir)) {
       const dest = join(work, f.replace(/\.tmpl$/, "").replace(/\.delete$/, ""));
@@ -47,7 +50,8 @@ export default class ReplayProvider {
     const mode = this.config.mode ?? "good";
     const t0 = Date.now();
     const prep = prepare({ caseId: vars.case, variant: vars.variant ?? "baseline", agent: "replay" });
-    const dir = join(evalsDir, "replay", vars.case, mode);
+    const root = CASES[vars.case]?.root;
+    const dir = root ? join(root, "replay", mode) : join(evalsDir, "replay", vars.case, mode);
     if (!existsSync(dir)) return { error: `no replay recorded for ${vars.case}/${mode}`, metadata: prep };
     applyReplay(prep.work, vars.case, mode);
     return {
