@@ -14,6 +14,7 @@ import {
 import type { RuleSet } from "validonce";
 import { withRules } from "validonce/zod";
 import { z } from "zod";
+import { backendAt } from "./backends";
 
 const messages: Catalog = {
   "rules.company_required": "Company is required on the Pro plan",
@@ -39,12 +40,11 @@ const params = new URLSearchParams(window.location.search);
 // vite.config.ts). `?api=http://host:port` still points the form at a backend directly.
 const api = (params.get("api") ?? "/api").replace(/\/$/, "");
 const proxied = api.startsWith("/");
-const port = proxied ? "" : new URL(api).port;
-const backend = proxied ? "via /api proxy" : port === "8010" ? "FastAPI" : "ASP.NET";
+const backend = proxied ? "via /api proxy" : backendAt(api).label;
 // Through the proxy, /api/openapi.json is rewritten to each backend's own document path.
 const openapiPath =
   params.get("openapi") ??
-  (proxied || port === "8010" ? "/openapi.json" : "/openapi/v1.json");
+  (proxied ? "/openapi.json" : backendAt(api).openapi);
 
 function Form({ rules }: { rules: RuleSet }) {
   const [skipClient, setSkipClient] = useState(false);
