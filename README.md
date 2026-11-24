@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/brand/banner/readme-banner-dark.png">
-    <img alt="validonce: write rules once, enforce them everywhere" src="assets/brand/banner/readme-banner-light.png" width="640">
+    <img alt="validonce: write rules once, enforce them everywhere. Rules written in ASP.NET Core or FastAPI travel through the OpenAPI document to React and Angular forms; Fastify, NestJS, Go, Spring, Vue and Web Components are planned." src="assets/brand/banner/readme-banner-light.png" width="830">
   </picture>
 </p>
 

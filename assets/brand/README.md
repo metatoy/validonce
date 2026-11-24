@@ -23,7 +23,7 @@ Wordmark: Interstate Bold, -0.02em tracking, lowercase. Outlined in every SVG, s
 - `svg/`: icon, small cut, square, bare mark, wordmark, lockup (dark and light)
 - `png/`: icons at 1024 to 16, lockups at 320 px tall
 - `favicon/`: favicon.svg, favicon.ico (16/32/48), PNGs, apple-touch-icon, android-chrome
-- `banner/`: README banner 1280x320 (PNG at 2x). Tagline (placeholder until the founder picks one): "Write rules once. Enforce them everywhere." at 19 px. Re-export with `rsvg-convert -z 2 readme-banner-<light|dark>.svg -o readme-banner-<light|dark>.png`. The tagline font is JetBrains Mono; install it before exporting, or the PNG uses a fallback monospace font.
+- `banner/`: README banner 830x300 (PNG at 2x, the width GitHub shows a README at): the lockup with the supported stacks (solid, accent color) and planned ones (dashed, grey). The tagline and small labels use JetBrains Mono if installed, else SF Mono or Menlo. Update the stack lists when support changes.
 
 ## Notes
 - The knockout gap around the check is drawn in the tile color. On a different background use the icon tiles, not the bare mark.
