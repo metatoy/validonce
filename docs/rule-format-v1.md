@@ -108,6 +108,27 @@ Every failing rule produces one issue, in the same shape everywhere — client e
 
 Server responses carry the same list: FastAPI's 422 body through each error's `ctx`, and ASP.NET through a ProblemDetails extension `validonce`. The JavaScript `server-errors` adapters turn either back into this list.
 
+## Transport (server responses)
+
+How a server reports failing rules to a client. This is a convention for implementations, not part of the rule data, so it does not change the format version.
+
+- **Shape:** an RFC 9457 problem details body (`application/problem+json`) with the issue list as a **top-level member named `validonce`**, holding the issues exactly as above. Other members (`title`, `status`, `errors`, …) are optional and free.
+- **Status:** 422 by default. A host may let users change it (ASP.NET: `ValidationStatusCode`).
+- **One response lists every failing rule**, in the order the evaluator produced them.
+- **Who uses it:** ASP.NET Core, and every backend added after it (Go, Spring, Fastify, NestJS). FastAPI keeps its native 422 body (the issues travel in each error's `ctx`), because FastAPI clients already read that shape.
+- **Clients:** `issuesFromProblemDetails` in `validonce/server-errors` reads this shape; `issuesFromResponse` reads it and FastAPI's.
+
+```json
+{
+  "type": "about:blank",
+  "title": "One or more validation errors occurred.",
+  "status": 422,
+  "validonce": [
+    { "path": ["company"], "ruleId": "Signup.required_when.company", "key": "rules.company_required", "params": {} }
+  ]
+}
+```
+
 ## Conformance cases
 
 `conformance/rules/*.json` files follow `conformance/schema/case.schema.json` (published as <https://schemas.metatoy.com/validonce/conformance-case-v1.json>, so another implementation can run the same cases):
