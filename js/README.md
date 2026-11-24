@@ -98,6 +98,20 @@ For each field it lists the other fields where rules that read it report their e
 
 `dependentFields` is also exported from the framework-neutral `validonce/deps`, for other form libraries or plain DOM code.
 
+## VeeValidate (Vue)
+
+`vee-validate` 4 takes its own `TypedSchema`, not Standard Schema (5.0.0-beta takes Standard Schema directly). `validonce/vue` adapts a `withRules` schema and re-checks dependent fields:
+
+```ts
+import { useForm } from "vee-validate";
+import { toVeeSchema, watchDependents } from "validonce/vue";
+
+const form = useForm({ validationSchema: toVeeSchema(schema) }); // VeeValidate 5: validationSchema: schema
+watchDependents(form, rules); // `plan` changes -> `company` is validated again
+```
+
+`watchDependents` calls `form.validateField` for the fields `dependentFields(rules)` lists. `vue` and `vee-validate` are optional peer dependencies. Guide: [Client: Vue](https://github.com/metatoy/validonce/blob/main/docs/client-vue.md).
+
 ## Angular
 
 ### Signal Forms (no adapter)
@@ -221,6 +235,6 @@ const issues = evaluate(parseRuleSet(raw).rules, data, { side: "client" });
 
 ## More
 
-Guides for [React](https://github.com/metatoy/validonce/blob/main/docs/client-react.md) and [Angular](https://github.com/metatoy/validonce/blob/main/docs/client-angular.md), the [rule format](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md), and the C# and Python server packages: [github.com/metatoy/validonce](https://github.com/metatoy/validonce).
+Guides for [React](https://github.com/metatoy/validonce/blob/main/docs/client-react.md), [Angular](https://github.com/metatoy/validonce/blob/main/docs/client-angular.md), [Vue](https://github.com/metatoy/validonce/blob/main/docs/client-vue.md) and [plain HTML and web components](https://github.com/metatoy/validonce/blob/main/docs/client-dom.md), the [rule format](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md), and the server packages: [github.com/metatoy/validonce](https://github.com/metatoy/validonce).
 
 Copyright 2026 Metatoy LLC. Licensed under the Apache License, Version 2.0.

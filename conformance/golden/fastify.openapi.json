@@ -1,0 +1,143 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "validonce Fastify example",
+    "version": "0.1.0"
+  },
+  "components": {
+    "schemas": {
+      "Signup": {
+        "type": "object",
+        "required": [
+          "plan",
+          "email",
+          "start",
+          "quantity"
+        ],
+        "properties": {
+          "plan": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "free"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "pro"
+                ]
+              }
+            ]
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "start": {
+            "format": "date",
+            "type": "string"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "quantity": {
+            "type": "integer"
+          }
+        },
+        "x-validonce": {
+          "version": 1,
+          "rules": [
+            {
+              "id": "Signup.required_when.company",
+              "kind": "required_when",
+              "field": "company",
+              "when": {
+                "eq": {
+                  "field": "plan",
+                  "value": "pro"
+                }
+              },
+              "message": {
+                "key": "rules.company_required"
+              }
+            },
+            {
+              "id": "Signup.compare.end",
+              "kind": "compare",
+              "left": {
+                "field": "end"
+              },
+              "op": "ge",
+              "right": {
+                "field": "start"
+              },
+              "type": "date",
+              "message": {
+                "key": "rules.end_after_start"
+              }
+            },
+            {
+              "id": "Signup.compare.quantity",
+              "kind": "compare",
+              "left": {
+                "field": "quantity"
+              },
+              "op": "ge",
+              "right": {
+                "value": 1
+              },
+              "type": "number",
+              "message": {
+                "key": "rules.quantity_min",
+                "params": {
+                  "min": 1
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/signups": {
+      "post": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Signup"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    }
+  }
+}

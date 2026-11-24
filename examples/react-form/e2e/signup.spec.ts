@@ -2,11 +2,10 @@
 // Copyright 2026 Metatoy LLC
 
 import { expect, type Page, test } from "@playwright/test";
+import { backendAt } from "../src/backends";
 
 const api = process.env.VALIDONCE_API ?? "http://localhost:5080";
-const port = new URL(api).port;
-const backend = port === "8010" ? "fastapi" : "aspnet";
-const openapi = port === "8010" ? "/openapi.json" : "/openapi/v1.json";
+const { id: backend, openapi } = backendAt(api);
 // VALIDONCE_PROXY=1 loads the form with no ?api=, so it uses its default same-origin /api proxy
 // (the dev server forwards to VALIDONCE_API), the way it runs in a codespace.
 const url =
