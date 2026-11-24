@@ -3,35 +3,30 @@
 name: publish-nuget
 # Publishes .NET packages to nuget.org through trusted publishing (no stored API key).
 # Runs when a GitHub Release is published: packs all four packages at the release version (the tag
-# must be v<Version in dotnet/Directory.Build.props>). Or by hand:
-#   source = dotnet:               packs the projects named in `packages` from dotnet/src at `version`
-#   source = placeholders/dotnet:  packs the name-holding placeholders (no version override)
+# must be v<Version in dotnet/Directory.Build.props>), attests them, attaches them to the Release
+# (nuget.org re-signs what it serves, so the Release copies are the ones `gh attestation verify`
+# accepts) and pushes them. Or by hand: packs the projects named in `packages` at `version`.
 # Needs the repository variable NUGET_USER (the nuget.org account name; not a secret).
 on:
   release:
     types: [published]
   workflow_dispatch:
     inputs:
-      source:
-        description: What to publish
-        type: choice
-        options: [dotnet, placeholders/dotnet]
-        default: dotnet
       packages:
-        description: Space-separated project names under dotnet/src (source = dotnet only)
+        description: Space-separated project names under dotnet/src
         type: string
         default: Validonce Validonce.Cli
       version:
-        description: Package version (source = dotnet only), e.g. 0.1.0
+        description: Package version, e.g. 0.1.0
         type: string
-        required: false
+        required: true
 permissions:
   contents: read
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
       attestations: write
     steps:
@@ -44,7 +39,6 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           TAG: ${{ github.event.release.tag_name }}
-          IN_SOURCE: ${{ inputs.source }}
           IN_PACKAGES: ${{ inputs.packages }}
           IN_VERSION: ${{ inputs.version }}
         run: |
@@ -52,45 +46,40 @@ jobs:
           if [ "$EVENT" = "release" ]; then
             version=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' dotnet/Directory.Build.props | head -1)
             [ "$TAG" = "v$version" ] || { echo "release tag $TAG does not match Directory.Build.props version $version"; exit 1; }
-            echo "source=dotnet" >> "$GITHUB_OUTPUT"
             echo "packages=Validonce Validonce.FluentValidation Validonce.AspNetCore Validonce.Cli" >> "$GITHUB_OUTPUT"
             echo "version=$version" >> "$GITHUB_OUTPUT"
           else
-            echo "source=$IN_SOURCE" >> "$GITHUB_OUTPUT"
             echo "packages=$IN_PACKAGES" >> "$GITHUB_OUTPUT"
             echo "version=$IN_VERSION" >> "$GITHUB_OUTPUT"
           fi
       - name: Test before packing
-        if: steps.cfg.outputs.source == 'dotnet'
         working-directory: dotnet
         run: dotnet test -c Release
       - name: Pack
         env:
-          SOURCE: ${{ steps.cfg.outputs.source }}
           PACKAGES: ${{ steps.cfg.outputs.packages }}
           VERSION: ${{ steps.cfg.outputs.version }}
         run: |
           set -euo pipefail
-          if [ "$SOURCE" = "dotnet" ]; then
-            if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
-              echo "version must look like 0.1.0, got '$VERSION'"; exit 1
-            fi
-            for name in $PACKAGES; do
-              proj="dotnet/src/$name/$name.csproj"
-              [ -f "$proj" ] || { echo "no project $proj"; exit 1; }
-              dotnet pack "$proj" -c Release -p:Version="$VERSION" -o "$GITHUB_WORKSPACE/out"
-            done
-          else
-            for proj in $(find placeholders/dotnet -name '*.csproj'); do
-              dotnet pack "$proj" -c Release -o "$GITHUB_WORKSPACE/out"
-            done
+          if ! printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "version must look like 0.1.0, got '$VERSION'"; exit 1
           fi
+          for name in $PACKAGES; do
+            proj="dotnet/src/$name/$name.csproj"
+            [ -f "$proj" ] || { echo "no project $proj"; exit 1; }
+            dotnet pack "$proj" -c Release -p:Version="$VERSION" -o "$GITHUB_WORKSPACE/out"
+          done
           ls -la "$GITHUB_WORKSPACE/out"
       - name: Attest build provenance
-        if: steps.cfg.outputs.source == 'dotnet'
         uses: actions/attest-build-provenance@v4
         with:
           subject-path: out/*.nupkg
+      - name: Attach the attested packages to the Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" out/*.nupkg --clobber --repo "$GITHUB_REPOSITORY"
       - name: Log in to nuget.org
         id: login
         uses: NuGet/login@v1

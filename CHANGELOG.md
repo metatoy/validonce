@@ -2,6 +2,13 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
+## Unreleased
+
+### Release process
+- Every GitHub Release now carries the packages it published: the four `.nupkg` files and the Python wheel and sdist, each with a GitHub build provenance attestation. Check a download with `gh attestation verify <file> -R metatoy/validonce`. nuget.org re-signs the packages it serves, so verify the copy attached to the Release, not one downloaded from nuget.org.
+- `scripts/prepare-release.mjs <version>` sets the version everywhere it lives (C#, TypeScript, Python, the demo chart, the bug-report template), turns this "Unreleased" heading into the release heading and refreshes `uv.lock`.
+- The name-holding placeholder packages and their publish path are gone.
+
 ## 0.3.1 (2026-11-24)
 
 ### Fixed
