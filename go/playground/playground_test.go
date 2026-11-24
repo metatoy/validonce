@@ -5,6 +5,10 @@ package playground_test
 
 import (
 	"encoding/json"
+	"errors"
+	"reflect"
+	"sort"
+	"strings"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
@@ -61,5 +65,80 @@ func TestRulesRunInsideValidator(t *testing.T) {
 		t.Fatal("field tags should fail")
 	} else if _, ok := playground.IssuesFromError(rules, err); ok {
 		t.Fatal("no rule failures expected")
+	}
+}
+
+type Order struct {
+	Items  []Signup          `json:"items" validate:"dive"`
+	Main   Signup            `json:"main"`
+	ByName map[string]Signup `json:"byName" validate:"dive"`
+}
+
+func TestNestedPaths(t *testing.T) {
+	v := validator.New()
+	playground.Register(v, rules, Signup{})
+	ok := Signup{Plan: "free", Email: "a@example.test", Start: "2026-02-01", Quantity: 1}
+	bad := Signup{Plan: "pro", Email: "a@example.test", Start: "2026-02-01", Quantity: 1}
+	err := v.Struct(Order{Items: []Signup{ok, bad}, Main: bad, ByName: map[string]Signup{"a.b": bad}})
+	issues, found := playground.IssuesFromError(rules, err)
+	if !found {
+		t.Fatalf("no issues: %v", err)
+	}
+	var got []string
+	for _, i := range issues {
+		b, _ := json.Marshal(i.Path)
+		got = append(got, string(b))
+	}
+	want := map[string]bool{`["items","1","company"]`: true, `["main","company"]`: true, `["byName","a.b","company"]`: true}
+	if len(got) != 3 {
+		t.Fatalf("paths = %v", got)
+	}
+	for _, g := range got {
+		if !want[g] {
+			t.Errorf("unexpected path %s (all: %v)", g, got)
+		}
+	}
+}
+
+type Plain struct {
+	Plan    string  `json:"plan"`
+	Company *string `json:"company,omitempty"`
+}
+
+type Wrapper struct {
+	Plain
+	List []Plain `json:"list" validate:"dive"`
+	Skip string  `json:"-"`
+}
+
+var plainRules = validonce.MustBuild[Plain](
+	validonce.When(validonce.Eq("plan", "pro")).Require("company", validonce.Key("rules.company_required")),
+)
+
+func TestUserTagNameFuncIsLeftAlone(t *testing.T) {
+	v := validator.New()
+	// The user names fields by a "label" tag; the integration must not replace this.
+	v.RegisterTagNameFunc(func(f reflect.StructField) string { return "L_" + f.Name })
+	playground.Register(v, plainRules, Plain{})
+
+	err := v.Struct(Wrapper{List: []Plain{{Plan: "pro"}}, Plain: Plain{Plan: "pro"}})
+	var ves validator.ValidationErrors
+	if !errors.As(err, &ves) || len(ves) != 2 {
+		t.Fatalf("err = %v", err)
+	}
+	for _, fe := range ves {
+		if !strings.Contains(fe.Namespace(), "L_") {
+			t.Errorf("user's tag name func was replaced: %s", fe.Namespace())
+		}
+	}
+	issues, ok := playground.IssuesFromError(plainRules, err)
+	if !ok || len(issues) != 2 {
+		t.Fatalf("issues = %+v", issues)
+	}
+	got := []string{strings.Join(issues[0].Path, "/"), strings.Join(issues[1].Path, "/")}
+	sort.Strings(got)
+	// An embedded struct is flattened on the wire; the list item keeps its index.
+	if got[0] != "company" || got[1] != "list/0/company" {
+		t.Fatalf("paths = %v", got)
 	}
 }
