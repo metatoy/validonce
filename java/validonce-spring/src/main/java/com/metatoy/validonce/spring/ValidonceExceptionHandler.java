@@ -3,6 +3,9 @@
 
 package com.metatoy.validonce.spring;
 
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.metatoy.validonce.Issue;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Path;
@@ -26,6 +29,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  */
 @RestControllerAdvice
 public class ValidonceExceptionHandler {
+    private final ObjectMapper mapper;
+
+    public ValidonceExceptionHandler() {
+        this(new ObjectMapper());
+    }
+
+    public ValidonceExceptionHandler(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ProblemDetail> handle(MethodArgumentNotValidException ex) {
@@ -33,7 +46,7 @@ public class ValidonceExceptionHandler {
         List<Issue> issues = new ArrayList<>();
         Map<String, List<String>> errors = new LinkedHashMap<>();
         for (ObjectError e : ex.getBindingResult().getAllErrors()) {
-            ValidonceRulesValidator.Positioned p = issueOf(e);
+            ValidonceRulesValidator.Positioned p = issueOf(e, mapper);
             if (p != null) {
                 found.add(p);
             } else {
@@ -52,7 +65,7 @@ public class ValidonceExceptionHandler {
         return ResponseEntity.unprocessableEntity().body(pd);
     }
 
-    private static ValidonceRulesValidator.Positioned issueOf(ObjectError error) {
+    private static ValidonceRulesValidator.Positioned issueOf(ObjectError error, ObjectMapper mapper) {
         ConstraintViolation<?> cv;
         try {
             cv = error.unwrap(ConstraintViolation.class);
@@ -64,13 +77,37 @@ public class ValidonceExceptionHandler {
         if (p == null) return null;
         Issue issue = p.issue();
         // The host's job: the full path, including any prefix from a nested object.
-        List<String> path = new ArrayList<>();
-        for (Path.Node n : cv.getPropertyPath()) {
-            if (n.isInIterable() && n.getIndex() != null) path.add(String.valueOf(n.getIndex()));
-            else if (n.isInIterable() && n.getKey() != null) path.add(String.valueOf(n.getKey()));
-            if (n.getName() != null) path.add(n.getName());
-        }
+        List<String> path = wirePath(cv, mapper);
         return new ValidonceRulesValidator.Positioned(p.position(),
                 issue.withPath(path.isEmpty() ? issue.path() : path));
+    }
+
+    /**
+     * The violation's path in wire names: each bean property name is mapped to its Jackson name, walking
+     * the types from the root bean. Collection indexes and map keys are kept.
+     */
+    static List<String> wirePath(ConstraintViolation<?> cv, ObjectMapper mapper) {
+        List<String> path = new ArrayList<>();
+        JavaType current = cv.getRootBeanClass() == null ? null : mapper.constructType(cv.getRootBeanClass());
+        for (Path.Node n : cv.getPropertyPath()) {
+            if (n.isInIterable()) {
+                if (n.getIndex() != null) path.add(String.valueOf(n.getIndex()));
+                else if (n.getKey() != null) path.add(String.valueOf(n.getKey()));
+                while (current != null && (current.isContainerType() || current.isReferenceType())) {
+                    current = current.getContentType();
+                }
+            }
+            String name = n.getName();
+            if (name == null) continue;
+            BeanPropertyDefinition p = current == null ? null : WireNames.byBeanName(mapper, current, name);
+            if (p == null) {
+                path.add(name);
+                current = null;
+            } else {
+                path.add(p.getName());
+                current = p.getPrimaryType();
+            }
+        }
+        return path;
     }
 }

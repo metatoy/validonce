@@ -50,7 +50,7 @@ public class ValidonceRulesValidator implements ConstraintValidator<ValidonceRul
             Issue issue = issues.get(i);
             hv.withDynamicPayload(new Positioned(i, issue));
             hv.buildConstraintViolationWithTemplate(escape(issue.key()))
-                    .addPropertyNode(issue.path().get(0))
+                    .addPropertyNode(WireNames.toBean(m, value.getClass(), issue.path().get(0)))
                     .addConstraintViolation();
         }
         return false;

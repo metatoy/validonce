@@ -4,6 +4,7 @@
 package com.metatoy.validonce.example;
 
 import com.metatoy.validonce.spring.ValidonceRules;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
@@ -12,8 +13,8 @@ import java.time.LocalDate;
 @ValidonceRules(SignupRules.class)
 public record Signup(
         @NotNull Plan plan,
-        String company,
+        @Schema(nullable = true) String company,
         @NotNull @Size(min = 1) String email,
         @NotNull LocalDate start,
-        LocalDate end,
+        @Schema(nullable = true) LocalDate end,
         @NotNull Integer quantity) {}
