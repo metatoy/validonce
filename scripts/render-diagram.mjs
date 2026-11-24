@@ -2,6 +2,8 @@
 // Copyright 2026 Metatoy LLC
 
 // Renders the "How it works" diagram from metatoy.com/oss/validonce into the PNG the README uses.
+// Note (2026-11-24): the README diagram (light and dark) is now designed in Claude Design (project
+// "validonce README assets") and exported at 2x. Running this script replaces it with the site's version.
 // The diagram on the site is HTML and CSS, which a GitHub README cannot render, so this captures
 // just that figure at 2x.
 //
