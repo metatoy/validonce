@@ -24,8 +24,8 @@ Usage:
 Options:
   -o, --out <file>     write to <file> (default: standard output; "-" is also standard output)
   --schema <Name>      only this schema (repeatable). "Name-Input" is used when "Name" has no rules
-  --format ts|json     TypeScript module (default) or plain JSON; name a JSON file
-                       *.validonce.json so editors validate it
+  --format ts|json     TypeScript module (default) or plain JSON (its JSON Schema:
+                       https://schemas.metatoy.com/validonce/rules-file-v1.json)
   -h, --help           show this help
   -v, --version        show the version
 
