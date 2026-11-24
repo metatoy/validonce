@@ -1,0 +1,26 @@
+{
+  "name": "validonce-example-fastify-app",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Metatoy LLC",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/main.ts src/export-openapi.ts --bundle --platform=node --format=esm --target=node20 --packages=external --outdir=dist",
+    "typecheck": "tsc --noEmit",
+    "start": "pnpm build && node dist/main.js",
+    "export-openapi": "pnpm build && node dist/export-openapi.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "11.4.3",
+    "@fastify/swagger": "9.9.5",
+    "@sinclair/typebox": "0.34.52",
+    "fastify": "5.12.8",
+    "validonce": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2"
+  }
+}

@@ -1,5 +1,6 @@
 {
   "formatter": { "indentStyle": "space", "indentWidth": 2 },
   "files": { "includes": ["src/**", "test/**", "*.json"] },
+  "javascript": { "parser": { "unsafeParameterDecoratorsEnabled": true } },
   "linter": { "enabled": true, "rules": { "preset": "recommended" } }
 }

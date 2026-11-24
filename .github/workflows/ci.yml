@@ -54,6 +54,12 @@ jobs:
       - name: Example form builds
         run: pnpm typecheck && pnpm build
         working-directory: examples/react-form
+      - name: Fastify example typechecks
+        run: pnpm typecheck
+        working-directory: examples/fastify-app
+      - name: NestJS example typechecks
+        run: pnpm typecheck
+        working-directory: examples/nestjs-app
       - name: Angular example builds
         # Angular 22's CLI needs Node 22.22.3 or later; the library itself supports Node 20.
         if: matrix.node == 22
@@ -97,7 +103,7 @@ jobs:
 
   golden:
     # Regenerates each example backend's OpenAPI document and fails on any difference from the
-    # committed copy, then checks the two backends export identical Signup rules.
+    # committed copy, then checks every backend exports identical Signup rules.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -105,15 +111,30 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - uses: astral-sh/setup-uv@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        working-directory: js
       - name: Export ASP.NET OpenAPI
         working-directory: examples/aspnet-app
         run: dotnet run --no-launch-profile -- --export-openapi ../../conformance/golden/aspnet.openapi.json
       - name: Export FastAPI OpenAPI
         working-directory: examples/fastapi-app
         run: uv run python export_openapi.py ../../conformance/golden/fastapi.openapi.json
+      - name: Export Fastify OpenAPI
+        working-directory: examples/fastify-app
+        run: pnpm export-openapi ../../conformance/golden/fastify.openapi.json
+      - name: Export NestJS OpenAPI
+        working-directory: examples/nestjs-app
+        run: pnpm export-openapi ../../conformance/golden/nestjs.openapi.json
       - name: No drift from the committed golden files
         run: git diff --exit-code conformance/golden
-      - name: Both backends export the same rules
+      - name: Every backend exports the same rules
         run: uv run --project python python scripts/check_golden.py
 
   e2e:
@@ -124,6 +145,10 @@ jobs:
       matrix:
         framework: [react, angular]
         backend: [aspnet, fastapi]
+        # React runs against every backend; each other frontend only against ASP.NET and FastAPI.
+        include:
+          - { framework: react, backend: fastify }
+          - { framework: react, backend: nestjs }
     env:
       CI: "1"
     steps:
@@ -162,6 +187,20 @@ jobs:
           # cache lock while the server is up.
           nohup .venv/bin/uvicorn app:app --port 8010 > backend.log 2>&1 &
           echo "VALIDONCE_API=http://localhost:8010" >> "$GITHUB_ENV"
+      - name: Start Fastify
+        if: matrix.backend == 'fastify'
+        working-directory: examples/fastify-app
+        run: |
+          pnpm build
+          nohup node dist/main.js > backend.log 2>&1 &
+          echo "VALIDONCE_API=http://localhost:8020" >> "$GITHUB_ENV"
+      - name: Start NestJS
+        if: matrix.backend == 'nestjs'
+        working-directory: examples/nestjs-app
+        run: |
+          pnpm build
+          nohup node dist/main.js > backend.log 2>&1 &
+          echo "VALIDONCE_API=http://localhost:8030" >> "$GITHUB_ENV"
       - name: Wait for the backend
         run: for i in $(seq 1 90); do curl -s -o /dev/null "$VALIDONCE_API/" && exit 0; sleep 1; done; exit 1
       - name: End-to-end tests
@@ -170,7 +209,7 @@ jobs:
       - name: Stop the backend
         if: always()
         run: |
-          for port in 5080 8010; do
+          for port in 5080 8010 8020 8030; do
             pids=$(lsof -t -iTCP:$port -sTCP:LISTEN || true)
             [ -n "$pids" ] && kill $pids || true
           done
