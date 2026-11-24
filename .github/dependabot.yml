@@ -5,8 +5,9 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    # No root package.json: list the pnpm workspace packages (the lockfile at the root is found).
-    directories: ["/js", "/mcp", "/mcp/evals", "/testbeds/before", "/examples/angular-form", "/examples/react-form", "/examples/wrap-demo"]
+    # The root package.json makes this a pnpm workspace Dependabot understands: one PR per update covers every
+    # workspace package and updates the root pnpm-lock.yaml.
+    directory: /
     schedule:
       interval: weekly
       day: monday
@@ -14,6 +15,13 @@ updates:
     groups:
       npm-minor-patch:
         update-types: [minor, patch]
+    ignore:
+      # Types must match the oldest supported Node (engines: >=20), not the newest.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # Angular pins TypeScript to a narrow range (22.3: >=6.0 <6.1); take majors by hand with Angular.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: nuget
     directories: ["/dotnet", "/conformance/regex/runners/dotnet", "/skills/validonce-migrate/scripts/dotnet-runner", "/testbeds/before/fluentvalidation"]
     schedule:
