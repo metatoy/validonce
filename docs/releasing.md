@@ -1,12 +1,12 @@
 # Releasing
 
-How the packages are published. npm, NuGet and PyPI publish from GitHub Actions (`publish-*.yml`). Maven Central is published by hand from the founder's Mac, because the signing key lives there. The Go module needs only a tag.
+How the packages are published. npm, NuGet and PyPI publish from GitHub Actions (`publish-*.yml`). Maven Central is published by hand from the founder's Mac, because the signing key lives there. The Go module is published by a tag, which `publish-go.yml` pushes.
 
 ## Order
 
 1. `node scripts/prepare-release.mjs X.Y.Z` sets the version everywhere (C#, TypeScript, Python, Java, the demo chart, the bug-report template) and turns the CHANGELOG's "## Unreleased" into the release heading. Open the release PR and merge it.
 2. Publish the GitHub Release `vX.Y.Z` from `main`. This runs the npm, NuGet and PyPI workflows, which check the tag against the version and attach attested packages to the Release.
-3. Go: push the tag `go/vX.Y.Z` on the same commit (`git tag go/vX.Y.Z <sha> && git push origin go/vX.Y.Z`). The Go module proxy picks it up on the first `go get`; check with `GOPROXY=https://proxy.golang.org go list -m github.com/metatoy/validonce/go@vX.Y.Z`.
+3. Go: nothing to do. `publish-go.yml` runs on the same Release: it tests the module, pushes `go/vX.Y.Z` on the Release's commit and fetches it through the Go module proxy. (For an older release, run it by hand with the release tag.)
 4. Maven Central: the manual steps below.
 
 ## Maven Central (manual)
