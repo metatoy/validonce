@@ -177,21 +177,11 @@ importers:
         version: 4.6.7
 
   mcp:
-    dependencies:
-      '@modelcontextprotocol/server':
-        specifier: 2.4.0
-        version: 2.4.0
-      fast-check:
-        specifier: 4.11.0
-        version: 4.11.0
-      validonce:
-        specifier: workspace:*
-        version: link:../js
-      zod:
-        specifier: 4.6.7
-        version: 4.6.7
     devDependencies:
       '@modelcontextprotocol/client':
+        specifier: 2.4.0
+        version: 2.4.0
+      '@modelcontextprotocol/server':
         specifier: 2.4.0
         version: 2.4.0
       '@types/node':
@@ -200,12 +190,21 @@ importers:
       esbuild:
         specifier: 0.28.2
         version: 0.28.2
+      fast-check:
+        specifier: 4.11.0
+        version: 4.11.0
       typescript:
         specifier: 7.0.2
         version: 7.0.2
+      validonce:
+        specifier: workspace:*
+        version: link:../js
       vitest:
         specifier: 5.1.1
         version: 5.1.1(@opentelemetry/api@1.10.0)(@types/node@22.20.5)(vite@8.3.8(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.108.2)(sass@1.108.2)(tsx@4.23.15)(yaml@2.9.1))
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
 
   mcp/evals:
     devDependencies:
