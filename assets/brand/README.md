@@ -23,7 +23,7 @@ Wordmark: Interstate Bold, -0.02em tracking, lowercase. Outlined in every SVG, s
 - `svg/`: icon, small cut, square, bare mark, wordmark, lockup (dark and light)
 - `png/`: icons at 1024 to 16, lockups at 320 px tall
 - `favicon/`: favicon.svg, favicon.ico (16/32/48), PNGs, apple-touch-icon, android-chrome
-- `banner/`: README banner 830x300 (PNG at 2x, the width GitHub shows a README at): the lockup with the supported stacks (solid, accent color) and planned ones (dashed, grey). The tagline and small labels use JetBrains Mono if installed, else SF Mono or Menlo. Update the stack lists when support changes.
+- `banner/`: README banner 830x300 (PNG at 2x, the width GitHub shows a README at), light and dark: the lockup with every supported stack (five backends, four frontends). Designed in Claude Design (project "validonce README assets", 2026-11-24) and exported at 2x. Update the stack lists when support changes.
 
 ## Notes
 - The knockout gap around the check is drawn in the tile color. On a different background use the icon tiles, not the bare mark.
