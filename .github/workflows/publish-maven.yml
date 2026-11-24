@@ -7,7 +7,7 @@ name: publish-maven
 # Central Portal user token. The environment only allows release tags and needs the founder's approval
 # for every run. Tests run first; the signed bundle gets a build provenance attestation and, for a
 # Release, is attached to it. Runs when a GitHub Release is published (tag v<version in
-# java/gradle.properties>), or by hand for an existing release tag.
+# java/gradle.properties>), or by hand for an existing release tag (then from the current commit).
 on:
   release:
     types: [published]
@@ -32,9 +32,11 @@ jobs:
       run:
         working-directory: java
     steps:
+      # A Release builds its tag. A manual run builds the commit it runs on (normally main), so a fix to
+      # the build can publish an earlier version; the version check below still has to match the tag.
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          ref: ${{ github.event.release.tag_name || github.sha }}
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
