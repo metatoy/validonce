@@ -4,7 +4,7 @@
 // Sets a new validonce version everywhere it lives, renames the CHANGELOG's "## Unreleased" heading to
 // the version and date, refreshes python/uv.lock, and checks that the old version is gone. It does not
 // commit, tag or publish: review the diff, open a release PR, merge it, then publish the GitHub Release
-// v<version> (that runs the npm, PyPI and NuGet publish workflows).
+// v<version> (that runs the npm, PyPI, NuGet and Go publish workflows).
 //
 // Usage, from the repo root:  node scripts/prepare-release.mjs X.Y.Z [--date YYYY-MM-DD]
 // (validonce-mcp has its own version in mcp/package.json and its own release; see publish-npm.yml.)

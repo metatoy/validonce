@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+name: publish-go
+# Publishes the Go module (github.com/metatoy/validonce/go). A Go module is published by its tag: this
+# pushes go/v<version> on the commit of the GitHub Release v<version> (the version is
+# js/package.json's, as for the other packages), then asks the Go module proxy for it, so the version
+# is fetchable at once. Tests run first. Runs when a Release is published, or by hand for an existing
+# release tag. If go/v<version> already exists on the same commit, nothing is pushed.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag, e.g. v0.4.0"
+        required: true
+permissions:
+  contents: read
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the go/v* tag
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: go/go.sum
+      - name: Check the release tag matches js/package.json
+        run: |
+          version=$(node -p "require('./js/package.json').version")
+          [ "$TAG" = "v$version" ] || { echo "release tag $TAG does not match js/package.json version $version"; exit 1; }
+          case "$TAG" in v*-*) echo "::notice::pre-release $TAG";; esac
+      - name: Test before tagging
+        working-directory: go
+        run: go test ./... && go vet ./...
+      - name: Push go/${{ env.TAG }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          existing=$(git ls-remote origin "refs/tags/go/$TAG" | cut -f1)
+          if [ -n "$existing" ]; then
+            [ "$existing" = "$sha" ] || { echo "::error::go/$TAG already exists on $existing, not on the release commit $sha"; exit 1; }
+            echo "go/$TAG is already on $sha"; exit 0
+          fi
+          git tag "go/$TAG" "$sha"
+          git push origin "go/$TAG"
+      - name: Fetch it through the Go module proxy
+        run: |
+          for i in 1 2 3 4 5 6; do
+            GOPROXY=https://proxy.golang.org go list -m "github.com/metatoy/validonce/go@$TAG" && exit 0
+            sleep 20
+          done
+          echo "::warning::the proxy has not served github.com/metatoy/validonce/go@$TAG yet; it will on the first go get"

@@ -136,6 +136,19 @@ jobs:
       - run: ./gradlew check
       - name: Unsigned dry-run bundle
         run: ./gradlew centralBundle
+      - name: Signed bundle with a throwaway key (the publish workflow's in-memory signing path)
+        run: |
+          export GNUPGHOME=$(mktemp -d)
+          gpg --batch --pinentry-mode loopback --passphrase ci --quick-gen-key "validonce CI test <test@example.invalid>" ed25519 sign 1d
+          export VALIDONCE_SIGNING_PASSWORD=ci
+          VALIDONCE_SIGNING_KEY=$(gpg --batch --pinentry-mode loopback --passphrase ci --armor --export-secret-keys)
+          export VALIDONCE_SIGNING_KEY
+          ./gradlew centralBundle -Pvalidonce.sign
+          bundle=$(ls build/central/validonce-*-bundle.zip)
+          dir=$(mktemp -d) && unzip -q "$bundle" -d "$dir"
+          jar=$(find "$dir" -name 'validonce-core-*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar')
+          gpg --verify "$jar.asc" "$jar"
+          [ "$(find "$dir" -name '*.asc' | wc -l)" -ge 10 ] || { echo "too few signatures"; exit 1; }
 
   conformance-schema:
     runs-on: ubuntu-latest

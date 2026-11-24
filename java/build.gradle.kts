@@ -28,10 +28,12 @@ subprojects {
     }
 }
 
-// ---- Publishing: a manual release by the founder. Nothing here signs or uploads on its own. ----
+// ---- Publishing. Nothing here uploads; .github/workflows/publish-maven.yml uploads the bundle. ----
 //
 //   ./gradlew centralBundle                      unsigned dry run -> build/central/validonce-<version>-bundle.zip
-//   ./gradlew centralBundle -Pvalidonce.sign     signs with the local gpg agent (founder's key), see docs/releasing.md
+//   ./gradlew centralBundle -Pvalidonce.sign     signed. With VALIDONCE_SIGNING_KEY (an ASCII-armored secret key)
+//                                                and VALIDONCE_SIGNING_PASSWORD in the environment (the publish
+//                                                workflow), the key is used in memory; otherwise the local gpg agent.
 
 val sign = providers.gradleProperty("validonce.sign").isPresent
 val stagingRepo = layout.buildDirectory.dir("staging-repo")
@@ -105,7 +107,12 @@ configure(subprojects.filter { it.name in publishedModules }) { pluginManager.wi
 
     if (sign) {
         extensions.configure<SigningExtension> {
-            useGpgCmd()
+            val key = System.getenv("VALIDONCE_SIGNING_KEY")
+            if (!key.isNullOrBlank()) {
+                useInMemoryPgpKeys(key, System.getenv("VALIDONCE_SIGNING_PASSWORD") ?: "")
+            } else {
+                useGpgCmd()
+            }
             sign(extensions.getByType<PublishingExtension>().publications)
         }
     }
