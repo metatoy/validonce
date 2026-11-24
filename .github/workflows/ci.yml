@@ -94,6 +94,26 @@ jobs:
         if: matrix.python == '3.13' && matrix.pydantic == 'highest'
         run: uv run ruff format --check .
 
+  go:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: go
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: |
+            go/go.sum
+            examples/go-app/go.sum
+      - run: go test ./...
+      - run: go vet ./...
+      - run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
+      - name: Example builds and vets
+        working-directory: examples/go-app
+        run: go vet ./... && go build ./... && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
+
   conformance-schema:
     runs-on: ubuntu-latest
     steps:
@@ -120,6 +140,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
         working-directory: js
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: examples/go-app/go.sum
       - name: Export ASP.NET OpenAPI
         working-directory: examples/aspnet-app
         run: dotnet run --no-launch-profile -- --export-openapi ../../conformance/golden/aspnet.openapi.json
@@ -132,6 +156,9 @@ jobs:
       - name: Export NestJS OpenAPI
         working-directory: examples/nestjs-app
         run: pnpm export-openapi ../../conformance/golden/nestjs.openapi.json
+      - name: Export Go OpenAPI
+        working-directory: examples/go-app
+        run: go run . --export-openapi ../../conformance/golden/go.openapi.json
       - name: No drift from the committed golden files
         run: git diff --exit-code conformance/golden
       - name: Every backend exports the same rules
@@ -149,6 +176,7 @@ jobs:
         include:
           - { framework: react, backend: fastify }
           - { framework: react, backend: nestjs }
+          - { framework: react, backend: go }
     env:
       CI: "1"
     steps:
@@ -165,6 +193,11 @@ jobs:
           dotnet-version: 10.0.x
       - uses: astral-sh/setup-uv@v7
         if: matrix.backend == 'fastapi'
+      - uses: actions/setup-go@v6
+        if: matrix.backend == 'go'
+        with:
+          go-version: stable
+          cache-dependency-path: examples/go-app/go.sum
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
         working-directory: js
@@ -201,6 +234,13 @@ jobs:
           pnpm build
           nohup node dist/main.js > backend.log 2>&1 &
           echo "VALIDONCE_API=http://localhost:8030" >> "$GITHUB_ENV"
+      - name: Start Go
+        if: matrix.backend == 'go'
+        working-directory: examples/go-app
+        run: |
+          go build -o go-app .
+          nohup ./go-app > backend.log 2>&1 &
+          echo "VALIDONCE_API=http://localhost:8040" >> "$GITHUB_ENV"
       - name: Wait for the backend
         run: for i in $(seq 1 90); do curl -s -o /dev/null "$VALIDONCE_API/" && exit 0; sleep 1; done; exit 1
       - name: End-to-end tests
@@ -209,7 +249,7 @@ jobs:
       - name: Stop the backend
         if: always()
         run: |
-          for port in 5080 8010 8020 8030; do
+          for port in 5080 8010 8020 8030 8040; do
             pids=$(lsof -t -iTCP:$port -sTCP:LISTEN || true)
             [ -n "$pids" ] && kill $pids || true
           done
