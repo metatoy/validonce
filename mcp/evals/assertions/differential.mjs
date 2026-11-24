@@ -82,24 +82,30 @@ export default async function (_output, context) {
       const before = readJsonl(join(diff, "old.jsonl"));
       const after = mig.ok ? readJsonl(join(whole, "migrated.jsonl")) : [];
       // Scoped proof: the agent's RULES (what browsers will enforce) against the old verdicts on the fields its rules
-      // report on. A model-level "__root__" failure counts against the rules, unless the migrated validator still fails
-      // at "__root__" for that input: then it comes from a check kept by hand, not from a migrated one.
-      const scoped = before.map((o, i) => {
-        const keptRoot = after[i]?.paths?.includes("__root__") ?? false;
-        const paths = (o.paths ?? []).filter((p) => agentPaths.has(p) || (p === "__root__" && !keptRoot));
-        return { ...o, accept: o.error ? o.accept : paths.length === 0, paths };
-      });
+      // report on. Inputs where the migrated validator still fails at "__root__" are left out: a check kept by hand
+      // rejects them (and a validator that stops at its first error may hide a rule's failure behind it), so they say
+      // nothing about the rules. The whole-model proof below still covers them.
+      const keptRoot = (i) => after[i]?.paths?.includes("__root__") ?? false;
+      const keep = before.map((_, i) => !keptRoot(i));
+      const scoped = before
+        .map((o, i) => {
+          const paths = (o.paths ?? []).filter((p) => agentPaths.has(p) || p === "__root__");
+          return { ...o, accept: o.error ? o.accept : paths.length === 0, paths };
+        })
+        .filter((_, i) => keep[i]);
       writeFileSync(join(diff, "old-scoped.jsonl"), scoped.map((o) => JSON.stringify(o)).join("\n") + "\n");
+      writeFileSync(join(diff, "inputs-scoped.jsonl"), inputs.filter((_, i) => keep[i]).map((d) => JSON.stringify(d)).join("\n") + "\n");
+      const scopedMin = Math.min(minInputs, scoped.length);
       // grader sanity: the input set must exercise the EXPECTED rules and agree with the old validator on them
       const exp = await call("compare_results", { rules: expectedSet, ...common });
       if (exp.verdict !== "PASS") return { pass: false, score: 0, reason: `grader input set is not usable (expected rules vs old validator: ${exp.verdict}: ${(exp.reasons ?? []).join(" ")})` };
-      const res = await call("compare_results", { rules: agent.ruleSet, ...common, oldResultsPath: join(diff, "old-scoped.jsonl") });
+      const res = await call("compare_results", { rules: agent.ruleSet, ...common, inputsPath: join(diff, "inputs-scoped.jsonl"), oldResultsPath: join(diff, "old-scoped.jsonl"), minInputs: scopedMin });
       const scopedPass = res.verdict === "PASS";
-      const scopedNote = `rules ${res.verdict} on ${inputs.length} inputs${scopedPass ? "" : `: ${(res.reasons ?? []).join(" ")}`} totals=${JSON.stringify(res.totals ?? {}).slice(0, 160)}`;
+      const scopedNote = `rules ${res.verdict} on ${scoped.length} inputs${scopedPass ? "" : `: ${(res.reasons ?? []).join(" ")}`} totals=${JSON.stringify(res.totals ?? {}).slice(0, 160)}`;
       // Whole-model proof: the migrated validator must accept and reject exactly what the original does on every input.
-      // This catches a check deleted without a rule in its place. When the migrated code cannot run, only the scoped
-      // proof decides and the builds assertion reports why.
-      if (!mig.ok) return { pass: scopedPass, score: scopedPass ? 1 : 0, reason: `${scopedNote}; whole-model check skipped (migrated validator could not run: ${mig.error.slice(0, 160)})` };
+      // This catches a check deleted without a rule in its place.
+      // No whole-model proof, no pass: a deleted check would go unseen.
+      if (!mig.ok) return { pass: false, score: 0, reason: `${scopedNote}; whole model FAIL: the migrated validator could not run (${mig.error.slice(0, 160)})` };
       const differs = before.map((o, i) => [o, after[i], inputs[i]]).filter(([o, n]) => !n || Boolean(o.error) !== Boolean(n.error) || o.accept !== n.accept);
       const wholePass = differs.length === 0;
       const example = differs[0] ? ` (e.g. ${JSON.stringify(differs[0][2]).slice(0, 140)}: original ${differs[0][0].accept ? "accepts" : "rejects"}, migrated ${differs[0][1]?.accept ? "accepts" : "rejects"})` : "";

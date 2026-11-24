@@ -33,7 +33,7 @@
 // Isolation (Node >= 22 permission model):
 //   * the user's module is bundled with esbuild into one file in a scratch dir;
 //     every import from the user's own code other than zod, yup, @angular/* (and
-//     rxjs, which Angular needs) and relative files, and every node builtin, resolves to a stub that throws
+//     rxjs, which Angular needs), validonce (so a migrated schema can be run too) and relative files, and every node builtin, resolves to a stub that throws
 //     "validonce runner: <module> needs I/O; isolate the schema module"
 //     (that covers fs, node:net, http, axios, database clients, ...);
 //   * the bundle runs in a child `node --permission --allow-fs-read=<bundle>`:
@@ -148,7 +148,7 @@ for (const line of buf.split("\\n")) {
 process.stdout.write(out.join("\\n") + (out.length ? "\\n" : ""));
 `;
 
-const ALLOWED = /^(zod|yup|rxjs|@angular\/[^/]+)(\/.*)?$/;
+const ALLOWED = /^(zod|yup|rxjs|validonce|@angular\/[^/]+)(\/.*)?$/;
 const plugin = {
   name: "validonce-runner",
   setup(b) {

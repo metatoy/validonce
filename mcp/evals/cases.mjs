@@ -114,5 +114,8 @@ if (process.env.VALIDONCE_HOLDOUT_CASES) {
 /** The fixture folder of a case: testbeds/<dir>, or an absolute root for a hold-out case. */
 export const caseDir = (c, testbeds) => (c.root ? c.root : join(testbeds, c.dir));
 
+/** The promptfoo test description of a case (tests.mjs builds them; score-vscode.mjs selects by them). */
+export const caseDescription = (id, c = CASES[id]) => (c.root ? `holdout/${id}` : c.dir);
+
 export const AGENTS = ["claude", "copilot"];
 export const REPEATS = 3;
