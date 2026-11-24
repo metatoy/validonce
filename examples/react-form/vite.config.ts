@@ -7,7 +7,9 @@ import { defineConfig } from "vite";
 // The form calls the backend through same-origin `/api`, so it works behind a forwarded port
 // (a GitHub codespace) without CORS. VALIDONCE_API picks the backend; default is ASP.NET.
 const target = process.env.VALIDONCE_API ?? "http://localhost:5080";
-const openapi = new URL(target).port === "8010" ? "/openapi.json" : "/openapi/v1.json";
+const targetPort = new URL(target).port;
+const openapi =
+  targetPort === "8010" || targetPort === "8040" ? "/openapi.json" : "/openapi/v1.json";
 
 export default defineConfig({
   plugins: [react()],

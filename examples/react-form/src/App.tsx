@@ -40,11 +40,19 @@ const params = new URLSearchParams(window.location.search);
 const api = (params.get("api") ?? "/api").replace(/\/$/, "");
 const proxied = api.startsWith("/");
 const port = proxied ? "" : new URL(api).port;
-const backend = proxied ? "via /api proxy" : port === "8010" ? "FastAPI" : "ASP.NET";
+const backend = proxied
+  ? "via /api proxy"
+  : port === "8010"
+    ? "FastAPI"
+    : port === "8040"
+      ? "Go"
+      : "ASP.NET";
 // Through the proxy, /api/openapi.json is rewritten to each backend's own document path.
 const openapiPath =
   params.get("openapi") ??
-  (proxied || port === "8010" ? "/openapi.json" : "/openapi/v1.json");
+  (proxied || port === "8010" || port === "8040"
+    ? "/openapi.json"
+    : "/openapi/v1.json");
 
 function Form({ rules }: { rules: RuleSet }) {
   const [skipClient, setSkipClient] = useState(false);
