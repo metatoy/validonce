@@ -145,11 +145,12 @@ test("live update: changing start clears the end error without touching end", as
   await page.getByTestId("end").fill("2026-03-01");
   await expect(page.getByTestId("error-end")).toHaveText(MSG.end);
   expect(await validationMessage(page, "end")).toBe(MSG.end);
-  // From here on, any input/change/focus event on end is counted.
+  // From here on, any input or change event on end is counted. (Not focus/blur: filling start
+  // moves focus away from end, which is the test's doing, not the library's.)
   await page.getByTestId("end").evaluate((e) => {
     const w = window as unknown as { endTouched: number };
     w.endTouched = 0;
-    for (const t of ["input", "change", "focus", "blur"]) e.addEventListener(t, () => w.endTouched++);
+    for (const t of ["input", "change"]) e.addEventListener(t, () => w.endTouched++);
   });
   await page.getByTestId("start").fill("2026-02-01");
   await expect(page.getByTestId("error-end")).toBeHidden();
