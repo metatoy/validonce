@@ -1,17 +1,27 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2026 Metatoy LLC
 name: publish-npm
-# Publishes the validonce npm package through npm trusted publishing (no stored token), with
-# provenance. Runs when a GitHub Release is published (the tag must be v<js/package.json version>),
-# or by hand. A version with a pre-release suffix (0.4.0-rc.1) is published under the `next` tag.
+# Publishes the npm packages through npm trusted publishing (no stored token), with provenance.
+# - validonce: when a GitHub Release tagged v<js/package.json version> is published, or by hand.
+#   A version with a pre-release suffix (0.4.0-rc.1) is published under the `next` tag.
+# - validonce-mcp: when a Release tagged validonce-mcp-v<mcp/package.json version> is published, or by hand
+#   (package: validonce-mcp). It is STAGED (`npm stage publish`): the version goes live only after a
+#   maintainer approves it on npmjs.com with 2FA. Its trusted publisher allows staged publishing only.
 on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      package:
+        description: Package to publish
+        type: choice
+        options: [validonce, validonce-mcp]
+        default: validonce
 permissions:
   contents: read
 jobs:
   publish:
+    if: (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v')) || (github.event_name == 'workflow_dispatch' && inputs.package == 'validonce')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -46,3 +56,36 @@ jobs:
             *-*) npm publish --access public --provenance --tag next ;;
             *) npm publish --access public --provenance ;;
           esac
+  publish-mcp:
+    if: (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'validonce-mcp-v')) || (github.event_name == 'workflow_dispatch' && inputs.package == 'validonce-mcp')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the release tag matches mcp/package.json
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version=$(node -p "require('./mcp/package.json').version")
+          [ "$TAG" = "validonce-mcp-v$version" ] || { echo "release tag $TAG does not match mcp/package.json version $version"; exit 1; }
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: Staged publishing needs a current npm
+        run: |
+          npm install -g npm@^11
+          npm stage --help >/dev/null 2>&1 || { echo "this npm ($(npm -v)) has no 'npm stage'"; exit 1; }
+      - run: pnpm install --frozen-lockfile
+      - name: Build and test
+        working-directory: mcp
+        run: pnpm build && pnpm typecheck && pnpm test
+      - name: Stage the release (a maintainer approves it on npmjs.com)
+        working-directory: mcp
+        run: npm stage publish --access public --provenance
