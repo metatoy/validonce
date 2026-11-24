@@ -88,6 +88,24 @@ jobs:
         if: matrix.python == '3.13' && matrix.pydantic == 'highest'
         run: uv run ruff format --check .
 
+  java:
+    # Gradle build: the evaluator on the 125 shared cases (both sides), the Spring integration and the
+    # example app, plus an unsigned dry-run of the Central Portal bundle.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: java
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v5
+      - run: ./gradlew check
+      - name: Unsigned dry-run bundle
+        run: ./gradlew centralBundle
+
   conformance-schema:
     runs-on: ubuntu-latest
     steps:
@@ -97,7 +115,7 @@ jobs:
 
   golden:
     # Regenerates each example backend's OpenAPI document and fails on any difference from the
-    # committed copy, then checks the two backends export identical Signup rules.
+    # committed copy, then checks every backend exports identical Signup rules.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -105,15 +123,23 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - uses: astral-sh/setup-uv@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v5
       - name: Export ASP.NET OpenAPI
         working-directory: examples/aspnet-app
         run: dotnet run --no-launch-profile -- --export-openapi ../../conformance/golden/aspnet.openapi.json
       - name: Export FastAPI OpenAPI
         working-directory: examples/fastapi-app
         run: uv run python export_openapi.py ../../conformance/golden/fastapi.openapi.json
+      - name: Export Spring OpenAPI
+        working-directory: java
+        run: ./gradlew :spring-app:exportOpenApi
       - name: No drift from the committed golden files
         run: git diff --exit-code conformance/golden
-      - name: Both backends export the same rules
+      - name: Every backend exports the same rules
         run: uv run --project python python scripts/check_golden.py
 
   e2e:
@@ -124,6 +150,10 @@ jobs:
       matrix:
         framework: [react, angular]
         backend: [aspnet, fastapi]
+        include:
+          # React against Spring only; no full cross product.
+          - framework: react
+            backend: spring
     env:
       CI: "1"
     steps:
@@ -140,6 +170,13 @@ jobs:
           dotnet-version: 10.0.x
       - uses: astral-sh/setup-uv@v7
         if: matrix.backend == 'fastapi'
+      - uses: actions/setup-java@v5
+        if: matrix.backend == 'spring'
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v5
+        if: matrix.backend == 'spring'
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
         working-directory: js
@@ -162,6 +199,15 @@ jobs:
           # cache lock while the server is up.
           nohup .venv/bin/uvicorn app:app --port 8010 > backend.log 2>&1 &
           echo "VALIDONCE_API=http://localhost:8010" >> "$GITHUB_ENV"
+      - name: Start Spring
+        if: matrix.backend == 'spring'
+        working-directory: java
+        run: |
+          ./gradlew :spring-app:bootJar
+          nohup java -jar ../examples/spring-app/build/libs/spring-app-0.4.0.jar > ../examples/spring-app/backend.log 2>&1 &
+          echo "VALIDONCE_API=http://localhost:8050" >> "$GITHUB_ENV"
+          echo "VALIDONCE_BACKEND=spring" >> "$GITHUB_ENV"
+          echo "VALIDONCE_OPENAPI=/v3/api-docs" >> "$GITHUB_ENV"
       - name: Wait for the backend
         run: for i in $(seq 1 90); do curl -s -o /dev/null "$VALIDONCE_API/" && exit 0; sleep 1; done; exit 1
       - name: End-to-end tests
@@ -170,7 +216,7 @@ jobs:
       - name: Stop the backend
         if: always()
         run: |
-          for port in 5080 8010; do
+          for port in 5080 8010 8050; do
             pids=$(lsof -t -iTCP:$port -sTCP:LISTEN || true)
             [ -n "$pids" ] && kill $pids || true
           done

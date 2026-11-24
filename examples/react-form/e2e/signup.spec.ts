@@ -5,8 +5,10 @@ import { expect, type Page, test } from "@playwright/test";
 
 const api = process.env.VALIDONCE_API ?? "http://localhost:5080";
 const port = new URL(api).port;
-const backend = port === "8010" ? "fastapi" : "aspnet";
-const openapi = port === "8010" ? "/openapi.json" : "/openapi/v1.json";
+// New backends set these two; ASP.NET and FastAPI are recognized by port.
+const backend = process.env.VALIDONCE_BACKEND ?? (port === "8010" ? "fastapi" : "aspnet");
+const openapi =
+  process.env.VALIDONCE_OPENAPI ?? (port === "8010" ? "/openapi.json" : "/openapi/v1.json");
 // VALIDONCE_PROXY=1 loads the form with no ?api=, so it uses its default same-origin /api proxy
 // (the dev server forwards to VALIDONCE_API), the way it runs in a codespace.
 const url =

@@ -30,8 +30,9 @@ The server always enforces the rules. The browser runs them first to give fast f
 - Five rule kinds: `required_when`, `compare`, `at_least_one_of`, `exactly_one_of`, `all_or_none`. See [the rule format](docs/rule-format-v1.md).
 - C# (primary): FluentValidation validators, ASP.NET Core minimal APIs and MVC, OpenAPI export.
 - Python: Pydantic models and FastAPI.
+- Java and Kotlin: Spring Boot with Bean Validation and springdoc (`com.metatoy:validonce-spring`).
 - TypeScript client: Zod 4, react-hook-form helpers, Angular Signal Forms and Reactive Forms, server-error mapping.
-- One shared conformance suite (125 cases) that all three evaluators pass.
+- One shared conformance suite (125 cases) that every evaluator passes.
 - Regex portability linter for `pattern` rules.
 
 ## Install
@@ -147,6 +148,7 @@ More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.m
 - [How it works](docs/how-it-works.md)
 - [Getting started: ASP.NET Core](docs/getting-started-aspnet.md)
 - [Getting started: FastAPI](docs/getting-started-fastapi.md)
+- [Getting started: Spring Boot](docs/getting-started-spring.md)
 - [Client: React](docs/client-react.md)
 - [Client: Angular](docs/client-angular.md)
 - [Loading rules at runtime](docs/live-rules.md)
@@ -182,8 +184,9 @@ The tool reads an OpenAPI file, so it works for any backend language. The same c
 | `conformance/` | Shared test cases every implementation must pass |
 | `dotnet/` | C#: rule types, evaluator, FluentValidation and ASP.NET Core integration |
 | `js/` | TypeScript: evaluator, Zod integration, form helpers |
+| `java/` | Java and Kotlin: rule model, evaluator, builders and the Spring Boot integration (Gradle) |
 | `python/` | Python: evaluator, Pydantic integration, regex linter |
-| `examples/` | ASP.NET Core and FastAPI backends with the same rules, and a React form that reads them |
+| `examples/` | ASP.NET Core, FastAPI and Spring Boot backends with the same rules, and a React form that reads them |
 | `assets/brand/` | Logo, icons and banners (not covered by the code license) |
 
 ## Copyright and license
