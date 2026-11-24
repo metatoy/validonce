@@ -62,4 +62,4 @@ Every run is graded by code, not by a model: the agent's rules must accept and r
 | Claude Code (Opus) | 30 of 30 runs pass every check | 6 of 9 pass every check; the other 3 migrated less than they could (rules left hand-written, with reasons) |
 | GitHub Copilot CLI (GPT-5.3-Codex) | 7 of 7 | 2 of 3; one left code that did not import (caught by the build check) |
 
-In all 42 graded runs, no migration changed what the validator accepts or rejects. Supported: **Claude Code**. Copilot's results are reported as measured.
+In all 49 graded runs (final tuning round and hold-out), no migration changed what the validator accepts or rejects. Supported: **Claude Code**. Copilot's results are reported as measured.
