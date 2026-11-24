@@ -32,7 +32,7 @@ validonce rules are data: five kinds, written once on the server, exported in th
 | `exactly_one_of` | not exactly one field is non-blank | "card or invoice, not both" |
 | `all_or_none` | some but not all fields are blank | "street, city and zip together" |
 
-Conditions for `required_when`: `eq ne in present absent all any not`.
+Conditions for `required_when`: `eq ne in present absent all any not`. A condition that tests "is set" in a way that counts `""` as set (Python `x is not None`, C# `x != null` on a string) is `any: [present x, eq x ""]`, since `present` alone treats `""` as blank.
 
 Pinned behaviour (full text in `docs/rule-format-v1.md` of the validonce repo): **blank** is missing, `null`, `""`, `[]` (not `" "`, `0`, `false`, `{}`); **no coercion** (`"1"` is not `1`); `compare` **passes when either side is blank**, so requiredness is always a separate rule you keep; dates are `YYYY-MM-DD`, datetimes need an offset and compare at millisecond precision; strings compare by code point.
 
@@ -122,7 +122,8 @@ Only now, and only for proven rules:
 - Server: delete the old hand-written checks for migrated rules, keep field-level checks. Make sure the OpenAPI document now carries `x-validonce` (ASP.NET: `AddValidonce()` and the schema transformer; FastAPI: `ValidonceModel` exports it).
 - **Never hand-edit an OpenAPI document the project does not generate** (a saved or downloaded copy of a backend's document, or a file a build step writes). The rules must come from the server that generates it, or the copy drifts from the backend. In a client-only project, keep the rules in `validonce-rules.json`, wire them into the client, and list in the report the rules the backend should add.
 - Client: replace the duplicated client checks with `withRules(...)` (Zod, react-hook-form), `validonceGroupValidator(...)` (Angular Reactive Forms) or `validonce wrap` (orval/kubb-generated Zod). `generate_code` with `target: "zod" | "react-hook-form" | "angular-reactive"` writes the wiring. Prefer reading rules from the API (`rulesFromOpenApi`) or `validonce extract` over pasting them.
-- Re-run the project's own tests and build. Report the results; do not "fix" unrelated failures.
+- Re-run the project's own tests and build **after your last edit**, and import or build the migrated model once more. Report the results; do not "fix" unrelated failures.
+- Error locations: a rule reports on its field (or `path`, which must name a real field of the model). An old model-level error (`__root__`, empty `loc`) moving onto the field is an improvement; never point a rule at a made-up field to keep the old location.
 
 ### 11. Hand over
 
@@ -136,4 +137,5 @@ Show the human `git status` and `git diff --stat`, the report path, the list kep
 - Unsure about a semantic: prefer a failing proof to a guess. The differential check is the arbiter.
 - Divergences only on inputs where a required field is missing (`end >= start` with no `start`, `null < 1`): field-level `required` rejects those before any rule runs. Regenerate with the `required` list and compare again.
 - Divergences only on wrongly typed inputs (`company: []`, `quantity: ""`, an invalid date): the inputs were generated without the field types. Regenerate with `properties` (step 6) and compare again; do not keep the rule for that reason.
+- Enum binding (ASP.NET `JsonStringEnumConverter`, Pydantic enums): the validator sees the **bound** value, not the wire text, so `eq` on the enum member matches `"weekly"` or `2` after binding exactly as the old check did. This is not a coercing comparison; prove it with the runner on bound values.
 - Truthiness in the old code (`!x`, `x && …`, `a < b` on strings): on well-typed inputs `!x` matches validonce blank for strings and nullable fields (missing, `null`, `""`), and `<` on `YYYY-MM-DD` strings matches a `date` compare. Prove it rather than assume either way.
