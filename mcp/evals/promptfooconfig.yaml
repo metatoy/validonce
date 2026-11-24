@@ -68,14 +68,4 @@ defaultTest:
       metric: report_clarity
       weight: 0.1
 
-tests:
-  - { description: "before/zod", vars: { case: zod } }
-  - { description: "before/yup", vars: { case: yup } }
-  - { description: "before/angular", vars: { case: angular } }
-  - { description: "before/pydantic", vars: { case: pydantic } }
-  - { description: "before/fluentvalidation", vars: { case: fluentvalidation } }
-  - { description: "tricky/arithmetic-ts", vars: { case: tricky-arithmetic } }
-  - { description: "tricky/nested-ts", vars: { case: tricky-nested } }
-  - { description: "tricky/coercion-py", vars: { case: tricky-coercion } }
-  - { description: "tricky/conditional-format-py", vars: { case: tricky-conditional-format } }
-  - { description: "tricky/async-db-cs", vars: { case: tricky-async-db } }
+tests: file://tests.mjs   # built from cases.mjs (VALIDONCE_EVAL_GROUP: tuning | holdout | all)

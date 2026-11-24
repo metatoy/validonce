@@ -10,10 +10,11 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, symlinkSync, 
 import { basename, isAbsolute, join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import { pathToFileURL } from "node:url";
-import { CASES } from "./cases.mjs";
+import { CASES, caseDir } from "./cases.mjs";
 import { assertOutsideParentWorkspace, ensureNugetFeed, ensureDir, evalsDir, mcpEntry, readJson, repoRoot, scratchRoot, skillsDir, testbeds } from "./lib/util.mjs";
 
-const SKIP = new Set(["expected.json", "node_modules", "bin", "obj", ".venv", "__pycache__", "inputs", ".git"]);
+// case.mjs, replay/ and SOURCE.md belong to a hold-out case's answer side, never the agent's copy
+const SKIP = new Set(["expected.json", "node_modules", "bin", "obj", ".venv", "__pycache__", "inputs", ".git", "case.mjs", "replay", "SOURCE.md"]);
 const skipFile = (name) => SKIP.has(name) || /^io_on_import\./.test(name);
 
 /** "baseline" = skills/validonce-migrate; otherwise mcp/evals/variants/<name>/ (a copy of the skill dir) or an absolute path. */
@@ -39,13 +40,13 @@ export function prepare({ caseId, variant = "baseline", agent, runId = process.e
   mkdirSync(work, { recursive: true });
 
   // 1. fixture files (never expected.json, inputs, build output, io_on_import fixtures)
-  const src = join(testbeds, c.dir);
+  const src = caseDir(c, testbeds);
   cpSync(src, work, { recursive: true, filter: (s) => !skipFile(basename(s)) });
   // 2. dependencies: link, don't copy (pnpm store / venv live in the repo, outside the agent's cwd)
   const nm = join(testbeds, "before/node_modules");
   if (c.stack === "js" && existsSync(nm)) symlinkSync(nm, join(work, "node_modules"), "dir");
   if (c.stack === "python") symlinkSync(join(repoRoot, "python/.venv"), join(work, ".venv"), "dir"); // pydantic + the workspace validonce (editable)
-  if (c.group === "before" && c.stack === "js") {
+  if ((c.group === "before" || c.group === "holdout") && c.stack === "js") {
     const p = readJson(join(testbeds, "before/package.json"));
     const dev = { ...p.devDependencies };
     delete dev.validonce;

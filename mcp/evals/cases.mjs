@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Metatoy LLC
 
+import { isAbsolute, join } from "node:path";
+import { pathToFileURL } from "node:url";
+
 // The test set: five "before" fixtures (the Signup rules, hand-written) and five "tricky" fixtures
 // (the agent must NOT migrate anything). Eval mechanics live here; the answers live in each
 // fixture's expected.json (which is never copied to the agent's working directory).
@@ -95,6 +98,21 @@ export const CASES = {
     build: { cmd: "dotnet", args: ["build", "-c", "Release", "-v", "q", "-nologo"] },
   },
 };
+
+// Hold-out cases (Plan C Part 5): public apps measured once, kept OUTSIDE this repo (third-party code, scratch copies).
+// VALIDONCE_HOLDOUT_CASES points at a module exporting HOLDOUT: { [id]: case } where each case has an absolute
+// `root` (its fixture folder, holding expected.json) and group "holdout". They run with VALIDONCE_EVAL_GROUP=holdout.
+if (process.env.VALIDONCE_HOLDOUT_CASES) {
+  const { HOLDOUT } = await import(pathToFileURL(process.env.VALIDONCE_HOLDOUT_CASES).href);
+  for (const [id, c] of Object.entries(HOLDOUT)) {
+    if (CASES[id]) throw new Error(`hold-out case id clashes with a tuning case: ${id}`);
+    if (!c.root || !isAbsolute(c.root)) throw new Error(`hold-out case ${id} needs an absolute root`);
+    CASES[id] = { group: "holdout", ...c, dir: "." };
+  }
+}
+
+/** The fixture folder of a case: testbeds/<dir>, or an absolute root for a hold-out case. */
+export const caseDir = (c, testbeds) => (c.root ? c.root : join(testbeds, c.dir));
 
 export const AGENTS = ["claude", "copilot"];
 export const REPEATS = 3;

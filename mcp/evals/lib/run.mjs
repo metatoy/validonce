@@ -3,7 +3,7 @@
 
 import { existsSync, readFileSync, readdirSync, lstatSync } from "node:fs";
 import { join, relative } from "node:path";
-import { CASES } from "../cases.mjs";
+import { CASES, caseDir } from "../cases.mjs";
 import { readJson, testbeds } from "./util.mjs";
 
 /** Everything an assertion needs about one run, from the provider's metadata. */
@@ -12,7 +12,7 @@ export function loadRun(context) {
   if (!meta?.work || !meta?.pristine) throw new Error("provider response has no run metadata (work/pristine)");
   const caseId = meta.caseId;
   const c = CASES[caseId];
-  const expected = readJson(join(testbeds, c.dir, "expected.json"));
+  const expected = readJson(join(caseDir(c, testbeds), "expected.json"));
   return { meta, caseId, case: c, expected, work: meta.work, pristine: meta.pristine, runDir: meta.runDir };
 }
 

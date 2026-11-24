@@ -29,6 +29,9 @@ export default async function (_output, context) {
   if (agent.error) return { pass: false, score: 0, reason: agent.error };
   if (agent.rules.length === 0) return { pass: false, score: 0, reason: "no rules to prove" };
   const c = run.case;
+  // A case whose fields are all enums and integers has fewer distinct well-formed inputs than MIN_INPUTS; its case
+  // sets minInputs to what the generator can reach (every rule must still be exercised both ways).
+  const minInputs = c.minInputs ?? MIN_INPUTS;
   // VALIDONCE_DIFF_DIR lets rescore.mjs write a fresh set (generate_inputs never overwrites a file).
   const diff = join(run.runDir, process.env.VALIDONCE_DIFF_DIR ?? "diff");
   mkdirSync(diff, { recursive: true });
@@ -41,7 +44,7 @@ export default async function (_output, context) {
       const seen = new Set();
       const inputs = [];
       for (const [name, rules, count, seed] of jobs) {
-        if (inputs.length >= MIN_INPUTS * 1.3 && name === "expected" && seed > 1) break;
+        if (inputs.length >= minInputs * 1.3 && name === "expected" && seed > 1) break;
         const file = join(diff, `generated-${name}-${seed}.jsonl`);
         const g = await call("generate_inputs", { rules, properties: c.properties, count, seed, outFile: file });
         gens.push(g);
@@ -58,7 +61,7 @@ export default async function (_output, context) {
       writeFileSync(join(diff, "inputs.jsonl"), inputs.map((i) => JSON.stringify(i)).join("\n") + "\n");
       const old = runOld(c, run.pristine, join(diff, "inputs.jsonl"), join(diff, "old.jsonl"), diff);
       if (!old.ok) return { pass: false, score: 0, reason: `old validator could not run: ${old.error}` };
-      const common = { inputsPath: join(diff, "inputs.jsonl"), oldResultsPath: join(diff, "old.jsonl"), minInputs: MIN_INPUTS, runner: { name: c.runner.script, sandbox: old.header } };
+      const common = { inputsPath: join(diff, "inputs.jsonl"), oldResultsPath: join(diff, "old.jsonl"), minInputs, runner: { name: c.runner.script, sandbox: old.header } };
       // A partial migration keeps some checks hand-written. Those checks still reject inputs in the old validator, so
       // compare the agent's rules only with the old verdicts on the fields its rules report on (old-scoped.jsonl).
       const agentPaths = new Set(agent.rules.map(reportPath));
@@ -72,8 +75,18 @@ export default async function (_output, context) {
         if (!new RegExp(r.keptIf.marker, r.keptIf.flags ?? "").test(text))
           return { pass: false, score: 0, reason: `${r.id} was neither migrated nor kept as a hand-written check in ${r.keptIf.file}` };
       }
-      const scoped = readJsonl(join(diff, "old.jsonl")).map((o) => {
-        const paths = (o.paths ?? []).filter((p) => agentPaths.has(p));
+      // Run the MIGRATED validator (its rules plus everything it kept by hand) on the same inputs.
+      const whole = join(diff, "whole");
+      mkdirSync(whole, { recursive: true });
+      const mig = runOld(c, run.work, join(diff, "inputs.jsonl"), join(whole, "migrated.jsonl"), whole);
+      const before = readJsonl(join(diff, "old.jsonl"));
+      const after = mig.ok ? readJsonl(join(whole, "migrated.jsonl")) : [];
+      // Scoped proof: the agent's RULES (what browsers will enforce) against the old verdicts on the fields its rules
+      // report on. A model-level "__root__" failure counts against the rules, unless the migrated validator still fails
+      // at "__root__" for that input: then it comes from a check kept by hand, not from a migrated one.
+      const scoped = before.map((o, i) => {
+        const keptRoot = after[i]?.paths?.includes("__root__") ?? false;
+        const paths = (o.paths ?? []).filter((p) => agentPaths.has(p) || (p === "__root__" && !keptRoot));
         return { ...o, accept: o.error ? o.accept : paths.length === 0, paths };
       });
       writeFileSync(join(diff, "old-scoped.jsonl"), scoped.map((o) => JSON.stringify(o)).join("\n") + "\n");
@@ -81,8 +94,17 @@ export default async function (_output, context) {
       const exp = await call("compare_results", { rules: expectedSet, ...common });
       if (exp.verdict !== "PASS") return { pass: false, score: 0, reason: `grader input set is not usable (expected rules vs old validator: ${exp.verdict}: ${(exp.reasons ?? []).join(" ")})` };
       const res = await call("compare_results", { rules: agent.ruleSet, ...common, oldResultsPath: join(diff, "old-scoped.jsonl") });
-      const pass = res.verdict === "PASS";
-      return { pass, score: pass ? 1 : 0, reason: `${res.verdict} on ${inputs.length} inputs${pass ? "" : `: ${(res.reasons ?? []).join(" ")}`} totals=${JSON.stringify(res.totals ?? {}).slice(0, 200)}` };
+      const scopedPass = res.verdict === "PASS";
+      const scopedNote = `rules ${res.verdict} on ${inputs.length} inputs${scopedPass ? "" : `: ${(res.reasons ?? []).join(" ")}`} totals=${JSON.stringify(res.totals ?? {}).slice(0, 160)}`;
+      // Whole-model proof: the migrated validator must accept and reject exactly what the original does on every input.
+      // This catches a check deleted without a rule in its place. When the migrated code cannot run, only the scoped
+      // proof decides and the builds assertion reports why.
+      if (!mig.ok) return { pass: scopedPass, score: scopedPass ? 1 : 0, reason: `${scopedNote}; whole-model check skipped (migrated validator could not run: ${mig.error.slice(0, 160)})` };
+      const differs = before.map((o, i) => [o, after[i], inputs[i]]).filter(([o, n]) => !n || Boolean(o.error) !== Boolean(n.error) || o.accept !== n.accept);
+      const wholePass = differs.length === 0;
+      const example = differs[0] ? ` (e.g. ${JSON.stringify(differs[0][2]).slice(0, 140)}: original ${differs[0][0].accept ? "accepts" : "rejects"}, migrated ${differs[0][1]?.accept ? "accepts" : "rejects"})` : "";
+      const pass = scopedPass && wholePass;
+      return { pass, score: pass ? 1 : 0, reason: `${scopedNote}; whole model ${wholePass ? "PASS" : "FAIL"}: ${differs.length} of ${inputs.length} inputs differ between the original and the migrated validator${example}` };
     });
   } catch (e) {
     return { pass: false, score: 0, reason: `differential could not run: ${e.message}` };

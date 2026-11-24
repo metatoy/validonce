@@ -11,6 +11,8 @@
 // maxBudgetUsd (5, per run), timeoutMs (1200000), planOnly.
 // Spends tokens: refuses to run unless VALIDONCE_EVAL_APPROVED=1. VALIDONCE_EVAL_PLAN_ONLY=1 prints the
 // options without calling anything.
+import { appendFileSync } from "node:fs";
+import { join } from "node:path";
 import { prepare } from "../prepare.mjs";
 import { requireApproval } from "../lib/util.mjs";
 
@@ -63,14 +65,28 @@ export default class ClaudeProvider {
     const timer = setTimeout(() => ac.abort(), this.config.timeoutMs ?? 20 * 60_000);
     const t0 = Date.now();
     let result;
+    // One line per SDK message (type, subtype, tool names, seconds): enough to see where a run stalls, without content.
+    const log = join(prep.runDir, "agent-messages.jsonl");
+    const note = (m) => {
+      const tools = (m.message?.content ?? []).filter((c) => c?.type === "tool_use").map((c) => c.name);
+      appendFileSync(log, `${JSON.stringify({ s: Math.round((Date.now() - t0) / 1000), type: m.type, subtype: m.subtype, tools: tools.length ? tools : undefined })}\n`);
+    };
     try {
       for await (const m of query({ prompt, options: { ...options, abortController: ac, env: { ...process.env, CLAUDE_CODE_DISABLE_TELEMETRY: "1" } } })) {
-        if (m.type === "result") result = m;
+        note(m);
+        if (m.type === "result") {
+          // The result is the last message that matters. Stop here: a stream that stays open after it (seen once in
+          // round 3) must not turn a finished run into a 20-minute timeout.
+          result = m;
+          break;
+        }
       }
     } catch (e) {
-      return { error: `claude run failed: ${e?.message ?? e}`, metadata: { ...prep, seconds: (Date.now() - t0) / 1000 } };
+      if (!result) return { error: `claude run failed: ${e?.message ?? e}`, metadata: { ...prep, seconds: (Date.now() - t0) / 1000 } };
     } finally {
       clearTimeout(timer);
+      // breaking out of the loop closes the query; abort anything still running (MCP server, shells)
+      ac.abort();
     }
     if (!result) return { error: "no result message (timeout or abort)", metadata: { ...prep, seconds: (Date.now() - t0) / 1000 } };
     const u = result.usage ?? {};
