@@ -2,7 +2,7 @@
 // Copyright 2026 Metatoy LLC
 
 import { z } from "zod";
-import { loadDocument, propertiesFor, readRules, checkRules, evaluatePayloads, MAX_PAYLOADS } from "./rules";
+import { loadDocument, propertiesFor, readRules, requiredFor, checkRules, evaluatePayloads, MAX_PAYLOADS } from "./rules";
 import { createHash } from "node:crypto";
 import { NAMINGS, TARGETS, generateCode } from "./codegen";
 import { compareResults } from "./compare";
@@ -81,10 +81,11 @@ export function buildServer(): ValidonceServer {
     name: "generate_inputs",
     title: "Generate boundary-biased test inputs (JSONL)",
     description:
-      "Generates deterministic wire-form JSON inputs for a rule set, for the differential check: the full blank/non-blank matrix over each rule's fields (blank = missing, null, \"\", []), near-blank non-blanks (\" \", 0, false, {}), compare pair coupling (equal, ±1 unit, offsets, Z vs +00:00), required_when value coupling (exact and near misses), seeds from the conformance suite, then `count` random inputs (default 10000, max 50000) for a fixed `seed`. Field types come from the rules and the JSON Schema `properties`. A large set cannot fit in a tool result, so pass `outFile` (a NEW .jsonl path inside the roots): this is the ONLY write the server ever does, it never overwrites an existing file, and it is why this tool is not marked read-only. Without `outFile` the inputs are returned inline when they fit (about 80 KB), otherwise the call fails and asks for `outFile`. By default inputs that fail the type or format check (\"2023-02-29\", a string where a number belongs) are not generated; set includeInvalid to add them.",
+      "Generates deterministic wire-form JSON inputs for a rule set, for the differential check: the full blank/non-blank matrix over each rule's fields (blank = missing, null, \"\", []), near-blank non-blanks (\" \", 0, false, {}), compare pair coupling (equal, ±1 unit, offsets, Z vs +00:00), required_when value coupling (exact and near misses), seeds from the conformance suite, then `count` random inputs (default 10000, max 50000) for a fixed `seed`. Field types come from the rules and the JSON Schema `properties`. A large set cannot fit in a tool result, so pass `outFile` (a NEW .jsonl path inside the roots): this is the ONLY write the server ever does, it never overwrites an existing file, and it is why this tool is not marked read-only. Without `outFile` the inputs are returned inline when they fit (about 80 KB), otherwise the call fails and asks for `outFile`. By default every input is well typed for `properties`: values that fail the type or format check (\"2023-02-29\", a string where a number belongs, [] or {} for a string field, \"\" for a date) and a missing `required` field are not generated, because validonce leaves those to field-level validation; set includeInvalid to add them. Always pass `properties` and `required` (or `document` + `schemaName`), or field types are guessed from the rules.",
     input: z.object({
       rules: z.unknown().describe("The rule set object: { version: 1, rules: [...] }"),
       properties: obj.optional().describe("JSON Schema `properties` of the target schema"),
+      required: z.array(z.string()).optional().describe("Required property names of the target schema (taken from `document` + `schemaName` when given)"),
       document: obj.optional().describe("OpenAPI document to take the schema from"),
       schemaName: z.string().optional().describe("Schema name inside `document`"),
       seed: z.number().int().default(1).describe("Seed; the same seed gives the same inputs"),
@@ -92,10 +93,11 @@ export function buildServer(): ValidonceServer {
       includeInvalid: z.boolean().default(false),
       outFile: z.string().optional().describe("New .jsonl file inside the roots to write the inputs to"),
     }),
-    handler: async ({ rules, properties, document, schemaName, seed, count, includeInvalid, outFile }) => {
+    handler: async ({ rules, properties, required, document, schemaName, seed, count, includeInvalid, outFile }) => {
       const g = generateInputs({
         rules,
         properties: propertiesFor(document, schemaName, properties),
+        required: requiredFor(document, schemaName, required),
         seed,
         count,
         includeInvalid,

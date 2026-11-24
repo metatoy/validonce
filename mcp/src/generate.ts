@@ -38,6 +38,8 @@ interface FieldInfo {
 export interface GenerateOptions {
   rules: unknown;
   properties?: Record<string, unknown>;
+  /** Required property names: a required field is never missing (nor null unless its type allows null). */
+  required?: string[];
   seed: number;
   count: number;
   includeInvalid?: boolean;
@@ -437,6 +439,47 @@ function coupleRequired(rec: Rec, rule: Extract<Rule, { kind: "required_when" }>
   else if (mode === 2 || mode === 4) rec[rule.field] = typicals(f(rule.field))[0];
 }
 
+// ---------- field-level type filter ----------
+// validonce leaves type and format failures to field-level validation, so by default every input must be
+// well typed for the schema `properties`: a blank or near-blank (null, "", [], {}, 0, false, " ") is only
+// generated for a field whose JSON Schema type allows it, and a `required` field is never missing.
+// includeInvalid turns this off.
+
+function jsonTypes(prop: unknown, out = new Set<string>()): Set<string> {
+  if (!prop || typeof prop !== "object") return out;
+  const p = prop as { type?: unknown; nullable?: unknown; anyOf?: unknown; oneOf?: unknown };
+  for (const t of Array.isArray(p.type) ? p.type : [p.type]) if (typeof t === "string") out.add(t);
+  if (p.nullable === true) out.add("null");
+  for (const k of [p.anyOf, p.oneOf]) if (Array.isArray(k)) for (const sub of k) jsonTypes(sub, out);
+  return out;
+}
+
+function valueFitsSchema(prop: unknown, v: V): boolean {
+  const types = jsonTypes(prop);
+  if (types.size === 0) return true; // no type information: anything goes
+  const format = (prop as { format?: unknown }).format;
+  if (v === null) return types.has("null");
+  if (typeof v === "string") return types.has("string") && !((format === "date" || format === "date-time") && v.trim() === "");
+  if (typeof v === "number") return types.has("number") || (types.has("integer") && Number.isInteger(v));
+  if (typeof v === "boolean") return types.has("boolean");
+  if (Array.isArray(v)) return types.has("array");
+  if (typeof v === "object") return types.has("object");
+  return true;
+}
+
+function wellTypedFilter(
+  properties: Record<string, unknown> | undefined,
+  required: string[] | undefined,
+  ruleFields: string[],
+): (r: Rec) => boolean {
+  // required applies to the fields the rules mention (the only fields an input carries)
+  const mustHave = (required ?? []).filter((k) => ruleFields.includes(k));
+  if (!properties && mustHave.length === 0) return () => true;
+  return (r) =>
+    mustHave.every((k) => Object.hasOwn(r, k)) &&
+    (!properties || Object.entries(r).every(([k, v]) => !Object.hasOwn(properties, k) || valueFitsSchema(properties[k], v)));
+}
+
 // ---------- main ----------
 
 export function generateInputs(opts: GenerateOptions): Generated {
@@ -462,8 +505,9 @@ export function generateInputs(opts: GenerateOptions): Generated {
       return true;
     });
 
-  const matrix = dedupe(rules.flatMap((r) => matrixFor(r, byName)));
-  const seeds = dedupe(conformanceSeeds(rules));
+  const typed = invalid ? () => true : wellTypedFilter(opts.properties, opts.required, fields.map((f) => f.name));
+  const matrix = dedupe(rules.flatMap((r) => matrixFor(r, byName)).filter(typed));
+  const seeds = dedupe(conformanceSeeds(rules).filter(typed));
 
   // random part: per-field draws + one integer per coupled rule
   const coupled = rules.filter((r) => r.kind === "compare" || r.kind === "required_when");
@@ -496,7 +540,8 @@ export function generateInputs(opts: GenerateOptions): Generated {
       });
       for (const k of Object.keys(rec)) if (rec[k] === MISSING) delete rec[k];
       return rec;
-    });
+    })
+    .filter(typed);
   const random =
     fields.length === 0
       ? Array.from({ length: opts.count }, () => ({}) as Rec)

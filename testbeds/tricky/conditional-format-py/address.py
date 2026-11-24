@@ -1,10 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2026 Metatoy LLC
 
-"""Tricky fixture: a format that depends on another field (US postal codes are 5 digits, UK ones are not).
-
-validonce has no pattern rule and no format-by-condition, so the agent must keep this.
-"""
+"""Shipping address model."""
 
 import re
 

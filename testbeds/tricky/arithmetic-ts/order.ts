@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Metatoy LLC
 
-// Tricky fixture: arithmetic across fields. validonce has no arithmetic rule kind, so the agent must keep this.
+// Order totals schema.
 import { z } from "zod";
 
 export const Order = z

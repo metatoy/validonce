@@ -2,11 +2,11 @@
   "migrate": [],
   "keep": [
     {
-      "check": "billing.vatId required when billing.business (nested object)",
+      "check": "poNumber required when billing.business (condition on a nested field)",
       "reason_category": "nested",
       "file": "checkout.ts",
       "marker": "billing\\.business",
-      "mention": "vatId|billing"
+      "mention": "poNumber|billing"
     }
   ],
   "allowedFiles": [

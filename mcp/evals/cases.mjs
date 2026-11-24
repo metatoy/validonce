@@ -7,8 +7,9 @@
 
 // JSON Schema properties of the Signup wire model (dates are format: date), given to generate_inputs.
 const SIGNUP_PROPERTIES = {
-  plan: { type: "string" }, company: { type: "string" }, email: { type: "string" },
-  start: { type: "string", format: "date" }, end: { type: "string", format: "date" }, quantity: { type: "integer" },
+  // same as testbeds/before/{zod,yup,angular}/openapi.json (nullable fields allow null, so null blanks are generated)
+  plan: { type: "string", enum: ["free", "pro"] }, company: { type: ["string", "null"] }, email: { type: "string", minLength: 1 },
+  start: { type: "string", format: "date" }, end: { type: ["string", "null"], format: "date" }, quantity: { type: "integer" },
 };
 const SIGNUP_BASE = { plan: "free", email: "a@example.test", start: "2026-05-10", quantity: 1 };
 // The old validators also enforce checks that are not migrated (required plan/email/start/quantity).
@@ -31,11 +32,15 @@ const signupWellFormed = (d) =>
   (d.end == null || (typeof d.end === "string" && realDate(d.end))) &&
   (d.company == null || typeof d.company === "string");
 
+// Angular's partially compiled packages need the JIT compiler loaded first (run-js.mjs does the same).
+const loadCheck = (kind) =>
+  (kind === "angular" ? "import('@angular/compiler').then(() => import('./signup.mjs'))" : "import('./signup.mjs')") +
+  ".then(() => process.exit(0), (e) => { console.error(e); process.exit(1); })";
 const JS_BEFORE = (kind, exportName) => ({
   group: "before",
   stack: "js",
   runner: { script: "run-js.mjs", kind, entry: "signup.mjs", exportName },
-  build: { cmd: "node", args: ["-e", "import('./signup.mjs').then(() => process.exit(0), (e) => { console.error(e); process.exit(1); })"] },
+  build: { cmd: "node", args: ["-e", loadCheck(kind)] },
   base: SIGNUP_BASE,
   properties: SIGNUP_PROPERTIES,
   wellFormed: signupWellFormed,

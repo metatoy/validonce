@@ -14,6 +14,8 @@ import { withMcp } from "../lib/mcp.mjs";
 import { runOld } from "../lib/oldvalidator.mjs";
 
 const MIN_INPUTS = 10_000;
+// The field a rule reports on (rule-format-v1 "Default path").
+const reportPath = (r) => r.path ?? (r.kind === "required_when" ? r.field : r.kind === "compare" ? r.left?.field : r.fields?.[0]);
 const readJsonl = (p) => readFileSync(p, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
 
 export default async function (_output, context) {
@@ -27,7 +29,8 @@ export default async function (_output, context) {
   if (agent.error) return { pass: false, score: 0, reason: agent.error };
   if (agent.rules.length === 0) return { pass: false, score: 0, reason: "no rules to prove" };
   const c = run.case;
-  const diff = join(run.runDir, "diff");
+  // VALIDONCE_DIFF_DIR lets rescore.mjs write a fresh set (generate_inputs never overwrites a file).
+  const diff = join(run.runDir, process.env.VALIDONCE_DIFF_DIR ?? "diff");
   mkdirSync(diff, { recursive: true });
   const expectedSet = { version: 1, rules: run.expected.migrate };
   try {
@@ -56,10 +59,18 @@ export default async function (_output, context) {
       const old = runOld(c, run.pristine, join(diff, "inputs.jsonl"), join(diff, "old.jsonl"), diff);
       if (!old.ok) return { pass: false, score: 0, reason: `old validator could not run: ${old.error}` };
       const common = { inputsPath: join(diff, "inputs.jsonl"), oldResultsPath: join(diff, "old.jsonl"), minInputs: MIN_INPUTS, runner: { name: c.runner.script, sandbox: old.header } };
+      // A partial migration keeps some checks hand-written. Those checks still reject inputs in the old validator, so
+      // compare the agent's rules only with the old verdicts on the fields its rules report on (old-scoped.jsonl).
+      const agentPaths = new Set(agent.rules.map(reportPath));
+      const scoped = readJsonl(join(diff, "old.jsonl")).map((o) => {
+        const paths = (o.paths ?? []).filter((p) => agentPaths.has(p));
+        return { ...o, accept: o.error ? o.accept : paths.length === 0, paths };
+      });
+      writeFileSync(join(diff, "old-scoped.jsonl"), scoped.map((o) => JSON.stringify(o)).join("\n") + "\n");
       // grader sanity: the input set must exercise the EXPECTED rules and agree with the old validator on them
       const exp = await call("compare_results", { rules: expectedSet, ...common });
       if (exp.verdict !== "PASS") return { pass: false, score: 0, reason: `grader input set is not usable (expected rules vs old validator: ${exp.verdict}: ${(exp.reasons ?? []).join(" ")})` };
-      const res = await call("compare_results", { rules: agent.ruleSet, ...common });
+      const res = await call("compare_results", { rules: agent.ruleSet, ...common, oldResultsPath: join(diff, "old-scoped.jsonl") });
       const pass = res.verdict === "PASS";
       return { pass, score: pass ? 1 : 0, reason: `${res.verdict} on ${inputs.length} inputs${pass ? "" : `: ${(res.reasons ?? []).join(" ")}`} totals=${JSON.stringify(res.totals ?? {}).slice(0, 200)}` };
     });

@@ -11,6 +11,7 @@ import { readdirSync } from "node:fs";
 const runDir = resolve(process.argv[2] ?? "");
 if (!existsSync(join(runDir, "work")) || !existsSync(join(runDir, "pristine"))) { console.error("usage: node rescore.mjs <runDir> (needs work/ and pristine/)"); process.exit(2); }
 const caseId = basename(runDir).split("__")[0];
+process.env.VALIDONCE_DIFF_DIR ??= `diff-rescore-${new Date().toISOString().replace(/[:.]/g, "-")}`;
 const context = { providerResponse: { metadata: { caseId, runDir, work: join(runDir, "work"), pristine: join(runDir, "pristine") } } };
 let bad = 0;
 for (const name of ["differential", "rules", "keep", "scope", "builds", "report"]) {

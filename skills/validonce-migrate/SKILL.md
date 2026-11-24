@@ -72,7 +72,7 @@ Note the **model name, wire field names** (after `[JsonPropertyName]`, Pydantic 
 
 For each check decide: one of the five kinds, or "does not map" (table above). Work in **wire names**. Write down the exact semantics of the old code before choosing: what counts as blank (`null`? `""`? whitespace?), strict or inclusive comparison (`GreaterThan` is `gt`, `GreaterThanOrEqualTo` is `ge`), whether the old check skips when a side is missing (that matches `compare`) or fails (that needs a separate required rule). The guides list the traps per stack.
 
-Field-level checks (type, length, enum, regex, plain required) are **not** validonce rules: they stay in the schema and already travel as JSON Schema.
+Field-level checks (type, length, enum, regex, plain required) are **not** validonce rules: they stay in the schema and already travel as JSON Schema. A single-field bound (`quantity >= 1`) may stay field-level (JSON Schema `minimum`) or become a `compare` with a constant value; either is fine, so say which you chose in the report.
 
 ### 3. Propose server rules
 
@@ -89,6 +89,8 @@ Call `generate_code` with `target: "csharp"` or `"python"`, `modelName`, and `pr
 ### 6. Generate inputs
 
 Call `generate_inputs` with the rules, the `properties`, and `outFile` pointing to a **new** `.jsonl` in a scratch directory inside the workspace roots (for example `.validonce-scratch/inputs.jsonl`; ask the human to ignore that directory). Default `count` is 10,000.
+
+**Always pass the real field types as `properties` and the schema's `required` list** (or `document` + `schemaName`, which gives both; look for a saved or served OpenAPI document first). With no OpenAPI document, write them from the model: the server class, the Pydantic model, or the client schema (`z.string().nullable()` is `{"type": ["string", "null"]}`, a date string is `{"type": "string", "format": "date"}`, an integer is `{"type": "integer"}`). The inputs are then all well typed. A wrongly typed value (`[]` for a string, `""` for a number or a date) is a field-level error that JSON Schema validation reports before any rule runs. It is **not** a rule divergence, so it never justifies keeping a rule hand-written. Use `includeInvalid` only to look at those inputs separately.
 
 ### 7. Run the old validator (ask first)
 
@@ -111,13 +113,14 @@ Only rules in a **PASS** verdict are migrated. Move any others back to hand-writ
 
 ### 9. Report
 
-Fill `assets/report-template.md` (rules found, migrated, proven, kept hand-written with reasons, divergences fixed, runner and sandbox, commands to re-run). The `compare_results` result includes a Markdown `report`; paste it under "Proof". Write the report next to the change (for example `docs/validonce-migration.md`), as a new file.
+Fill `assets/report-template.md` (rules found, migrated, proven, kept hand-written with reasons, divergences fixed, runner and sandbox, commands to re-run). Keep every heading of the template, and write "None" under a heading with nothing to report. The `compare_results` result includes a Markdown `report`; paste it under "Proof". Write the report next to the change (for example `docs/validonce-migration.md`), as a new file.
 
 ### 10. Remove duplicates and wire the clients
 
 Only now, and only for proven rules:
 
 - Server: delete the old hand-written checks for migrated rules, keep field-level checks. Make sure the OpenAPI document now carries `x-validonce` (ASP.NET: `AddValidonce()` and the schema transformer; FastAPI: `ValidonceModel` exports it).
+- **Never hand-edit an OpenAPI document the project does not generate** (a saved or downloaded copy of a backend's document, or a file a build step writes). The rules must come from the server that generates it, or the copy drifts from the backend. In a client-only project, keep the rules in `validonce-rules.json`, wire them into the client, and list in the report the rules the backend should add.
 - Client: replace the duplicated client checks with `withRules(...)` (Zod, react-hook-form), `validonceGroupValidator(...)` (Angular Reactive Forms) or `validonce wrap` (orval/kubb-generated Zod). `generate_code` with `target: "zod" | "react-hook-form" | "angular-reactive"` writes the wiring. Prefer reading rules from the API (`rulesFromOpenApi`) or `validonce extract` over pasting them.
 - Re-run the project's own tests and build. Report the results; do not "fix" unrelated failures.
 
@@ -131,3 +134,6 @@ Show the human `git status` and `git diff --stat`, the report path, the list kep
 - Runner exits 3 ("needs I/O; isolate the schema module"): extract the schema into a small module without I/O imports, tell the human, retry once.
 - Runner exits 4 ("cannot prove"): keep those rules hand-written.
 - Unsure about a semantic: prefer a failing proof to a guess. The differential check is the arbiter.
+- Divergences only on inputs where a required field is missing (`end >= start` with no `start`, `null < 1`): field-level `required` rejects those before any rule runs. Regenerate with the `required` list and compare again.
+- Divergences only on wrongly typed inputs (`company: []`, `quantity: ""`, an invalid date): the inputs were generated without the field types. Regenerate with `properties` (step 6) and compare again; do not keep the rule for that reason.
+- Truthiness in the old code (`!x`, `x && …`, `a < b` on strings): on well-typed inputs `!x` matches validonce blank for strings and nullable fields (missing, `null`, `""`), and `<` on `YYYY-MM-DD` strings matches a `date` compare. Prove it rather than assume either way.

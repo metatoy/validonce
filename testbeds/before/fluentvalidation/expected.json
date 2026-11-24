@@ -45,7 +45,8 @@
         "params": {
           "min": 1
         }
-      }
+      },
+      "optional": true
     }
   ],
   "keep": [],
