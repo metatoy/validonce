@@ -2,6 +2,24 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
+## 0.4.0 (2026-11-24)
+
+New backends (Go, Java/Kotlin with Spring Boot, Fastify, NestJS) and new frontends (plain HTML and web components, Vue). Every backend returns the same 422 response, and every evaluator passes the 125 shared conformance cases.
+
+### Added
+- **Go**: module `github.com/metatoy/validonce/go` (release tags `go/vX.Y.Z`): an evaluator, struct rule builders keyed by JSON tag, go-playground/validator integration (`playground`) and Huma integration (`humaonce`: `x-validonce` in the OpenAPI document and the 422 response).
+- **Java and Kotlin**: `com.metatoy:validonce-core` (evaluator, rule model and fluent builders keyed by Jackson names) and `com.metatoy:validonce-spring` (a class-level `@ValidonceRules` Bean Validation constraint, a springdoc `OpenApiCustomizer` and a 422 `ProblemDetail` handler). Published to Maven Central.
+- **TypeScript servers**: `validonce/rules` (rule builders mirroring the Python ones), `validonce/fastify` (TypeBox schemas, a preHandler, `@fastify/swagger` output) and `validonce/nestjs` (a class decorator, a validation pipe, a `@nestjs/swagger` post-processor). Their framework packages are optional peer dependencies.
+- **Plain HTML and web components**: `validonce/dom`, whose `attachRules(form, rules)` sets native validity (`setCustomValidity`, or `ElementInternals` for form-associated custom elements), writes accessible error text, re-checks dependent fields and applies server errors; and `validonce/dom-element`, an optional `<validonce-form>` element.
+- **Vue**: `validonce/vue`, with `toVeeSchema` for VeeValidate 4 (VeeValidate 5 takes the `withRules` schema directly) and `watchDependents` to re-check dependent fields.
+- `validonce/deps`: `dependentFields` in a framework-neutral module, still re-exported from `validonce/react-hook-form`.
+- Examples for each new stack: `fastify-app`, `nestjs-app`, `go-app`, `spring-app`, `dom-form` and `vue-form`. The React form runs against every backend in CI.
+
+### Docs
+- The rule format now has a "Transport" section that fixes the shared error response: RFC 9457 problem details, status 422, with the issues in a top-level `validonce` member. FastAPI keeps its native 422 body.
+- Getting-started pages for Go, Spring Boot, Fastify and NestJS, and client guides for plain HTML and web components and for Vue.
+- `docs/releasing.md`: how each package is released, including the manual, signed Maven Central upload and the Go tag.
+
 ## 0.3.3 (2026-11-24)
 
 Version 0.3.2 was skipped: its GitHub Release was published before the version bump, so the publish workflows stopped at their version check and published nothing. 0.3.3 is the release with these changes.

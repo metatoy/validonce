@@ -295,7 +295,7 @@ jobs:
         working-directory: java
         run: |
           ./gradlew :spring-app:bootJar
-          nohup java -jar ../examples/spring-app/build/libs/spring-app-0.4.0.jar > ../examples/spring-app/backend.log 2>&1 &
+          nohup java -jar ../examples/spring-app/build/libs/spring-app.jar > ../examples/spring-app/backend.log 2>&1 &
           echo "VALIDONCE_API=http://localhost:8050" >> "$GITHUB_ENV"
       - name: Wait for the backend
         run: for i in $(seq 1 90); do curl -s -o /dev/null "$VALIDONCE_API/" && exit 0; sleep 1; done; exit 1

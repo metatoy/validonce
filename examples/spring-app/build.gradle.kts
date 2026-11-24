@@ -36,3 +36,8 @@ tasks.register<Test>("exportOpenApi") {
     systemProperty("validonce.export", goldenFile.absolutePath)
     outputs.upToDateWhen { false }
 }
+
+// A fixed name, so CI and the docs don't change with each version.
+tasks.bootJar {
+    archiveFileName.set("spring-app.jar")
+}
