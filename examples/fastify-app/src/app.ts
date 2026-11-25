@@ -67,6 +67,7 @@ const contactFields = [
 ] as const;
 const C = fieldRefs(...contactFields);
 
+// playground:begin
 const contactRules = defineRules(
   "Contact",
   [
@@ -80,6 +81,7 @@ const contactRules = defineRules(
   ],
   { fields: contactFields },
 );
+// playground:end
 
 const optionalString = (opts = {}) => Type.Optional(Type.Union([Type.String(opts), Type.Null()]));
 

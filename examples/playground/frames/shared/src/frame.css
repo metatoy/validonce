@@ -58,3 +58,17 @@ button.submit {
 .status { margin: 0; color: var(--accent); font-weight: 600; }
 .status[hidden], [hidden] { display: none; }
 .load-error { color: var(--error); }
+
+/* Inputs in a row keep their own height; error text sits below each one. */
+.row { align-items: start; }
+
+/* Embedded in the playground shell: its toggle is the only one. */
+.embedded .toggle { display: none; }
+
+/* The shell's number before a server error. */
+[data-marker]::before {
+  content: attr(data-marker);
+  display: inline-block; width: 15px; height: 15px; margin-right: 5px; border-radius: 50%;
+  background: var(--error); color: var(--bg); font: 700 10px/15px system-ui, sans-serif;
+  text-align: center; vertical-align: 1px;
+}

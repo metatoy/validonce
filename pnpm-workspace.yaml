@@ -8,4 +8,6 @@ packages:
   - 'testbeds/before'
   - 'examples/*'
   - 'examples/playground/frames/*'
+  - 'examples/playground/k8s'
+  - 'examples/playground/shell'
   - 'examples/codegen-clients/*'

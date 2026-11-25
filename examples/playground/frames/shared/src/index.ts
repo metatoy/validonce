@@ -122,6 +122,8 @@ export interface FrameParams {
   openapi: string;
   /** The component schema holding `x-validonce`. */
   schema: string;
+  /** URL of a Kubernetes CRD manifest, read instead of the OpenAPI document (`?crd=`). */
+  crd?: string;
   theme: "light" | "dark";
 }
 
@@ -132,6 +134,7 @@ export function readParams(search: string = window.location.search): FrameParams
     api,
     openapi: p.get("openapi") ?? "/openapi.json",
     schema: p.get("schema") ?? "Contact",
+    crd: p.get("crd") ?? undefined,
     theme: p.get("theme") === "dark" ? "dark" : "light",
   };
 }
@@ -161,7 +164,68 @@ function send(message: Record<string, unknown>): void {
 }
 
 export function announceReady(framework: Framework): void {
+  installShellBridge();
   send({ type: "validonce:ready", framework });
+}
+
+// ---------------------------------------------------------------------------
+// What the shell controls without touching the form code: embedded mode (`?embedded=1` hides the
+// frame's own "Skip browser checks", the shell's toggle is the only one), the theme (live, so the form
+// keeps its state) and the numbered markers on server errors.
+// ---------------------------------------------------------------------------
+
+let markers: Record<string, number> = {};
+let bridgeInstalled = false;
+
+/** Put the shell's number on each field whose first error is a server error (a data attribute the CSS draws). */
+function paintMarkers(): void {
+  for (const el of document.querySelectorAll<HTMLElement>('[data-testid^="error-"]')) {
+    const m = /^error-([A-Za-z]+)$/.exec(el.dataset.testid ?? "");
+    const field = m?.[1];
+    const badge = field ? document.querySelector<HTMLElement>(`[data-testid="badge-server-${field}"]`) : null;
+    const n = field ? markers[field] : undefined;
+    if (n && badge && !badge.hidden && el.textContent) el.dataset.marker = String(n);
+    else delete el.dataset.marker;
+  }
+}
+
+function installShellBridge(): void {
+  if (bridgeInstalled) return;
+  bridgeInstalled = true;
+  if (new URLSearchParams(window.location.search).get("embedded") === "1") {
+    document.documentElement.classList.add("embedded");
+  }
+  window.addEventListener("message", (e: MessageEvent) => {
+    if (e.source !== window.parent) return;
+    const d: unknown = e.data;
+    if (typeof d !== "object" || d === null) return;
+    const m = d as { type?: unknown; theme?: unknown; byField?: unknown };
+    if (m.type === "validonce:set" && (m.theme === "light" || m.theme === "dark")) {
+      applyTheme(m.theme);
+    } else if (m.type === "validonce:markers" && typeof m.byField === "object" && m.byField !== null) {
+      markers = {};
+      for (const [field, n] of Object.entries(m.byField)) {
+        if (typeof n === "number") markers[field] = n;
+      }
+      paintMarkers();
+    }
+  });
+  // Frameworks re-render error lines; repaint whenever the DOM changes.
+  new MutationObserver(paintMarkers).observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["hidden"],
+  });
+  // The next edit clears the numbers.
+  const clear = () => {
+    if (Object.keys(markers).length === 0) return;
+    markers = {};
+    paintMarkers();
+  };
+  document.addEventListener("input", clear);
+  document.addEventListener("change", clear);
 }
 
 const lastIssues: Record<string, string> = {};
@@ -195,6 +259,7 @@ export function onSet(handler: (skipClient: boolean) => void): void {
 // ---------------------------------------------------------------------------
 
 export async function fetchOpenApi(params: FrameParams): Promise<unknown> {
+  if (params.crd) return fetchCrd(params.crd, params.schema);
   const res = await fetch(`${params.api}${params.openapi}`);
   if (!res.ok) throw new Error(`OpenAPI document: HTTP ${res.status}`);
   return res.json();
@@ -319,4 +384,19 @@ export function entriesByField(s: ViewState): Record<Field, Entry[]> {
     out[f] = list;
   }
   return out;
+}
+
+/**
+ * `?crd=`: fetch a Kubernetes CRD, translate its CEL with `translateCrd`, and return an OpenAPI-shaped
+ * document, so the frames read the rules the same way as from a backend. The CRD's messages join the
+ * catalog (the translated rules use `k8s.<Kind>.<n>` keys).
+ */
+async function fetchCrd(url: string, schema: string): Promise<unknown> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`CRD: HTTP ${res.status}`);
+  const { translateCrd } = await import("validonce/kubernetes");
+  const version = Object.values(translateCrd(await res.json()).versions)[0];
+  if (!version) throw new Error("the CRD has no versions");
+  Object.assign(messages, version.catalog);
+  return { openapi: "3.1.0", components: { schemas: { [schema]: version.schema } } };
 }

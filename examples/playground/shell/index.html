@@ -1,0 +1,22 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2026 Metatoy LLC -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>validonce Playground</title>
+    <meta name="description" content="Pick a backend and a frontend, fill in a contact form, and watch the same rules run in the browser and on the server." />
+    <script>
+      // Set the theme before first paint: the saved choice, else the system's.
+      try {
+        var t = localStorage.getItem("playground-theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/main.tsx"></script>
+  </body>
+</html>

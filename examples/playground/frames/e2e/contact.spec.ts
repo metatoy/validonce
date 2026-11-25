@@ -243,6 +243,56 @@ for (const fw of FRAMEWORKS) {
       await expect(page.getByTestId("toggle-skip")).toBeChecked();
     });
 
+    test("embedded mode hides the frame's own toggle", async ({ page }) => {
+      await open(page, fw);
+      await expect(page.getByTestId("toggle-skip")).toBeVisible();
+      await open(page, fw, "&embedded=1");
+      await expect(page.getByTestId("toggle-skip")).toBeHidden();
+      // The shell can still set it.
+      await page.evaluate(() =>
+        window.postMessage({ type: "validonce:set", skipClient: true }, "*"),
+      );
+      await expect(page.getByTestId("toggle-skip")).toBeChecked();
+    });
+
+    test("validonce:markers numbers server errors, and the next edit clears them", async ({
+      page,
+    }) => {
+      await open(page, fw);
+      await page.getByTestId("toggle-skip").check();
+      await page.getByTestId("field-email").fill("a@b.co");
+      await page.getByTestId("submit").click();
+      await expect(page.getByTestId("badge-server-postalCode")).toBeVisible();
+      await expect(page.getByTestId("error-postalCode")).not.toHaveAttribute("data-marker", /.*/);
+      await page.evaluate(() =>
+        window.postMessage({ type: "validonce:markers", byField: { postalCode: 2 } }, "*"),
+      );
+      await expect(page.getByTestId("error-postalCode")).toHaveAttribute("data-marker", "2");
+      await page.getByTestId("field-phone").fill("+1 555 010 0199");
+      await expect(page.getByTestId("error-postalCode")).not.toHaveAttribute("data-marker", /.*/);
+    });
+
+    test("validonce:set theme switches the theme live and keeps the form", async ({ page }) => {
+      await open(page, fw);
+      await page.getByTestId("field-email").fill("keep@me.test");
+      await page.evaluate(() => window.postMessage({ type: "validonce:set", theme: "dark" }, "*"));
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+      await expect(page.getByTestId("field-email")).toHaveValue("keep@me.test");
+      await page.evaluate(() => window.postMessage({ type: "validonce:set", theme: "light" }, "*"));
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    });
+
+    test("city and postal code inputs are the same height with errors below", async ({ page }) => {
+      await open(page, fw);
+      await page.getByTestId("field-street").fill("1 Main St");
+      await page.getByTestId("field-city").fill("Springfield");
+      await expect(page.getByTestId("error-postalCode")).toBeVisible();
+      const city = await page.getByTestId("field-city").boundingBox();
+      const postal = await page.getByTestId("field-postalCode").boundingBox();
+      expect(city?.height).toBe(postal?.height);
+      expect(postal?.y).toBe(city?.y);
+    });
+
     test("?theme=dark switches the theme", async ({ page }) => {
       await open(page, fw, "&theme=dark");
       await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");

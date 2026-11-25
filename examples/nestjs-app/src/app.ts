@@ -73,6 +73,7 @@ const contactFields = [
 ] as const;
 const C = fieldRefs(...contactFields);
 
+// playground:begin
 const contactRules = defineRules(
   "Contact",
   [
@@ -86,6 +87,7 @@ const contactRules = defineRules(
   ],
   { fields: contactFields },
 );
+// playground:end
 
 const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 

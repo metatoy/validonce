@@ -8,6 +8,7 @@ import com.metatoy.validonce.Op;
 import com.metatoy.validonce.RuleDefinition;
 import com.metatoy.validonce.RuleSetBuilder;
 
+// playground:begin
 public final class ContactRules extends RuleDefinition<Contact> {
     public ContactRules() {
         super(Contact.class);
@@ -21,3 +22,4 @@ public final class ContactRules extends RuleDefinition<Contact> {
                 .compare("availableTo", Op.GE, "availableFrom").key("rules.available_to_after_from");
     }
 }
+// playground:end
