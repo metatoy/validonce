@@ -1,5 +1,7 @@
 # Getting started: FastAPI
 
+> **Try it first:** [the playground with FastAPI](https://playground.metatoy.com/?backend=fastapi&frontend=react) runs this backend live, with React, Angular, Vue or a plain form.
+
 Write cross-field rules once on a Pydantic model. The server enforces them and FastAPI publishes them in OpenAPI. Needs Python 3.10+ and `pydantic>=2.9`.
 
 ## 1. Install

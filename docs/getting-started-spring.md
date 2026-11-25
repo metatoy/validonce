@@ -1,5 +1,7 @@
 # Getting started: Spring Boot
 
+> **Try it first:** [the playground with Spring Boot](https://playground.metatoy.com/?backend=spring&frontend=react) runs this backend live, with React, Angular, Vue or a plain form.
+
 Write cross-field rules once, next to your request type. The server enforces them inside the normal `@Valid` flow and springdoc publishes them in OpenAPI. Needs Java 21 and Spring Boot 3.5 (Jackson 2, Hibernate Validator, springdoc 2.8).
 
 ## 1. Install
