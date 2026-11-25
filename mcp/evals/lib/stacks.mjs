@@ -159,6 +159,15 @@ func main() {
 	fmt.Fprintln(os.Stderr, "validonce-runner: go handler, in process")
 }
 `;
+/** Copies a Go project. The checksum of the workspace's own module changes with the workspace, so a go.sum line recorded
+ * against an older build of it (a replay, a saved run) gets the current one. A missing line stays missing. */
+const copyGo = (project, dir) => {
+  copyProject(project, dir);
+  const f = join(dir, "go.sum"), mod = "github.com/metatoy/validonce/go";
+  if (!existsSync(f)) return;
+  const hash = readFileSync(join(ensureGo(), "mod/cache/download", mod, "@v", `${VALIDONCE_GO}.ziphash`), "utf8").trim();
+  writeFileSync(f, readFileSync(f, "utf8").replace(new RegExp(`^(${mod} ${VALIDONCE_GO}) h1:.*$`, "m"), `$1 ${hash}`));
+};
 const goModule = (dir) => /^module\s+(\S+)/m.exec(readFileSync(join(dir, "go.mod"), "utf8"))[1];
 const graderGo = () => {
   const root = join(scratchRoot(), `${GO_ROOT}-grader`);
@@ -168,7 +177,7 @@ const graderGo = () => {
 
 export function runGo(project, inputs, out, scratch) {
   const dir = join(scratch, `go-${basename(project)}`);
-  copyProject(project, dir);
+  copyGo(project, dir);
   mkdirSync(join(dir, "cmd/zzgrader"), { recursive: true });
   writeFileSync(join(dir, "cmd/zzgrader/main.go"), GO_MAIN(goModule(dir)));
   const env = graderGo();
@@ -180,7 +189,7 @@ export function runGo(project, inputs, out, scratch) {
 
 export function buildGo(project, scratch) {
   const dir = join(scratch, "go-build");
-  copyProject(project, dir);
+  copyGo(project, dir);
   // -mod=readonly: the go.mod and go.sum the agent left must be complete
   const r = spawnSync("go", ["vet", "./..."], { cwd: dir, encoding: "utf8", env: { ...graderGo(), GOFLAGS: "-mod=readonly -modcacherw" }, timeout: 240_000 });
   return r.status === 0 ? { ok: true } : { ok: false, error: `go vet failed: ${r.stderr.slice(-400)}` };
@@ -189,7 +198,7 @@ export function buildGo(project, scratch) {
 /** Prints every package-level validonce rule set (var x = validonce.MustBuild / Build) of the root package, from a test in that package. */
 export function exportGo(project, scratch) {
   const dir = join(scratch, "go-export");
-  copyProject(project, dir);
+  copyGo(project, dir);
   const files = readdirSync(dir).filter((f) => f.endsWith(".go"));
   const src = files.map((f) => readFileSync(join(dir, f), "utf8")).join("\n");
   const names = [...new Set([...src.matchAll(/^(?:var\s+)?\s*(\w+)(?:\s*,\s*\w+)?\s*=\s*\w+\.(?:MustBuild|Build)\[/gm)].map((m) => m[1]))].filter((n) => new RegExp(`(^var\\s+${n}\\b|^var\\s*\\([\\s\\S]*?^\\t${n}\\b)`, "m").test(src));
