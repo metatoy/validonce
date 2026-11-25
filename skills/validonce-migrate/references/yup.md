@@ -46,7 +46,7 @@ On `yup.number()` and `yup.date()`: `.moreThan(ref("start"))` is `gt`, `.min(ref
 - **`.test` paths.** `createError({ path })` or the field the test is attached to decides the error field; a schema-level `.test` has path `""`. Set the rule's `path` to the field the form shows.
 - **`abortEarly`.** Default `true` stops at the first error; the runner uses `false`. validonce reports every rule.
 - **`this.parent` vs `$ref`.** `this.parent` only sees the **sibling** values in the same object: same scope as a v1 rule. A test reading `this.from` (ancestors) is cross-object: keep it.
-- **Date comparison.** `yup.date()` casts to `Date` objects (and accepts many string forms); the wire carries a string. Rules compare ISO strings of `type: "date"`/`"datetime"`; for `yup.string()` dates (as in the fixture) the comparison is lexicographic and equals a date compare for well-formed values.
+- **Date comparison.** `yup.date()` casts to `Date` objects (and accepts many string forms); the wire carries a string. Rules compare ISO strings of `type: "date"`/`"datetime"`; for `yup.string()` dates (as in the fixture) the comparison is lexicographic and equals a date compare only for well-formed values. `yup.string()` and a `format: date` in the OpenAPI document do not enforce the format: without a runtime check, malformed dates and datetimes the old test rejected pass a `date` compare, and the generated inputs do not show it.
 - **`when` with several keys** (`when(["a","b"], ...)`) is `all`/`any` over conditions; read the `is` function carefully.
 - **`otherwise`** branches: `then: required, otherwise: notRequired` is just `required_when`; `otherwise: required` means `not` of the condition.
 - **`lazy`, `mixed().test` using services or `await`** (async tests) never map.
