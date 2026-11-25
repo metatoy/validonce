@@ -93,4 +93,23 @@ describe("POST /contacts", () => {
       expect(res.headers.get("access-control-allow-origin")).toBe(origin);
     }
   });
+
+  it("rejects an oversized chunked body (no content-length)", async () => {
+    const enc = new TextEncoder();
+    const body = new ReadableStream({
+      start(c) {
+        c.enqueue(enc.encode('{"country":"CA","email":"a@example.test","street":"'));
+        for (let i = 0; i < 20; i++) c.enqueue(enc.encode("x".repeat(1024)));
+        c.enqueue(enc.encode('"}'));
+        c.close();
+      },
+    });
+    const res = await fetch(`${base}/contacts`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body,
+      duplex: "half",
+    } as RequestInit);
+    expect(res.status).toBe(413);
+  });
 });

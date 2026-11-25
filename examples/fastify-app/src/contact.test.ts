@@ -83,4 +83,28 @@ describe("POST /contacts", () => {
       expect(res.headers["access-control-allow-origin"]).toBe(origin);
     }
   });
+
+  it("rejects an oversized chunked body (no content-length)", async () => {
+    const app = await buildApp();
+    await app.listen({ port: 0, host: "127.0.0.1" });
+    const { port } = app.server.address() as { port: number };
+    const chunk = "x".repeat(1024);
+    const body = new ReadableStream({
+      start(c) {
+        const enc = new TextEncoder();
+        c.enqueue(enc.encode('{"country":"CA","email":"a@example.test","street":"'));
+        for (let i = 0; i < 20; i++) c.enqueue(enc.encode(chunk));
+        c.enqueue(enc.encode('"}'));
+        c.close();
+      },
+    });
+    const res = await fetch(`http://127.0.0.1:${port}/contacts`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body,
+      duplex: "half",
+    } as RequestInit);
+    await app.close();
+    expect(res.status).toBe(413);
+  });
 });

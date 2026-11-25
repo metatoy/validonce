@@ -19,9 +19,12 @@ RUN pnpm --filter validonce-example-nestjs-app deploy --prod /out \
 
 FROM node:22-slim
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=8030
+# Coolify runs curl or wget inside the container for its health check; node:22-slim has neither.
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build --chown=node:node /out/ ./
 USER node
 EXPOSE 8030
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s CMD node -e "fetch('http://127.0.0.1:8030/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s CMD curl -fsS http://127.0.0.1:8030/ || exit 1
 CMD ["node", "dist/main.js"]
