@@ -1095,3 +1095,12 @@ export function rulesAt(
     throw e;
   }
 }
+
+export {
+  type DryRunOptions,
+  dryRunIssues,
+  dryRunUrl,
+  K8S_SERVER_RULE_ID,
+  k8sServerCatalog,
+  splitFieldPath,
+} from "./kubernetes-dryrun";
