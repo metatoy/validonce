@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "experimentalDecorators": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": {
+      "@sinclair/typebox": ["../../../examples/fastify-app/node_modules/@sinclair/typebox"],
+      "class-validator": ["../../../examples/nestjs-app/node_modules/class-validator"],
+      "vee-validate": ["../../../examples/vue-form/node_modules/vee-validate"],
+      "vue": ["../../../examples/vue-form/node_modules/vue"],
+      "zod": ["../../node_modules/zod"]
+    }
+  },
+  "include": ["out-targets/ts/**/*.ts", "out-targets/ts/**/*.vue"],
+  "exclude": ["out-targets/ts/export-entry.ts"]
+}

@@ -33,3 +33,29 @@ jobs:
       - name: Generate, compile, export, compare
         run: bash ./run.sh
         working-directory: mcp/test/golden
+
+  golden-targets:
+    # generate_code writes Go, Java, TypeScript rule builders (Fastify, NestJS), Vue and DOM code; all of it must
+    # compile (go build/vet, javac via Gradle, tsc, vue-tsc) and export exactly the rules it was generated from.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go/go.mod
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        working-directory: js
+      - name: Generate, compile, export, compare
+        run: bash ./run-targets.sh
+        working-directory: mcp/test/golden

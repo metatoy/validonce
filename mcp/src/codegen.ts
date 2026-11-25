@@ -8,7 +8,7 @@ import { type Condition, type Rule, type RuleSet, ValidonceFormatError, parseRul
 import { fieldsOf } from "./rules";
 import { ToolError } from "./sdk";
 
-export const TARGETS = ["csharp", "python", "zod", "react-hook-form", "angular-reactive"] as const;
+export const TARGETS = ["csharp", "python", "zod", "react-hook-form", "angular-reactive", "go", "java", "typescript-rules", "vue", "dom"] as const;
 export type Target = (typeof TARGETS)[number];
 export const NAMINGS = ["auto", "pascal", "camel", "snake", "identity"] as const;
 export type Naming = (typeof NAMINGS)[number];
@@ -28,6 +28,14 @@ export interface CodegenInput {
   naming?: Naming;
   /** Also write the model class (csharp, python) or a base-schema skeleton (zod, react-hook-form). */
   includeModel?: boolean;
+  /** typescript-rules only: which server framework to wire. Default "fastify". */
+  framework?: "fastify" | "nestjs";
+}
+
+export interface GeneratedFile {
+  path: string;
+  language: "go" | "java" | "typescript" | "vue" | "html";
+  source: string;
 }
 
 export interface Unexpressible {
@@ -37,8 +45,11 @@ export interface Unexpressible {
 
 export interface CodegenResult {
   target: Target;
-  language: "csharp" | "python" | "typescript";
+  language: "csharp" | "python" | "typescript" | "go" | "java";
+  /** The generated code. For targets that write several files (java, vue, dom) this is the primary file, or all files joined (java). */
   source: string;
+  /** Every file the target writes (go, java, typescript-rules, vue, dom). */
+  files?: GeneratedFile[];
   /** false when some rules could not be written with the builders; they appear as comments. */
   complete: boolean;
   unexpressible: Unexpressible[];
@@ -596,12 +607,483 @@ export function generateCode(input: CodegenInput): CodegenResult {
   } catch (e) {
     throw new ToolError(`Invalid rule set: ${e instanceof ValidonceFormatError ? e.message : "unreadable"}`);
   }
-  const model = ident(input.modelName ?? "Model", input.target === "python" ? PY_KEYWORDS : CS_KEYWORDS, "Model");
+  let model = ident(input.modelName ?? "Model", input.target === "python" ? PY_KEYWORDS : CS_KEYWORDS, "Model");
+  if (input.target === "go" || input.target === "java") model = model.replace(/^_+/, "").replace(/^[a-z]/, (c) => c.toUpperCase()) || "Model";
   const fields = inferFields(set.rules, input.properties);
   if (fields.size === 0) throw new ToolError("The rule set has no rules.");
   switch (input.target) {
+    case "go": return genGo(set, input, fields, model);
+    case "java": return genJava(set, input, fields, model);
+    case "typescript-rules": return genTsRules(set, input, fields, model);
+    case "vue": return genVue(set, input, fields, model);
+    case "dom": return genDom(set, input, fields, model);
     case "csharp": return genCSharp(set, input, fields, model);
     case "python": return genPython(set, input, fields, model);
     default: return genClient(set, input, fields, model);
   }
+}
+
+// ---------------------------------------------------------------- shared helpers (go, java, ts)
+
+const isIdent = (w: string) => /^[A-Za-z_$][\w$]*$/.test(w);
+const lowerFirst = (s: string) => (s ? s[0]!.toLowerCase() + s.slice(1) : s);
+const hasLoneSurrogate = (s: string) => /[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/.test(s);
+const defaultId = (model: string, r: Rule, path: string) => `${model}.${r.kind}.${path}`;
+const firstField = (r: Rule): string => (r.kind === "required_when" ? r.field : r.kind === "compare" ? r.left.field : r.fields[0]!);
+const hq = (s: string) => `"${s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/{/g, "&#123;")}"`;
+const ht = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/{/g, "&#123;");
+const opName = (op: string) => op[0]!.toUpperCase() + op.slice(1);
+
+// ---------------------------------------------------------------- Go
+
+const GO_KEYWORDS = new Set("break case chan const continue default defer else fallthrough for func go goto if import interface map package range return select struct switch type var".split(" "));
+
+function goTagOk(w: string): boolean {
+  if (w === "" || w === "-") return false;
+  for (const ch of w) if (!/[\p{L}\p{N}]/u.test(ch) && !"!#$%&()*+-./:;<=>?@[]^_{|}~ ".includes(ch)) return false;
+  return true;
+}
+
+function goType(k: Kind): { type: string; tag: string } {
+  switch (k) {
+    case "number": return { type: "*float64", tag: "" };
+    case "integer": return { type: "*int64", tag: "" };
+    case "bool": return { type: "*bool", tag: "" };
+    case "date": return { type: "*string", tag: ' format:"date"' };
+    case "datetime": return { type: "*string", tag: ' format:"date-time"' };
+    default: return { type: "*string", tag: "" };
+  }
+}
+
+function genGo(set: RuleSet, input: CodegenInput, fields: Map<string, FieldInfo>, model: string): CodegenResult {
+  const notes: string[] = [];
+  const unexpressible: Unexpressible[] = [];
+  const naming = input.naming ?? "auto";
+  const toName = (w: string) => {
+    const base = naming === "identity" ? w.replace(/[^A-Za-z0-9_]/g, "") : pascalOf(w).replace(/[^A-Za-z0-9]/g, "");
+    let n = /^[A-Z]/.test(base) ? base : `F${base}`;
+    if (GO_KEYWORDS.has(n)) n = `${n}_`;
+    return n;
+  };
+  const names = uniqueNames([...fields.keys()], input.propertyNames, toName, new Set([model, `${model}Rules`]));
+  const pkg = input.namespace ?? "models";
+  const varName = `${model}Rules`;
+  const wantModel = input.includeModel ?? true;
+
+  const gq = (s: string): string => {
+    if (hasLoneSurrogate(s)) throw new Skip("a string literal contains a lone surrogate, which Go cannot write");
+    return JSON.stringify(s).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
+  };
+  const gnum = (n: number) => (Number.isInteger(n) && Math.abs(n) >= 2 ** 31 ? `float64(${String(n)})` : String(n));
+  const gval = (v: unknown): string => (v === null ? "nil" : typeof v === "number" ? gnum(v) : typeof v === "boolean" ? String(v) : gq(String(v)));
+  const goKindOf = (w: string): string => (fields.get(w)!.kind === "integer" ? "number" : fields.get(w)!.kind);
+
+  const cond = (c: Condition): string => {
+    if ("eq" in c) return `validonce.Eq(${gq(c.eq.field)}, ${gval(c.eq.value)})`;
+    if ("ne" in c) return `validonce.Ne(${gq(c.ne.field)}, ${gval(c.ne.value)})`;
+    if ("in" in c) return `validonce.In(${[gq(c.in.field), ...c.in.values.map(gval)].join(", ")})`;
+    if ("present" in c) return `validonce.Present(${gq(c.present.field)})`;
+    if ("absent" in c) return `validonce.Absent(${gq(c.absent.field)})`;
+    if ("all" in c) return `validonce.AllOf(${c.all.map(cond).join(", ")})`;
+    if ("any" in c) return `validonce.AnyOf(${c.any.map(cond).join(", ")})`;
+    return `validonce.Not(${cond(c.not)})`;
+  };
+  const opts = (r: Rule, path: string, extra: string[] = []): string => {
+    const o = [`validonce.Key(${gq(r.message.key)})`];
+    const p = r.message.params;
+    if (p !== undefined) o.push(`validonce.Params(map[string]any{${Object.entries(p).map(([k, v]) => `${gq(k)}: ${gval(v)}`).join(", ")}})`);
+    if (r.id !== defaultId(model, r, path)) o.push(`validonce.ID(${gq(r.id)})`);
+    if (r.path !== undefined) o.push(`validonce.Path(${gq(r.path)})`);
+    if (r.server_only) o.push("validonce.ServerOnly()");
+    o.push(...extra);
+    return o.join(", ");
+  };
+
+  const lines: string[] = [];
+  for (const r of set.rules) {
+    try {
+      for (const w of new Set([...fieldsOf(r), ...(r.path !== undefined ? [r.path] : [])]))
+        if (!goTagOk(w)) throw new Skip(`field "${w}" cannot be written in a Go json tag`);
+      const path = r.path ?? firstField(r);
+      if (r.kind === "required_when") {
+        lines.push(`validonce.When(${cond(r.when)}).Require(${gq(r.field)}, ${opts(r, path)}),`);
+      } else if (r.kind === "compare") {
+        const sides = [r.left.field, ..."field" in r.right ? [r.right.field] : []];
+        for (const w of sides) {
+          const k = goKindOf(w);
+          const ok = r.type === "number" ? k === "number" : r.type === "string" ? k === "string" : k === "string" || k === "date" || k === "datetime";
+          if (!ok) throw new Skip(`compare type "${r.type}" does not fit field "${w}" (${fields.get(w)!.kind})`);
+        }
+        const inferred = goKindOf(r.left.field);
+        const as = inferred === r.type ? [] : [`validonce.As(${gq(r.type)})`];
+        const right = "field" in r.right ? `validonce.Ref(${gq(r.right.field)})` : `validonce.Val(${gval(r.right.value)})`;
+        lines.push(`validonce.Cmp(${gq(r.left.field)}).${opName(r.op)}(${right}, ${opts(r, path, as)}),`);
+      } else {
+        const fn = { at_least_one_of: "AtLeastOneOf", exactly_one_of: "ExactlyOneOf", all_or_none: "AllOrNone" }[r.kind];
+        lines.push(`validonce.${fn}([]string{${r.fields.map(gq).join(", ")}}, ${opts(r, path)}),`);
+      }
+    } catch (e) {
+      if (!(e instanceof Skip)) throw e;
+      unexpressible.push({ ruleId: r.id, reason: e.message });
+      lines.push(`// NOT EXPRESSIBLE with the builders: ${r.id.replace(/[\r\n]/g, " ")} (${e.message.replace(/[\r\n]/g, " ")}). Keep it hand-written.`);
+    }
+  }
+
+  const out: string[] = [`package ${pkg}`, "", `import validonce "github.com/metatoy/validonce/go"`, ""];
+  if (wantModel) {
+    out.push(`// ${model} is the wire model. The json tags are the field names the rules use.`, `type ${model} struct {`);
+    const w = Math.max(...[...fields.keys()].map((x) => names[x]!.length));
+    for (const [wire, f] of fields) {
+      const t = goType(f.kind);
+      const tag = goTagOk(wire) ? `json:${JSON.stringify(`${wire},omitempty`)}${t.tag}` : `json:"-"`;
+      out.push(`\t${names[wire]!.padEnd(w)} ${t.type} \`${tag}\``);
+    }
+    out.push("}", "");
+  } else {
+    notes.push(`Your struct needs json tags equal to the rule wire names: ${[...fields.keys()].join(", ")}. Compare types are inferred from your field types (a string field with format:"date" is a date); a mismatch fails in MustBuild at startup.`);
+  }
+  out.push(`// ${varName} is built once at startup: an unknown field, bad compare type or id collision panics here.`, `var ${varName} = validonce.MustBuild[${model}](`);
+  for (const l of lines) out.push(`\t${l}`);
+  out.push(")", "");
+  notes.push(
+    `Huma: add \`func (${model}) TransformSchema(_ huma.Registry, s *huma.Schema) *huma.Schema { return humaonce.Transform(${varName}, s) }\` to publish x-validonce, and register the handler as huma.Register(api, op, humaonce.Wrap(${varName}, handler)) (import github.com/metatoy/validonce/go/humaonce).`,
+    `go-playground/validator: keep field tags on the struct and call ${varName}.Check(v) after validate.Struct(v); it returns the failing rules as issues.`,
+  );
+  const source = out.join("\n");
+  return { target: "go", language: "go", source, files: [{ path: `${lowerFirst(model)}.go`, language: "go", source }], complete: unexpressible.length === 0, unexpressible, notes, names };
+}
+
+// ---------------------------------------------------------------- Java
+
+const JAVA_KEYWORDS = new Set(
+  "abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for goto if implements import instanceof int interface long native new package private protected public return short static strictfp super switch synchronized this throw throws transient try void volatile while true false null var record yield sealed permits".split(" "),
+);
+
+function javaType(k: Kind): string {
+  switch (k) {
+    case "number": return "Double";
+    case "integer": return "Long";
+    case "bool": return "Boolean";
+    case "date": return "LocalDate";
+    case "datetime": return "OffsetDateTime";
+    default: return "String";
+  }
+}
+
+function genJava(set: RuleSet, input: CodegenInput, fields: Map<string, FieldInfo>, model: string): CodegenResult {
+  const notes: string[] = [];
+  const naming = input.naming ?? "auto";
+  const toName = (w: string) => ident(naming === "pascal" ? pascalOf(w) : naming === "snake" ? snakeOf(w) : naming === "identity" ? w : camelOf(w), JAVA_KEYWORDS, "field");
+  const names = uniqueNames([...fields.keys()], input.propertyNames, toName, new Set());
+  const wantModel = input.includeModel ?? true;
+  const pkg = input.namespace;
+  const jq = (s: string) => JSON.stringify(s);
+  const jnum = (n: number) => (Number.isInteger(n) && Math.abs(n) < 2 ** 31 ? String(n) : /[eE]/.test(String(n)) || !Number.isInteger(n) ? String(n) : `${String(n)}.0`);
+  const jval = (v: unknown): string => (v === null ? "null" : typeof v === "number" ? jnum(v) : typeof v === "boolean" ? String(v) : jq(String(v)));
+  const cond = (c: Condition): string => {
+    if ("eq" in c) return `Condition.eq(${jq(c.eq.field)}, ${jval(c.eq.value)})`;
+    if ("ne" in c) return `Condition.ne(${jq(c.ne.field)}, ${jval(c.ne.value)})`;
+    if ("in" in c) return `Condition.in(${[jq(c.in.field), ...c.in.values.map(jval)].join(", ")})`;
+    if ("present" in c) return `Condition.present(${jq(c.present.field)})`;
+    if ("absent" in c) return `Condition.absent(${jq(c.absent.field)})`;
+    if ("all" in c) return `Condition.all(${c.all.map(cond).join(", ")})`;
+    if ("any" in c) return `Condition.any(${c.any.map(cond).join(", ")})`;
+    return `Condition.not(${cond(c.not)})`;
+  };
+  const inferredType = (k: Kind) => (k === "integer" || k === "number" ? "number" : k === "string" ? "string" : k === "date" ? "date" : k === "datetime" ? "datetime" : "");
+  const tail = (r: Rule, first: string, extra = ""): string => {
+    let s = `.key(${jq(r.message.key)})`;
+    for (const [k, v] of Object.entries(r.message.params ?? {})) s += `.param(${jq(k)}, ${jval(v)})`;
+    if (r.id !== defaultId(model, r, first)) s += `.id(${jq(r.id)})`;
+    if (r.path !== undefined) s += `.path(${jq(r.path)})`;
+    if (r.server_only) s += ".serverOnly()";
+    return s + extra;
+  };
+  const rl: string[] = [];
+  for (const r of set.rules) {
+    const first = firstField(r);
+    if (r.kind === "required_when") rl.push(`.requiredWhen(${jq(r.field)}, ${cond(r.when)})${tail(r, first)}`);
+    else if (r.kind === "compare") {
+      const sides = [r.left.field, ...("field" in r.right ? [r.right.field] : [])];
+      const needType = sides.some((w) => inferredType(fields.get(w)!.kind) !== r.type);
+      const typ = needType ? `.type(CompareType.${r.type.toUpperCase()})` : "";
+      const call = "field" in r.right ? `.compare(${jq(r.left.field)}, Op.${r.op.toUpperCase()}, ${jq(r.right.field)})` : `.compareValue(${jq(r.left.field)}, Op.${r.op.toUpperCase()}, ${jval((r.right as { value: unknown }).value)})`;
+      rl.push(`${call}${tail(r, first, typ)}`);
+    } else {
+      const m = { at_least_one_of: "atLeastOneOf", exactly_one_of: "exactlyOneOf", all_or_none: "allOrNone" }[r.kind];
+      rl.push(`.${m}(${r.fields.map(jq).join(", ")})${tail(r, first)}`);
+    }
+  }
+  const header = (imports: string[]) => [...(pkg ? [`package ${pkg};`, ""] : []), ...imports.map((i) => `import ${i};`), ""];
+  const files: GeneratedFile[] = [];
+  if (wantModel) {
+    const kinds = new Set([...fields.values()].map((f) => f.kind));
+    const imps = ["com.fasterxml.jackson.annotation.JsonProperty"];
+    if (kinds.has("date")) imps.push("java.time.LocalDate");
+    if (kinds.has("datetime")) imps.push("java.time.OffsetDateTime");
+    imps.push("com.metatoy.validonce.spring.ValidonceRules");
+    imps.sort();
+    const o = [...header(imps), `/** The wire model. Jackson property names are the rule field names. */`, `@ValidonceRules(${model}Rules.class)`, `public record ${model}(`];
+    const comps = [...fields].map(([w, f]) => `        ${names[w] !== w ? `@JsonProperty(${jq(w)}) ` : ""}${javaType(f.kind)} ${names[w]}`);
+    o.push(comps.join(",\n") + ") {}", "");
+    files.push({ path: `${model}.java`, language: "java", source: o.join("\n") });
+  } else {
+    notes.push(`Your model needs Jackson property names equal to the rule wire names: ${[...fields.keys()].join(", ")}. Compare types are inferred from the Java types (a String is a string; add .type(CompareType.DATE) for dates held in a String).`);
+  }
+  const ro = [...header(["com.metatoy.validonce.CompareType", "com.metatoy.validonce.Condition", "com.metatoy.validonce.Op", "com.metatoy.validonce.RuleDefinition", "com.metatoy.validonce.RuleSetBuilder"]),
+    `/** Built once, on first use: an unknown property, bad compare type or id collision throws ValidonceDefinitionException. */`,
+    `public final class ${model}Rules extends RuleDefinition<${model}> {`,
+    `    public ${model}Rules() {`, `        super(${model}.class);`, "    }", "",
+    "    @Override", `    protected void define(RuleSetBuilder<${model}> r) {`, "        r"];
+  for (const l of rl) ro.push(`                ${l}`);
+  ro[ro.length - 1] += ";";
+  ro.push("    }", "}", "");
+  files.push({ path: `${model}Rules.java`, language: "java", source: ro.join("\n") });
+  notes.push(
+    "Spring Boot: add com.metatoy:validonce-spring; @ValidonceRules runs the rules in the normal @Valid flow and a 422 problem-details handler is registered by auto-configuration.",
+    "Kotlin: use the same classes. A data class needs @get:JsonProperty(...) (or the jackson-module-kotlin naming) where the property name differs from the wire name, and `@ValidonceRules(XRules::class)`; RuleDefinition subclasses are written in Kotlin as `class XRules : RuleDefinition<X>(X::class.java) { override fun define(rules: RuleSetBuilder<X>) { rules.atLeastOneOf(...).key(...) } }`.",
+    "Numbers in conditions and params are written as Java literals; the library stores them as doubles, as the rule format does.",
+  );
+  return { target: "java", language: "java", source: files.map((f) => `// ----- ${f.path} -----\n${f.source}`).join("\n"), files, complete: true, unexpressible: [], notes, names };
+}
+
+// ---------------------------------------------------------------- TypeScript rules builders (Fastify, NestJS), Vue, DOM
+
+function tsBuilders(set: RuleSet, model: string, fieldList: string[], varName = "rules"): { code: string; imports: string[] } {
+  const used = new Set<string>(["defineRules", "fieldRefs"]);
+  const ref = (w: string) => (isIdent(w) ? `F.${w}` : `F[${q(w)}]`);
+  const cond = (c: Condition): string => {
+    if ("eq" in c) return `${ref(c.eq.field)}.eq(${JSON.stringify(c.eq.value)})`;
+    if ("ne" in c) return `${ref(c.ne.field)}.ne(${JSON.stringify(c.ne.value)})`;
+    if ("in" in c) return `${ref(c.in.field)}.isIn(${JSON.stringify(c.in.values)})`;
+    if ("present" in c) return `${ref(c.present.field)}.present()`;
+    if ("absent" in c) return `${ref(c.absent.field)}.absent()`;
+    if ("all" in c) { used.add("allOf"); return `allOf(${c.all.map(cond).join(", ")})`; }
+    if ("any" in c) { used.add("anyOf"); return `anyOf(${c.any.map(cond).join(", ")})`; }
+    used.add("not");
+    return `not(${cond(c.not)})`;
+  };
+  const opts = (r: Rule, extra = ""): string => {
+    const parts = [`key: ${q(r.message.key)}`];
+    if (r.message.params !== undefined) parts.push(`params: ${JSON.stringify(r.message.params)}`);
+    const path = r.path ?? firstField(r);
+    if (r.id !== defaultId(model, r, path)) parts.push(`id: ${q(r.id)}`);
+    if (r.path !== undefined) parts.push(`path: ${q(r.path)}`);
+    if (r.server_only) parts.push("server_only: true");
+    if (extra) parts.push(extra);
+    return `{ ${parts.join(", ")} }`;
+  };
+  const CMP: Record<string, string> = { lt: "lt", le: "le", gt: "gt", ge: "ge", eq: "equals", ne: "notEquals" };
+  const lines = set.rules.map((r) => {
+    if (r.kind === "required_when") { used.add("when"); return `when(${cond(r.when)}).require(${ref(r.field)}, ${opts(r)}),`; }
+    if (r.kind === "compare") {
+      const right = "field" in r.right ? ref(r.right.field) : JSON.stringify(r.right.value);
+      return `${ref(r.left.field)}.${CMP[r.op]}(${right}, ${opts(r, `type: ${q(r.type)}`)}),`;
+    }
+    const fn = { at_least_one_of: "atLeastOneOf", exactly_one_of: "exactlyOneOf", all_or_none: "allOrNone" }[r.kind];
+    used.add(fn);
+    return `${fn}(${[...r.fields.map(ref), opts(r)].join(", ")}),`;
+  });
+  const code = [
+    `const fields = ${JSON.stringify(fieldList)} as const;`,
+    "const F = fieldRefs(...fields);",
+    "",
+    "// Built once at startup: an unknown field or an id collision stops the app here.",
+    `export const ${varName} = defineRules(`,
+    `  ${q(model)},`,
+    "  [",
+    ...lines.map((l) => `    ${l}`),
+    "  ],",
+    "  { fields },",
+    ");",
+  ].join("\n");
+  return { code, imports: [...used].sort() };
+}
+
+function tsFieldType(f: FieldInfo): { box: string; ts: string; validator: string[] } {
+  switch (f.kind) {
+    case "number": return { box: "Type.Number()", ts: "number", validator: ["@IsNumber()"] };
+    case "integer": return { box: "Type.Integer()", ts: "number", validator: ["@IsInt()"] };
+    case "bool": return { box: "Type.Boolean()", ts: "boolean", validator: ["@IsBoolean()"] };
+    case "date": return { box: 'Type.String({ format: "date" })', ts: "string", validator: ["@Matches(/^\\d{4}-\\d{2}-\\d{2}$/)"] };
+    case "datetime": return { box: 'Type.String({ format: "date-time" })', ts: "string", validator: ["@IsISO8601()"] };
+    default: return { box: "Type.String()", ts: "string", validator: ["@IsString()"] };
+  }
+}
+
+function tsNamesOf(fields: Map<string, FieldInfo>): Record<string, string> {
+  return Object.fromEntries([...fields.keys()].map((w) => [w, w]));
+}
+
+function genTsRules(set: RuleSet, input: CodegenInput, fields: Map<string, FieldInfo>, model: string): CodegenResult {
+  const framework = input.framework ?? "fastify";
+  const wantModel = input.includeModel ?? true;
+  const { code, imports } = tsBuilders(set, model, [...fields.keys()]);
+  const notes: string[] = [];
+  const prop = (w: string) => (isIdent(w) ? w : q(w));
+  const out: string[] = [];
+  if (framework === "fastify") {
+    if (wantModel) out.push(`import { Type } from "@sinclair/typebox";`);
+    out.push(`import { ${imports.join(", ")} } from "validonce/rules";`);
+    if (wantModel) out.push(`import { withRules } from "validonce/fastify";`);
+    out.push("", code, "");
+    if (wantModel) {
+      out.push("// Skeleton: tighten the field checks (required, formats, bounds) to match your API.", `export const ${model}Schema = withRules(`, "  Type.Object(", "    {");
+      for (const [w, f] of fields) out.push(`      ${prop(w)}: Type.Optional(Type.Union([${tsFieldType(f).box}, Type.Null()])),`);
+      out.push("    },", `    { $id: ${q(model)} },`, "  ),", "  rules,", ");", "");
+    } else notes.push("Attach with withRules(yourTypeBoxSchema, rules) from validonce/fastify.");
+    notes.push(
+      "Fastify: create the app with Fastify({ ajv: { customOptions: { keywords: ajvKeywords } } }), register the schema with app.addSchema, and add validonceHook(rules) as a preHandler on the route (imports from validonce/fastify); it replies 422 problem details.",
+      "withRules also puts x-validonce on the schema, so @fastify/swagger publishes the rules under components.schemas.",
+    );
+  } else {
+    const vals = new Set<string>();
+    if (wantModel) for (const f of fields.values()) for (const v of tsFieldType(f).validator) vals.add(v.slice(1, v.indexOf("(")));
+    if (wantModel) out.push(`import { ${["IsOptional", ...vals].sort().join(", ")} } from "class-validator";`);
+    out.push(`import { ${imports.join(", ")} } from "validonce/rules";`);
+    if (wantModel) out.push(`import { ValidonceRules } from "validonce/nestjs";`);
+    out.push("", code, "");
+    if (wantModel) {
+      out.push("// Field checks (class-validator) answer 400; the rules answer 422. Tighten them to match your API.", "@ValidonceRules(rules)", `export class ${model} {`);
+      for (const [w, f] of fields) {
+        const t = tsFieldType(f);
+        out.push(`  @IsOptional()`, ...t.validator.map((v) => `  ${v}`), `  ${prop(w)}?: ${t.ts} | null;`, "");
+      }
+      out.pop();
+      out.push("}", "");
+    } else notes.push("Decorate your DTO class with @ValidonceRules(rules) from validonce/nestjs.");
+    notes.push(
+      `NestJS: run ValidonceValidationPipe (validonce/nestjs) after Nest's ValidationPipe: @Body(new ValidonceValidationPipe(${model})) body: ${model}; add ValidonceExceptionFilter for the 422 problem details, and addValidonceToDocument(document, ...) to publish x-validonce in Swagger.`,
+      "esbuild/Vite emit no decorator metadata, so @nestjs/swagger needs an explicit @ApiProperty({ type: ... }) on each property.",
+    );
+  }
+  const source = out.join("\n");
+  return {
+    target: "typescript-rules", language: "typescript", source,
+    files: [{ path: `${lowerFirst(model)}.rules.ts`, language: "typescript", source }],
+    complete: true, unexpressible: [], notes, names: tsNamesOf(fields),
+  };
+}
+
+function varNames(fields: Map<string, FieldInfo>, taken: string[]): Record<string, string> {
+  return uniqueNames([...fields.keys()], undefined, (w) => ident(camelOf(w), PY_KEYWORDS, "field"), new Set(taken));
+}
+
+function genVue(set: RuleSet, input: CodegenInput, fields: Map<string, FieldInfo>, model: string): CodegenResult {
+  const wantModel = input.includeModel ?? false;
+  const cm = camelOf(model) || "model";
+  const reserved = ["form", "errors", "onSubmit", "rules", "messages", "schema"];
+  const vars = varNames(fields, reserved);
+  const names = input.propertyNames ? { ...vars, ...input.propertyNames } : vars;
+  const notes: string[] = [];
+  const base = `${cm}Base`;
+  const out: string[] = [
+    `import { useForm } from "vee-validate";`,
+    `import type { RuleSet } from "validonce";`,
+    `import type { Catalog } from "validonce/messages";`,
+    `import { toVeeSchema, watchDependents } from "validonce/vue";`,
+    `import { ${[...(wantModel ? [...new Set([...fields.values()].flatMap((f) => (f.kind === "date" ? ["isoDate"] : f.kind === "datetime" ? ["isoDateTime"] : [])))].sort() : []), "withRules"].join(", ")} } from "validonce/zod";`,
+    `import { z } from "zod";`,
+    "",
+    `export const rules: RuleSet = ${tsRules({ version: 1, rules: set.rules })};`,
+    "",
+    `export const messages: Catalog = ${messageCatalog(set)};`,
+    "",
+  ];
+  if (wantModel) {
+    out.push("// Skeleton: replace with your real schema (field-level checks stay there).", `const ${base} = z.object({`);
+    for (const [w, f] of fields) out.push(`  ${isIdent(w) ? w : q(w)}: ${zodField(f)},`);
+    out.push("});", "");
+  } else notes.push(`\`${base}\` is your existing z.object(...) schema; every field named by a rule must exist in it or withRules throws.`);
+  out.push(
+    `export type ${model}Values = z.input<typeof ${base}>;`,
+    `export const schema = withRules(${base}, rules, { messages });`,
+    "",
+    `export function use${model}Form(onValid: (values: ${model}Values) => void | Promise<void> = () => {}) {`,
+    `  const form = useForm<${model}Values>({ validationSchema: toVeeSchema(schema) });`,
+    "  // Changing one field re-checks the fields whose rules read it.",
+    "  watchDependents(form, rules);",
+  );
+  for (const w of fields.keys()) out.push(`  const [${names[w]}] = form.defineField(${q(w)} as never);`);
+  out.push(
+    "  const onSubmit = form.handleSubmit((values) => onValid(values));",
+    `  return { form, errors: form.errors, onSubmit, ${[...fields.keys()].map((w) => names[w]).join(", ")} };`,
+    "}",
+    "",
+  );
+  const comp = out.join("\n");
+  const tpl: string[] = ["<template>", '  <form novalidate @submit="onSubmit">'];
+  for (const [w, f] of fields) {
+    const v = names[w]!;
+    const err = isIdent(w) ? `errors.${w}` : `errors['${w.replace(/[\\']/g, "\\$&").replace(/"/g, "&quot;")}']`;
+    const type = f.kind === "date" ? "date" : f.kind === "bool" ? "checkbox" : f.kind === "number" || f.kind === "integer" ? "number" : "text";
+    const model2 = f.kind === "number" || f.kind === "integer" ? `v-model.number="${v}"` : `v-model="${v}"`;
+    tpl.push("    <label>", `      ${ht(w)}`, `      <input type="${type}" name=${hq(w)} ${model2} :aria-invalid="${err} ? true : undefined" aria-describedby="error-${w.replace(/[^A-Za-z0-9_-]/g, "_")}" />`, "    </label>", `    <p id="error-${w.replace(/[^A-Za-z0-9_-]/g, "_")}" class="error" role="alert">{{ ${err} }}</p>`);
+  }
+  tpl.push('    <button type="submit">Submit</button>', "  </form>", "</template>");
+  const vue = [
+    '<script setup lang="ts">',
+    `import { use${model}Form, type ${model}Values } from "./use${model}Form";`,
+    `const emit = defineEmits<{ submit: [values: ${model}Values] }>();`,
+    `const { errors, onSubmit, ${[...fields.keys()].map((w) => names[w]).join(", ")} } = use${model}Form((values) => emit("submit", values));`,
+    "</script>",
+    "",
+    ...tpl,
+    "",
+  ].join("\n");
+  notes.push(
+    "vee-validate 4: toVeeSchema adapts the Zod 4 schema (vee-validate 5 takes Standard Schema directly). Blank inputs arrive as empty strings, which the rules treat as blank; map them to null if your Zod base schema needs it.",
+    "server_only rules are skipped by withRules; they still run on the server.",
+  );
+  return {
+    target: "vue", language: "typescript", source: comp,
+    files: [
+      { path: `use${model}Form.ts`, language: "typescript", source: comp },
+      { path: `${model}Form.vue`, language: "vue", source: vue },
+    ],
+    complete: true, unexpressible: [], notes, names,
+  };
+}
+
+function genDom(set: RuleSet, input: CodegenInput, fields: Map<string, FieldInfo>, model: string): CodegenResult {
+  const id = (camelOf(model) || "model").replace(/[^A-Za-z0-9_-]/g, "");
+  const notes: string[] = [];
+  const out = [
+    `import { attachRules } from "validonce/dom";`,
+    `import type { RuleSet } from "validonce";`,
+    `import type { Catalog } from "validonce/messages";`,
+    "",
+    `export const rules: RuleSet = ${tsRules({ version: 1, rules: set.rules })};`,
+    "",
+    `export const messages: Catalog = ${messageCatalog(set)};`,
+    "",
+    "/** Checks run on change and on submit; a failing submit is blocked and the messages are shown. */",
+    `export function attach${model}Form(form: HTMLFormElement) {`,
+    "  return attachRules(form, rules, { messages });",
+    "}",
+    "",
+    'if (typeof document !== "undefined") {',
+    `  const form = document.querySelector<HTMLFormElement>("#${id}");`,
+    `  if (form) attach${model}Form(form);`,
+    "}",
+    "",
+  ].join("\n");
+  const html: string[] = [`<form id="${id}" novalidate>`];
+  for (const [w, f] of fields) {
+    const type = f.kind === "date" ? "date" : f.kind === "bool" ? "checkbox" : f.kind === "number" || f.kind === "integer" ? "number" : "text";
+    html.push(`  <label>${ht(w)} <input type="${type}" name=${hq(w)} /></label>`, `  <p data-validonce-error=${hq(w)} hidden></p>`);
+  }
+  html.push('  <button type="submit">Submit</button>', "</form>", "");
+  notes.push(
+    "Each input's name is the rule wire name; the <p data-validonce-error> element is where its message goes (attachRules creates one after the label when it is missing). Form-associated custom elements must expose ElementInternals as `internals`.",
+    "Dependent fields (a rule that reads another field) are re-checked when that field changes. server_only rules are skipped; show server 422s with attached.applyServerErrors(body).",
+  );
+  return {
+    target: "dom", language: "typescript", source: out,
+    files: [
+      { path: `${id}-form.ts`, language: "typescript", source: out },
+      { path: `${id}-form.html`, language: "html", source: html.join("\n") },
+    ],
+    complete: true, unexpressible: [], notes, names: tsNamesOf(fields),
+  };
 }

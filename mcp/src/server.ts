@@ -169,25 +169,27 @@ export function buildServer(): ValidonceServer {
     name: "generate_code",
     title: "Generate builder code or client wiring from a rule set",
     description:
-      "Writes source text for a rule set (nothing is written to disk or run). target `csharp`: a model class and a `ValidonceValidator<T>` whose constructor uses RequiredWhen / Compare / If.* / AtLeastOneOf / ExactlyOneOf / AllOrNone. target `python`: a `ValidonceModel` with `__rules__` built from F / when / group builders. target `zod`, `react-hook-form`, `angular-reactive`: client wiring (`withRules`, `registerDeps`, `validonceGroupValidator`) with the rules embedded. Names: C# properties are PascalCase of the wire name (a [JsonPropertyName] is written when the default camelCase policy would not give the wire name back); Python attributes are the wire name when it is an identifier, else snake_case with an alias; pass `propertyNames` ({wireName: name}) to override, or `naming`. Field types come from `properties` / `document` + `schemaName`, else from the rules. Rules the builders cannot express (for example `path` on a C# required_when or compare) are listed in `unexpressible` and written as comments; `complete` is false then. Check the rules with check_rules first.",
+      "Writes source text for a rule set (nothing is written to disk or run). target `csharp`: a model class and a `ValidonceValidator<T>` whose constructor uses RequiredWhen / Compare / If.* / AtLeastOneOf / ExactlyOneOf / AllOrNone. target `python`: a `ValidonceModel` with `__rules__` built from F / when / group builders. target `go`: a struct with json tags and a rule set built with `validonce.MustBuild[T]` (`When`, `Cmp`, `AtLeastOneOf`...; Huma and go-playground wiring in `notes`). target `java`: a record plus a `RuleDefinition` rules class using the `RuleSetBuilder` fluent API and `@ValidonceRules` (Spring; Kotlin in `notes`); `files` has both. target `typescript-rules`: `defineRules` with the `validonce/rules` builders plus a Fastify (TypeBox, `withRules`) or NestJS (DTO + `@ValidonceRules`) schema; pick with `framework`. target `vue`: a vee-validate composable (`toVeeSchema(withRules(...))` + `watchDependents`) and a single-file component. target `dom`: `attachRules(form, rules)` and the matching form markup (`files`). target `zod`, `react-hook-form`, `angular-reactive`: client wiring (`withRules`, `registerDeps`, `validonceGroupValidator`) with the rules embedded. Names: Go fields are exported PascalCase with json tags; Java record components are camelCase with `@JsonProperty` where the name differs; C# properties are PascalCase of the wire name (a [JsonPropertyName] is written when the default camelCase policy would not give the wire name back); Python attributes are the wire name when it is an identifier, else snake_case with an alias; pass `propertyNames` ({wireName: name}) to override, or `naming`. Field types come from `properties` / `document` + `schemaName`, else from the rules. Rules the builders cannot express (for example `path` on a C# required_when or compare) are listed in `unexpressible` and written as comments; `complete` is false then. Check the rules with check_rules first.",
     input: z.object({
       rules: z.unknown().describe("The rule set object: { version: 1, rules: [...] }"),
       target: z.enum(TARGETS),
       modelName: z.string().default("Model").describe("Model / class name (the validator is <name>Validator in C#); also the default rule-id prefix"),
-      namespace: z.string().optional().describe("C# namespace (file-scoped)"),
+      namespace: z.string().optional().describe("C# namespace (file-scoped), Go package name (default models) or Java package"),
+      framework: z.enum(["fastify", "nestjs"]).default("fastify").describe("typescript-rules only: the server framework to wire"),
       properties: obj.optional().describe("JSON Schema `properties` of the target schema, for field types"),
       document: obj.optional().describe("OpenAPI document to take the schema from"),
       schemaName: z.string().optional().describe("Schema name inside `document`"),
       propertyNames: z.record(z.string(), z.string()).optional().describe("Explicit wire name -> property / attribute name"),
       naming: z.enum(NAMINGS).default("auto").describe("auto: PascalCase for C#, wire name or snake_case for Python"),
-      includeModel: z.boolean().optional().describe("Also write the model class (default true for csharp and python) or a base-schema skeleton (default false for the clients)"),
+      includeModel: z.boolean().optional().describe("Also write the model class (default true for csharp and python) or a base-schema skeleton (default false for zod, react-hook-form, angular-reactive, vue; true for the go, java and typescript-rules targets)"),
     }),
-    handler: ({ rules, target, modelName, namespace, properties, document, schemaName, propertyNames, naming, includeModel }) =>
+    handler: ({ rules, target, modelName, namespace, framework, properties, document, schemaName, propertyNames, naming, includeModel }) =>
       generateCode({
         rules,
         target,
         modelName,
         namespace,
+        framework,
         properties: propertiesFor(document, schemaName, properties),
         propertyNames,
         naming,

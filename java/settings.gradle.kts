@@ -3,5 +3,6 @@
 
 rootProject.name = "validonce-java"
 
-include("validonce-core", "validonce-spring", "spring-app")
+include("validonce-core", "validonce-spring", "spring-app", "codegen-golden")
 project(":spring-app").projectDir = file("../examples/spring-app")
+project(":codegen-golden").projectDir = file("../mcp/test/golden-java")
