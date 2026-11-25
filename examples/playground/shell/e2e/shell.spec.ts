@@ -102,15 +102,59 @@ test("the toggle skips browser checks; the 422 comes back with numbered markers"
   await expect(first.locator("[data-testid=marker-1]")).toBeVisible();
 });
 
-test("the theme toggle switches light and dark", async ({ page }) => {
+test("the theme toggle switches light and dark live, without reloading the frame", async ({
+  page,
+}) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto(`${origin}/`);
   const html = page.locator("html");
+  const frame = page.frameLocator("[data-testid=frame]");
+  await frame.getByTestId("field-email").fill("keep@me.test");
+  const src = await page.getByTestId("frame").getAttribute("src");
   await page.getByTestId("theme-toggle").click();
   await expect(html).toHaveAttribute("data-theme", "dark");
-  await expect(page.getByTestId("frame")).toHaveAttribute("src", /theme=dark/);
+  await expect(frame.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(frame.getByTestId("field-email")).toHaveValue("keep@me.test");
+  expect(await page.getByTestId("frame").getAttribute("src")).toBe(src);
   await page.getByTestId("theme-toggle").click();
   await expect(html).toHaveAttribute("data-theme", "light");
+  await expect(frame.locator("html")).toHaveAttribute("data-theme", "light");
+});
+
+test("the shell's toggle is the only one: the frame's own is hidden", async ({ page }) => {
+  await page.goto(`${origin}/?backend=go&frontend=react`);
+  const frame = page.frameLocator("[data-testid=frame]");
+  await expect(frame.getByTestId("field-email")).toBeVisible();
+  await expect(frame.getByTestId("toggle-skip")).toBeHidden();
+  await expect(page.getByTestId("skip-toggle")).toBeAttached();
+});
+
+test("the server's numbers appear on the fields in the frame, and clear on the next edit", async ({
+  page,
+}) => {
+  await page.goto(`${origin}/?backend=go&frontend=vue`);
+  const frame = page.frameLocator("[data-testid=frame]");
+  await page.getByTestId("skip-toggle").check({ force: true });
+  await frame.getByTestId("field-email").fill("a@b.co");
+  await frame.getByTestId("field-street").fill("1 Main St");
+  await frame.getByTestId("submit").click();
+  // 1 = required_when (postal code), 2 = all_or_none (street).
+  await expect(frame.getByTestId("error-postalCode")).toHaveAttribute("data-marker", "1");
+  await expect(frame.getByTestId("error-street")).toHaveAttribute("data-marker", "2");
+  await frame.getByTestId("field-phone").fill("+1 555 010 0199");
+  await expect(frame.getByTestId("error-postalCode")).not.toHaveAttribute("data-marker", /.*/);
+});
+
+test("the x-validonce panel is compact: a rule takes one to three lines", async ({ page }) => {
+  await page.goto(`${origin}/?backend=go&frontend=react`);
+  const panel = page.getByTestId("panel-x");
+  await expect(panel).toContainText("Contact.compare.availableTo");
+  const lines = await panel.locator(".ln").count();
+  expect(lines).toBeLessThanOrEqual(14);
+  // One rule's id and kind share a line.
+  await expect(
+    panel.locator(".ln", { hasText: '"id": "Contact.all_or_none.street", "kind": "all_or_none"' }),
+  ).toHaveCount(1);
 });
 
 test("the system's dark preference is followed", async ({ page }) => {

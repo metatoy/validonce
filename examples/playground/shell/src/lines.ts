@@ -121,3 +121,46 @@ export function ruleRanges(backend: string, code: string): Partial<Record<Kind, 
   }
   return out;
 }
+
+// ---------------------------------------------------------------------------
+// The compact x-validonce view: one rule per one or two lines
+// ---------------------------------------------------------------------------
+
+/** Inline JSON with spaces: `{ "a": 1, "b": ["x", "y"] }`. */
+function inline(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(inline).join(", ")}]`;
+  if (isObj(v)) {
+    const parts = Object.entries(v).map(([k, x]) => `${JSON.stringify(k)}: ${inline(x)}`);
+    return parts.length ? `{ ${parts.join(", ")} }` : "{}";
+  }
+  return JSON.stringify(v);
+}
+
+/**
+ * `"Contact": { "x-validonce": { "version": 1, "rules": [ ... ]}}` with each rule packed onto as few
+ * lines as fit `width` characters, every line tagged with the rule's id.
+ */
+export function compactRulesLines(rules: { version: number; rules: Record<string, unknown>[] }, width = 88): Line[] {
+  const out: Line[] = [
+    { text: '"Contact": { "x-validonce": { "version": ' + `${rules.version}, "rules": [` },
+  ];
+  rules.rules.forEach((rule, i) => {
+    const tag = ruleIdOf(rule);
+    const tokens = Object.entries(rule).map(([k, v]) => `${JSON.stringify(k)}: ${inline(v)}`);
+    const last = i === rules.rules.length - 1;
+    let current = "  { ";
+    const rows: string[] = [];
+    tokens.forEach((t, n) => {
+      const piece = n < tokens.length - 1 ? `${t}, ` : t;
+      if (current.trim().length > 1 && (current + piece).length > width) {
+        rows.push(current.trimEnd());
+        current = "    ";
+      }
+      current += piece;
+    });
+    rows.push(`${current} }${last ? "" : ","}`);
+    for (const text of rows) out.push({ text, tag });
+  });
+  out.push({ text: "]}}" });
+  return out;
+}

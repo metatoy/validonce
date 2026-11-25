@@ -16,7 +16,7 @@ import {
 } from "./backends";
 import { type IssueLite, parseFrameEvent, type RequestRecord } from "./bridge";
 import snippets from "./generated/snippets.json";
-import { type Kind, type Line, KINDS, prettyLines, ruleIdOf, ruleRanges } from "./lines";
+import { compactRulesLines, type Kind, type Line, KINDS, prettyLines, ruleIdOf, ruleRanges } from "./lines";
 import { loadRules, type XValidonce } from "./rules";
 import { tint } from "./tint";
 
@@ -119,18 +119,27 @@ export function App() {
     return () => window.removeEventListener("popstate", on);
   }, []);
 
+  // The theme in the URL is only the frame's first paint; changes are sent live (no reload).
+  const firstTheme = useRef(theme);
   const src = useMemo(
-    () => frameUrl(sel.frontend, sel.backend, theme),
-    [sel.frontend, sel.backend, theme],
+    () => frameUrl(sel.frontend, sel.backend, firstTheme.current),
+    [sel.frontend, sel.backend],
   );
   const frameOrigin = useMemo(() => new URL(src).origin, [src]);
 
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
+  const post = useCallback(
+    (message: Record<string, unknown>) => {
+      iframeRef.current?.contentWindow?.postMessage(message, frameOrigin);
+    },
+    [frameOrigin],
+  );
+  // The frame's settings: sent when it says it is ready, and again when they change.
   const postSkip = useCallback(() => {
-    iframeRef.current?.contentWindow?.postMessage(
-      { type: "validonce:set", skipClient: skipRef.current },
-      frameOrigin,
-    );
-  }, [frameOrigin]);
+    post({ type: "validonce:set", skipClient: skipRef.current });
+    post({ type: "validonce:set", theme: themeRef.current });
+  }, [post]);
 
   // A new frame starts clean.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset when the frame URL changes
@@ -160,6 +169,10 @@ export function App() {
     postSkip();
   }, [skip, postSkip]);
 
+  useEffect(() => {
+    post({ type: "validonce:set", theme });
+  }, [theme, post]);
+
   // x-validonce from the live OpenAPI document (or the translated CRD).
   useEffect(() => {
     let live = true;
@@ -180,6 +193,17 @@ export function App() {
     for (const i of serverIssues) if (!m.has(i.ruleId)) m.set(i.ruleId, m.size + 1);
     return m;
   }, [serverIssues]);
+
+  // The numbers also go to the frame, by field: the first server issue on a field is the one it shows.
+  useEffect(() => {
+    const byField: Record<string, number> = {};
+    for (const i of serverIssues) {
+      const field = i.path[0];
+      const n = numbers.get(i.ruleId);
+      if (field && n && byField[field] === undefined) byField[field] = n;
+    }
+    post({ type: "validonce:markers", byField });
+  }, [serverIssues, numbers, post]);
 
   const kindOf = useMemo(() => {
     const m = new Map<string, string>();
@@ -452,7 +476,7 @@ function RulePanel(props: { active: boolean; backend: BackendId; language: strin
 
 function XPanel(props: { active: boolean; backend: BackendId; rules: XValidonce | null; error: string | null; numbers: Map<string, number> }) {
   const lines = useMemo(
-    () => (props.rules ? prettyLines({ Contact: { "x-validonce": props.rules } }, ruleIdOf) : []),
+    () => (props.rules ? compactRulesLines(props.rules) : []),
     [props.rules],
   );
   const meta = props.backend === "k8s" ? "translateCrd(contact-crd.json)" : "from the OpenAPI document";

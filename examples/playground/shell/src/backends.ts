@@ -82,7 +82,7 @@ export function endpointFor(id: BackendId, pageUrl: string = window.location.hre
   return { api, openapi };
 }
 
-/** The iframe URL for a pair. */
+/** The iframe URL for a pair. `theme` is only the first paint: later changes go by postMessage. */
 export function frameUrl(
   frontend: FrontendId,
   backend: BackendId,
@@ -95,5 +95,6 @@ export function frameUrl(
   else p.set("openapi", e.openapi);
   p.set("schema", "Contact");
   p.set("theme", theme);
+  p.set("embedded", "1");
   return new URL(`frames/${frontend}/index.html?${p.toString()}`, pageUrl).href;
 }

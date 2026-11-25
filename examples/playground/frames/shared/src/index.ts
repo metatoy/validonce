@@ -164,7 +164,68 @@ function send(message: Record<string, unknown>): void {
 }
 
 export function announceReady(framework: Framework): void {
+  installShellBridge();
   send({ type: "validonce:ready", framework });
+}
+
+// ---------------------------------------------------------------------------
+// What the shell controls without touching the form code: embedded mode (`?embedded=1` hides the
+// frame's own "Skip browser checks", the shell's toggle is the only one), the theme (live, so the form
+// keeps its state) and the numbered markers on server errors.
+// ---------------------------------------------------------------------------
+
+let markers: Record<string, number> = {};
+let bridgeInstalled = false;
+
+/** Put the shell's number on each field whose first error is a server error (a data attribute the CSS draws). */
+function paintMarkers(): void {
+  for (const el of document.querySelectorAll<HTMLElement>('[data-testid^="error-"]')) {
+    const m = /^error-([A-Za-z]+)$/.exec(el.dataset.testid ?? "");
+    const field = m?.[1];
+    const badge = field ? document.querySelector<HTMLElement>(`[data-testid="badge-server-${field}"]`) : null;
+    const n = field ? markers[field] : undefined;
+    if (n && badge && !badge.hidden && el.textContent) el.dataset.marker = String(n);
+    else delete el.dataset.marker;
+  }
+}
+
+function installShellBridge(): void {
+  if (bridgeInstalled) return;
+  bridgeInstalled = true;
+  if (new URLSearchParams(window.location.search).get("embedded") === "1") {
+    document.documentElement.classList.add("embedded");
+  }
+  window.addEventListener("message", (e: MessageEvent) => {
+    if (e.source !== window.parent) return;
+    const d: unknown = e.data;
+    if (typeof d !== "object" || d === null) return;
+    const m = d as { type?: unknown; theme?: unknown; byField?: unknown };
+    if (m.type === "validonce:set" && (m.theme === "light" || m.theme === "dark")) {
+      applyTheme(m.theme);
+    } else if (m.type === "validonce:markers" && typeof m.byField === "object" && m.byField !== null) {
+      markers = {};
+      for (const [field, n] of Object.entries(m.byField)) {
+        if (typeof n === "number") markers[field] = n;
+      }
+      paintMarkers();
+    }
+  });
+  // Frameworks re-render error lines; repaint whenever the DOM changes.
+  new MutationObserver(paintMarkers).observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["hidden"],
+  });
+  // The next edit clears the numbers.
+  const clear = () => {
+    if (Object.keys(markers).length === 0) return;
+    markers = {};
+    paintMarkers();
+  };
+  document.addEventListener("input", clear);
+  document.addEventListener("change", clear);
 }
 
 const lastIssues: Record<string, string> = {};
