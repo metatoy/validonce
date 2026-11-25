@@ -181,7 +181,16 @@ describe("CEL -> rule table", () => {
     ["self.a != self.b", cmp("a", "ne", { field: "b" }, "string")],
     ["self.a < 'm'", cmp("a", "lt", { value: "m" }, "string")],
     // date-time strings compared without timestamp() are plain string compares in CEL
-    ["self.t1 < self.t2", cmp("t1", "lt", { field: "t2" }, "string")],
+    // format: date-time / date strings are CEL timestamps, so the compare type comes from `format`
+    ["self.t1 < self.t2", cmp("t1", "lt", { field: "t2" }, "datetime")],
+    [
+      "timestamp(self.t1) < self.t2",
+      cmp("t1", "lt", { field: "t2" }, "datetime"),
+    ],
+    [
+      "timestamp(self.start) < timestamp(self.end)",
+      cmp("start", "lt", { field: "end" }, "date"),
+    ],
     // field sets
     [
       "has(self.a) || has(self.b) || has(self.c)",
@@ -283,10 +292,9 @@ describe("unrecognised CEL stays server_only", () => {
     ["self.a < self.min", /string with number/],
     ["self.flag > true", /not comparable/],
     ["self.missing > 3", /not declared/],
-    ["self.start < self.t1", /date with string/],
-    ["timestamp(self.t1) < self.t2", /one side/],
+    ["self.start < self.t1", /date with datetime/],
+    ["timestamp(self.a) < timestamp(self.b)", /plain string/],
     ["timestamp(self.t1) < timestamp('2026-01-01T00:00:00Z')", /takes self/],
-    ["timestamp(self.start) < timestamp(self.end)", /date-time string/],
     ["self.min > 'x'", /does not match/],
     ["self.end > 'tomorrow'", /does not match/],
     ["[has(self.a), has(self.b)].all(x, x)", /macro 'all'/],
@@ -380,74 +388,533 @@ describe("unrecognised CEL stays server_only", () => {
   });
 });
 
-describe("allowlist", () => {
+describe("allowlist and guards", () => {
   const cel = "self.max >= self.min";
 
-  test("every row defaults to drop, and a dropped row keeps its recognised rule as server_only", () => {
-    expect(Object.values(TRANSLATIONS).every((l) => l === "drop")).toBe(true);
+  test("every row defaults to guarded; a failed guard keeps the real rule as server_only with the reason", () => {
+    expect(Object.values(TRANSLATIONS).every((l) => l === "guarded")).toBe(
+      true,
+    );
     const r = translateKubernetesSchema(node(cel), { schemaName: "S" });
-    const rules = parseRuleSet(
-      (r.schema as Record<string, unknown>)["x-validonce"],
-    ).rules;
-    expect(rules[0]).toMatchObject({
+    expect(rulesOf(r.schema)[0]).toMatchObject({
       kind: "compare",
       left: { field: "max" },
       server_only: true,
       message: { key: "k8s.S.0", params: { cel } },
     });
-    expect(r.report[0]?.reason).toMatch(/not allowlisted/);
+    expect(r.report[0]?.reason).toMatch(/G-missing/);
   });
 
-  test("guarded: the guard decides from the field schemas", () => {
-    const schema = (extra: object) => ({
-      type: "object",
-      required: ["min", "max"],
-      properties: {
-        min: { type: "integer" },
-        max: { type: "integer", ...extra },
-      },
-      "x-kubernetes-validations": [{ rule: cel }],
-    });
-    const ctx = {
+  test("drop and exact levels", () => {
+    const drop = translateKubernetesSchema(node(cel), {
       schemaName: "S",
-      translations: { "compare.number": "guarded" },
-    } as const;
-    expect(translateKubernetesSchema(schema({}), ctx).report[0]?.outcome).toBe(
-      "translated",
-    );
-    expect(
-      translateKubernetesSchema(schema({ nullable: true }), ctx).report[0]
-        ?.outcome,
-    ).toBe("server_only");
-    const optional = { ...schema({}), required: ["min"] };
-    expect(translateKubernetesSchema(optional, ctx).report[0]?.reason).toMatch(
-      /guard/,
-    );
-    // a custom guard
-    const custom = translateKubernetesSchema(schema({ nullable: true }), {
-      ...ctx,
-      guards: { "compare.number": () => true },
+      translations: { "compare.number": "drop" },
+    });
+    expect(drop.report[0]?.reason).toMatch(/not allowlisted/);
+    const exact = translateKubernetesSchema(node(cel), {
+      schemaName: "S",
+      translations: { "compare.number": "exact" },
+    });
+    expect(exact.report[0]?.outcome).toBe("translated");
+    const custom = translateKubernetesSchema(node(cel), {
+      schemaName: "S",
+      guards: { "compare.number": () => undefined },
     });
     expect(custom.report[0]?.outcome).toBe("translated");
   });
 
-  test("guarded presence: a string needs minLength, an array minItems", () => {
-    const mk = (a: object) => ({
-      type: "object",
-      properties: { a, b: { type: "boolean" } },
-      "x-kubernetes-validations": [{ rule: "has(self.a) || has(self.b)" }],
+  const dt = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}";
+  type P = Record<string, unknown>;
+  const mk = (
+    rule: string,
+    properties: Record<string, P>,
+    required: string[] = [],
+  ) => ({
+    type: "object",
+    required,
+    properties,
+    "x-kubernetes-validations": [{ rule }],
+  });
+  const str1 = { type: "string", minLength: 1 };
+  const i32 = { type: "integer", format: "int32" };
+  const ok = "translated";
+  const no = "server_only";
+  const RW = "!(self.plan == 'pro') || has(self.company)";
+  const GC = "!has(self.a) || !has(self.b) || self.a <= self.b";
+
+  // [name, schema, expected outcome, reason pattern for a failure]
+  const cases: Array<[string, ReturnType<typeof mk>, string, RegExp?]> = [
+    // required_when: G-blank on the target, G-key on eq fields, no default
+    ["rw passes", mk(RW, { plan: str1, company: str1 }, ["plan"]), ok],
+    [
+      "rw: target can be blank",
+      mk(RW, { plan: str1, company: str }, ["plan"]),
+      no,
+      /G-blank/,
+    ],
+    [
+      "rw: target has a default",
+      mk(RW, { plan: str1, company: { ...str1, default: "x" } }, ["plan"]),
+      no,
+      /no default/,
+    ],
+    [
+      "rw: target enum without empty is not blank",
+      mk(RW, { plan: str1, company: { type: "string", enum: ["a"] } }, [
+        "plan",
+      ]),
+      ok,
+    ],
+    [
+      "rw: G-key, optional unguarded eq field",
+      mk(RW, { plan: str1, company: str1 }),
+      no,
+      /G-key/,
+    ],
+    [
+      "rw: G-key via default",
+      mk(RW, { plan: { ...str1, default: "free" }, company: str1 }),
+      ok,
+    ],
+    [
+      "rw: G-key via the CEL's own has() guard",
+      mk("!(has(self.plan) && self.plan == 'pro') || has(self.company)", {
+        plan: str,
+        company: str1,
+      }),
+      ok,
+    ],
+    [
+      "rw: has() guard on a different field does not count",
+      mk("!(has(self.region) && self.plan == 'pro') || has(self.company)", {
+        plan: str,
+        region: str1,
+        company: str1,
+      }),
+      no,
+      /G-key/,
+    ],
+    [
+      "rw: ne guarded by !has()",
+      mk("(!has(self.plan) || self.plan != 'pro') ? has(self.company) : true", {
+        plan: str,
+        company: str1,
+      }),
+      ok,
+    ],
+    [
+      "rw: literal type must equal the field type",
+      mk(
+        "!(self.n == 'x') || has(self.company)",
+        { n: { type: "integer" }, company: str1 },
+        ["n"],
+      ),
+      no,
+      /literal type/,
+    ],
+    [
+      "rw: int literal on a number field",
+      mk(
+        "!(self.r == 1) || has(self.company)",
+        { r: { type: "number" }, company: str1 },
+        ["r"],
+      ),
+      no,
+      /literal type/,
+    ],
+    [
+      "rw: double literal on a number field",
+      mk(
+        "!(self.r == 1.5) || has(self.company)",
+        { r: { type: "number" }, company: str1 },
+        ["r"],
+      ),
+      ok,
+    ],
+    [
+      "rw: present condition field can be blank",
+      mk("!has(self.region) || has(self.company)", {
+        region: str,
+        company: str1,
+      }),
+      no,
+      /G-blank/,
+    ],
+    [
+      "rw: present condition field has minLength",
+      mk("!has(self.region) || has(self.company)", {
+        region: str1,
+        company: str1,
+      }),
+      ok,
+    ],
+    [
+      "rw: present condition field has a default",
+      mk("!has(self.region) || has(self.company)", {
+        region: { ...str1, default: "x" },
+        company: str1,
+      }),
+      no,
+      /no default/,
+    ],
+    // field sets: G-blank on every member
+    [
+      "alo passes",
+      mk("has(self.a) || has(self.b)", { a: str1, b: { type: "integer" } }),
+      ok,
+    ],
+    [
+      "alo: string member can be blank",
+      mk("has(self.a) || has(self.b)", { a: str, b: str1 }),
+      no,
+      /G-blank/,
+    ],
+    [
+      "alo: array member needs minItems",
+      mk("has(self.a) || has(self.b)", { a: { type: "array" }, b: str1 }),
+      no,
+      /minItems/,
+    ],
+    [
+      "alo: array with minItems",
+      mk("has(self.a) || has(self.b)", {
+        a: { type: "array", minItems: 1 },
+        b: str1,
+      }),
+      ok,
+    ],
+    [
+      "alo: member with a default",
+      mk("has(self.a) || has(self.b)", {
+        a: { type: "integer", default: 1 },
+        b: str1,
+      }),
+      no,
+      /no default/,
+    ],
+    [
+      "alo: nullable does not matter",
+      mk("has(self.a) || has(self.b)", {
+        a: { type: "integer", nullable: true },
+        b: str1,
+      }),
+      ok,
+    ],
+    [
+      "alo: date-format string is never blank",
+      mk("has(self.a) || has(self.b)", {
+        a: { type: "string", format: "date" },
+        b: str1,
+      }),
+      ok,
+    ],
+    [
+      "exo passes",
+      mk("[has(self.a), has(self.b)].exists_one(x, x)", { a: str1, b: str1 }),
+      ok,
+    ],
+    [
+      "exo: blank member",
+      mk("[has(self.a), has(self.b)].exists_one(x, x)", { a: str, b: str1 }),
+      no,
+      /G-blank/,
+    ],
+    [
+      "exo sum form: blank member",
+      mk("(has(self.a) ? 1 : 0) + (has(self.b) ? 1 : 0) == 1", {
+        a: str,
+        b: str1,
+      }),
+      no,
+      /G-blank/,
+    ],
+    ["aon passes", mk("has(self.a) == has(self.b)", { a: str1, b: str1 }), ok],
+    [
+      "aon: blank member",
+      mk("has(self.a) == has(self.b)", { a: str1, b: str }),
+      no,
+      /G-blank/,
+    ],
+    // compare.number: G-missing, integer range, int/double mixing
+    [
+      "num: both required",
+      mk("self.a >= self.b", { a: i32, b: i32 }, ["a", "b"]),
+      ok,
+    ],
+    [
+      "num: operand not required",
+      mk("self.a >= self.b", { a: i32, b: i32 }, ["a"]),
+      no,
+      /G-missing/,
+    ],
+    [
+      "num: has()-guarded form needs no required",
+      mk(GC, { a: i32, b: i32 }),
+      ok,
+    ],
+    [
+      "num: guarded form, operand has a default",
+      mk(GC, { a: i32, b: { ...i32, default: 1 } }),
+      no,
+      /no default/,
+    ],
+    [
+      "num: unbounded integer",
+      mk("self.a >= self.b", { a: { type: "integer" }, b: i32 }, ["a", "b"]),
+      no,
+      /2\^53/,
+    ],
+    [
+      "num: integer bounded by min and max",
+      mk(
+        "self.a >= self.b",
+        { a: { type: "integer", minimum: 0, maximum: 100 }, b: i32 },
+        ["a", "b"],
+      ),
+      ok,
+    ],
+    [
+      "num: integer bound above 2^53",
+      mk(
+        "self.a >= self.b",
+        { a: { type: "integer", minimum: 0, maximum: 2 ** 60 }, b: i32 },
+        ["a", "b"],
+      ),
+      no,
+      /2\^53/,
+    ],
+    [
+      "num: number fields need no range",
+      mk("self.a >= self.b", { a: { type: "number" }, b: { type: "number" } }, [
+        "a",
+        "b",
+      ]),
+      ok,
+    ],
+    [
+      "num: mixed int/double ordering",
+      mk("self.a >= self.b", { a: i32, b: { type: "number" } }, ["a", "b"]),
+      ok,
+    ],
+    [
+      "num: mixed int/double equality",
+      mk("self.a == self.b", { a: i32, b: { type: "number" } }, ["a", "b"]),
+      no,
+      /mixed/,
+    ],
+    [
+      "num: int field, double literal ordering",
+      mk("self.a > 1.5", { a: i32 }, ["a"]),
+      ok,
+    ],
+    [
+      "num: int field, double literal equality",
+      mk("self.a == 1.5", { a: i32 }, ["a"]),
+      no,
+      /mixed/,
+    ],
+    [
+      "num: number field, int literal equality",
+      mk("self.r == 1", { r: { type: "number" } }, ["r"]),
+      no,
+      /mixed/,
+    ],
+    [
+      "num: literal compare, guarded form",
+      mk("!has(self.a) || self.a <= 100", { a: i32 }),
+      ok,
+    ],
+    // compare.string: G-missing and G-blank on every operand
+    [
+      "str: required with minLength",
+      mk("self.a < self.b", { a: str1, b: str1 }, ["a", "b"]),
+      ok,
+    ],
+    [
+      "str: operand can be blank",
+      mk("self.a < self.b", { a: str1, b: str }, ["a", "b"]),
+      no,
+      /G-blank/,
+    ],
+    [
+      "str: not required",
+      mk("self.a < self.b", { a: str1, b: str1 }, ["a"]),
+      no,
+      /G-missing/,
+    ],
+    [
+      "str: guarded form still needs minLength",
+      mk("!has(self.a) || !has(self.b) || self.a < self.b", {
+        a: str1,
+        b: str,
+      }),
+      no,
+      /G-blank/,
+    ],
+    [
+      "str: guarded form with minLength",
+      mk("!has(self.a) || !has(self.b) || self.a < self.b", {
+        a: str1,
+        b: str1,
+      }),
+      ok,
+    ],
+    // compare.date and compare.datetime
+    [
+      "date: both required",
+      mk(
+        "self.s <= self.e",
+        {
+          s: { type: "string", format: "date" },
+          e: { type: "string", format: "date" },
+        },
+        ["s", "e"],
+      ),
+      ok,
+    ],
+    [
+      "date: not required",
+      mk(
+        "self.s <= self.e",
+        {
+          s: { type: "string", format: "date" },
+          e: { type: "string", format: "date" },
+        },
+        ["s"],
+      ),
+      no,
+      /G-missing/,
+    ],
+    [
+      "date: guarded form",
+      mk("!has(self.s) || !has(self.e) || self.s <= self.e", {
+        s: { type: "string", format: "date" },
+        e: { type: "string", format: "date" },
+      }),
+      ok,
+    ],
+    [
+      "datetime: pattern limits the fraction to 3 digits",
+      mk(
+        "self.s <= self.e",
+        {
+          s: {
+            type: "string",
+            format: "date-time",
+            pattern: `${dt}(\\.\\d{1,3})?Z$`,
+          },
+          e: {
+            type: "string",
+            format: "date-time",
+            pattern: `${dt}(\\.\\d{1,3})?Z$`,
+          },
+        },
+        ["s", "e"],
+      ),
+      ok,
+    ],
+    [
+      "datetime: pattern with no fraction",
+      mk(
+        "self.s <= self.e",
+        {
+          s: { type: "string", format: "date-time", pattern: `${dt}Z$` },
+          e: { type: "string", format: "date-time", pattern: `${dt}Z$` },
+        },
+        ["s", "e"],
+      ),
+      ok,
+    ],
+    [
+      "datetime: no pattern",
+      mk(
+        "self.s <= self.e",
+        {
+          s: { type: "string", format: "date-time" },
+          e: { type: "string", format: "date-time" },
+        },
+        ["s", "e"],
+      ),
+      no,
+      /fractional/,
+    ],
+    [
+      "datetime: open-ended fraction",
+      mk(
+        "self.s <= self.e",
+        {
+          s: {
+            type: "string",
+            format: "date-time",
+            pattern: `${dt}(\\.\\d+)?Z$`,
+          },
+          e: {
+            type: "string",
+            format: "date-time",
+            pattern: `${dt}(\\.\\d+)?Z$`,
+          },
+        },
+        ["s", "e"],
+      ),
+      no,
+      /fractional/,
+    ],
+    [
+      "datetime: fraction up to 9 digits",
+      mk(
+        "self.s <= self.e",
+        {
+          s: {
+            type: "string",
+            format: "date-time",
+            pattern: `${dt}(\\.\\d{1,9})?Z$`,
+          },
+          e: {
+            type: "string",
+            format: "date-time",
+            pattern: `${dt}(\\.\\d{1,9})?Z$`,
+          },
+        },
+        ["s", "e"],
+      ),
+      no,
+      /fractional/,
+    ],
+    [
+      "datetime: the second operand lacks the pattern",
+      mk(
+        "self.s <= self.e",
+        {
+          s: { type: "string", format: "date-time", pattern: `${dt}Z$` },
+          e: { type: "string", format: "date-time" },
+        },
+        ["s", "e"],
+      ),
+      no,
+      /'e'.*fractional/,
+    ],
+  ];
+
+  test.each(cases)("%s", (_name, schema, outcome, reason) => {
+    const r = translateKubernetesSchema(schema, { schemaName: "S" });
+    expect(r.report).toHaveLength(1);
+    const e = r.report[0];
+    expect(e?.outcome, e?.reason).toBe(outcome);
+    if (reason) expect(e?.reason).toMatch(reason);
+    // translated or kept, the emitted rule always parses
+    if (e?.ruleId) expect(rulesOf(r.schema).length).toBe(1);
+  });
+
+  test("a failed guard keeps the rule with server_only and the CEL", () => {
+    const r = translateKubernetesSchema(
+      mk(RW, { plan: str1, company: str }, ["plan"]),
+      { schemaName: "S" },
+    );
+    expect(rulesOf(r.schema)[0]).toMatchObject({
+      kind: "required_when",
+      server_only: true,
+      message: { params: { cel: RW } },
     });
-    const ctx = {
-      schemaName: "S",
-      translations: { at_least_one_of: "guarded" },
-    } as const;
-    const out = (a: object) =>
-      translateKubernetesSchema(mk(a), ctx).report[0]?.outcome;
-    expect(out({ type: "string" })).toBe("server_only");
-    expect(out({ type: "string", minLength: 1 })).toBe("translated");
-    expect(out({ type: "array", minItems: 1 })).toBe("translated");
-    expect(out({ type: "array" })).toBe("server_only");
-    expect(out({ type: ["integer", "null"] })).toBe("server_only");
   });
 });
 
