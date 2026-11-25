@@ -45,7 +45,7 @@ describe("validonce-mcp", () => {
   it("lists the read-only tools", async () => {
     const c = await connectClient([golden]);
     const { tools } = await c.listTools();
-    expect(tools.map((t) => t.name).sort()).toEqual(["check_rules", "compare_results", "evaluate", "generate_code", "generate_inputs", "read_openapi_rules"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["check_rules", "compare_results", "evaluate", "generate_code", "generate_inputs", "read_openapi_rules", "suggest_client_wiring", "translate_kubernetes"]);
     for (const t of tools) expect(t.annotations?.readOnlyHint).toBe(t.name !== "generate_inputs");
   });
 
