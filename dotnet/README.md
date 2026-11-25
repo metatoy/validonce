@@ -81,3 +81,13 @@ A failing request gets status 422 (`options.ValidationStatusCode` changes it) wi
 
 `validonce` is the same issue list the client evaluators produce. Inside FluentValidation each issue is a
 `ValidationFailure` whose `ErrorCode` is the key and `CustomState` is the `Issue`.
+
+## Migrate with an agent
+
+To move existing cross-field checks to validonce rules, use the [`validonce-mcp`](https://www.npmjs.com/package/validonce-mcp) MCP server, alone or with the `validonce-migrate` skill in the Claude Code plugin. The agent finds the checks (for a .NET project: FluentValidation `When`, `Must` and comparisons between properties), writes the rules, and compares your old validator with validonce on generated inputs. It never commits for you.
+
+```sh
+claude mcp add --transport stdio validonce -- npx -y validonce-mcp
+```
+
+In Claude Code, `/plugin marketplace add metatoy/validonce` then `/plugin install validonce@validonce` adds the skill and the server together. Targets for Go, Java, Vue and plain HTML, Kubernetes CEL translation and client wiring need `validonce-mcp` 0.2.0 or later. Details: [Migrating with an agent](https://github.com/metatoy/validonce/blob/main/docs/agentic-migration.md); [server tools](https://github.com/metatoy/validonce/blob/main/mcp/README.md).

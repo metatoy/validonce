@@ -1,5 +1,7 @@
 # Client: plain HTML and web components
 
+> **Try it first:** [the playground with a plain HTML form](https://playground.metatoy.com/?backend=aspnet&frontend=dom) runs this frontend live against ASP.NET Core, FastAPI, Fastify, NestJS, Go, Spring Boot or a Kubernetes CRD.
+
 Use the server's rules in a plain HTML form, or in a form made of web components (Lit, Stencil, or your own). `validonce/dom` runs the rules in the browser and reports errors through the platform's own validation API, so `validationMessage`, `:invalid` and `form.reportValidity()` all work. It has no framework dependency. The same code works against ASP.NET Core and FastAPI.
 
 ```sh
@@ -175,5 +177,9 @@ Set `messages` on the element as a property. It fires `validonce-ready` once att
 `attachRules` looks at `form.elements`, so the form and its controls must be in the same tree, and the form must be inside the root you pass it. A form in a shadow root works if you attach from inside that component (as in the Lit and Stencil examples). It does not reach across a shadow boundary: a `<form>` in the light DOM cannot see inputs inside a child component's shadow root unless that component is form-associated. If you wrap native inputs in your own element without form association, make the wrapper form-associated, or render its input into the light DOM.
 
 Error elements follow the same rule: `data-validonce-error` and `aria-describedby` are looked up in the form's own tree, and an `aria-describedby` reference cannot cross a shadow boundary. Put the error element next to the control in the same root.
+
+## Migrate with an agent
+
+For a plain HTML or web-component form, `generate_code` with target `dom` writes the `attachRules(form, rules)` call and the matching form markup, and `suggest_client_wiring` with `frontend: "dom"` returns the snippets. Both need `validonce-mcp` 0.2.0 or later. If hand-written checks exist in the form, the skill's guides in [`skills/validonce-migrate/references/`](../skills/validonce-migrate/references/) cover the libraries it supports. See [Migrating with an agent](agentic-migration.md).
 
 Full working form, with one form-associated custom element: [examples/dom-form](../examples/dom-form/src/main.ts). Package reference: [js/README.md](../js/README.md).

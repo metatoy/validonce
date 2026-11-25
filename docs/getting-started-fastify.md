@@ -89,4 +89,8 @@ Rules run in a `preHandler`, after Fastify's own schema validation, so a body wi
 - Ids default to `Schema.kind.field`. Pass `id:` on a collision.
 - Rules see the parsed body, so field names are wire names.
 
+## Migrate with an agent
+
+Fastify has no dedicated source guide. If your cross-field checks are in Zod, yup or Joi, use the matching guide in [`skills/validonce-migrate/references/`](../skills/validonce-migrate/references/). `generate_code` with target `typescript-rules` and `framework: "fastify"` writes the `defineRules` call and a TypeBox schema (needs `validonce-mcp` 0.2.0 or later). See [Migrating with an agent](agentic-migration.md).
+
 Next: the [React guide](client-react.md) or [Angular guide](client-angular.md). Runnable example: [examples/fastify-app](../examples/fastify-app/README.md).

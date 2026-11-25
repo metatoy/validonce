@@ -74,4 +74,8 @@ Rules run after field validation succeeds, so a request with a bad field type ge
 - Ids default to `ClassName.kind.field`. Pass `id=` on a collision.
 - Fewer than two fields, a repeated field or an unknown field in a group rule raises `ValidonceDefinitionError` at class definition, not at request time.
 
+## Migrate with an agent
+
+If your cross-field checks are already Pydantic `@model_validator`s, an agent can move them. The [Pydantic guide](../skills/validonce-migrate/references/pydantic.md) maps each check to a `ValidonceModel` rule, and `generate_code` with target `python` writes the model. The old validator then runs on generated inputs to prove the two agree. See [Migrating with an agent](agentic-migration.md). `suggest_client_wiring` (needs `validonce-mcp` 0.2.0 or later) returns the matching client set-up.
+
 Next: the [React guide](client-react.md) or [Angular guide](client-angular.md). Runnable example: [examples/fastapi-app](../examples/fastapi-app/README.md).

@@ -99,6 +99,10 @@ A rule is translated only when its **guard** holds; otherwise it is kept as `ser
 
 **Write translatable CRDs:** give text fields `minLength: 1`, give integers `format: int32` (or `minimum` and `maximum`), give date-time fields a pattern limiting fractions to milliseconds, and guard comparisons with `has()`. Run `validonce k8s --report` to see which rules translate and why the rest don't.
 
+## Migrate with an agent
+
+An agent can translate a CRD for you without rewriting its CEL: the `translate_kubernetes` tool takes a CRD manifest or a Kubernetes OpenAPI v3 document and returns the augmented document, the message catalog and a per-rule report (`translated`, or `server_only` with the reason). The skill's [Kubernetes guide](../skills/validonce-migrate/references/kubernetes.md) has the steps, and `suggest_client_wiring` returns the client set-up. These need `validonce-mcp` 0.2.0 or later. See [Migrating with an agent](agentic-migration.md).
+
 ## Example
 
 [`examples/k8s-form`](../examples/k8s-form) is a React form for a sample `Signup` CRD ([`crd/signup-crd.yaml`](../examples/k8s-form/crd/signup-crd.yaml)). Four of its rules run in the browser. The fifth (`self.company.size() <= 40`) is answered by a recorded Kubernetes 422 through `dryRunIssues`, so the example needs no cluster.

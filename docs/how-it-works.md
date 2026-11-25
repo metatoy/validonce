@@ -8,7 +8,7 @@ The sections below follow the rules from left to right: written on the server, e
 
 ## 1. Write the rules once
 
-In C#, a `ValidonceValidator<T>` (a FluentValidation `AbstractValidator<T>`). In Python, `__rules__` on a `ValidonceModel`. Both validate requests with their own library and both can export the rules.
+In C#, a `ValidonceValidator<T>` (a FluentValidation `AbstractValidator<T>`). In Python, `__rules__` on a `ValidonceModel`. In TypeScript, `defineRules` for Fastify or NestJS; in Go, `validonce.MustBuild`; in Java and Kotlin, a `RuleDefinition<T>` for Spring Boot. A Kubernetes CRD's CEL rules are translated instead of rewritten. Each validates requests with its own library and can export the rules.
 
 ## 2. Export as data
 
@@ -33,7 +33,7 @@ Messages are keys, not text. The server sends `rules.company_required`; the clie
 
 ## 4. Same result everywhere
 
-C#, TypeScript and Python each have their own evaluator. A shared suite in `conformance/` (125 cases) pins the behavior they must agree on. Some of the rules that make this work:
+C#, Python, TypeScript, Go and Java each have their own evaluator. A shared suite in `conformance/` (125 cases) pins the behavior they must agree on. Some of the rules that make this work:
 
 - Rules evaluate the JSON wire form, not language objects.
 - Blank means missing, `null`, `""` or `[]`. Nothing else.
@@ -51,6 +51,10 @@ Clients may skip checks or run old rules. The server always evaluates every rule
 
 `issuesFromResponse` in `validonce/server-errors` reads both and returns the same `Issue[]` the client evaluator produces.
 
+## Migrating an existing project
+
+Rules do not have to be written from scratch. `validonce-mcp` (an MCP server) and the `validonce-migrate` skill help a coding agent find existing cross-field checks, write them as these rules, and prove the result with a differential check: the old validator and the validonce evaluator run on the same generated inputs and must accept and reject the same ones. The server's tools read, check, evaluate, generate and compare rules; they never run your code. See [agentic-migration.md](agentic-migration.md).
+
 ## Known limits
 
 - A rule refers only to fields of its own object. A nested object carries its own rules.
@@ -58,4 +62,4 @@ Clients may skip checks or run old rules. The server always evaluates every rule
 - Evaluators reject a rule-format version they do not know instead of skipping rules.
 - A `pattern` can still behave differently per regex engine. Run the [regex linter](regex-findings.md) on your OpenAPI document.
 
-Guides: [ASP.NET Core](getting-started-aspnet.md), [FastAPI](getting-started-fastapi.md), [React](client-react.md), [Angular](client-angular.md).
+Guides: [ASP.NET Core](getting-started-aspnet.md), [FastAPI](getting-started-fastapi.md), [Fastify](getting-started-fastify.md), [NestJS](getting-started-nestjs.md), [Go](getting-started-go.md), [Spring Boot](getting-started-spring.md), [Kubernetes](kubernetes.md), [React](client-react.md), [Angular](client-angular.md), [Vue](client-vue.md), [plain HTML](client-dom.md).
