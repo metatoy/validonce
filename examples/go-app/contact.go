@@ -22,6 +22,7 @@ type Contact struct {
 	AvailableTo   *string `json:"availableTo,omitempty" format:"date" nullable:"true"`
 }
 
+// playground:begin
 var contactRules = validonce.MustBuild[Contact](
 	validonce.AtLeastOneOf([]string{"email", "phone"},
 		validonce.Key("rules.contact_email_or_phone"), validonce.ID("Contact.at_least_one_of.email")),
@@ -32,6 +33,7 @@ var contactRules = validonce.MustBuild[Contact](
 	validonce.Cmp("availableTo").Ge(validonce.Ref("availableFrom"),
 		validonce.Key("rules.available_to_after_from"), validonce.ID("Contact.compare.availableTo")),
 )
+// playground:end
 
 // TransformSchema publishes the rules as x-validonce on the Contact component schema.
 func (Contact) TransformSchema(_ huma.Registry, s *huma.Schema) *huma.Schema {

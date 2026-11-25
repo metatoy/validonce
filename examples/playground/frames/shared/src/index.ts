@@ -122,6 +122,8 @@ export interface FrameParams {
   openapi: string;
   /** The component schema holding `x-validonce`. */
   schema: string;
+  /** URL of a Kubernetes CRD manifest, read instead of the OpenAPI document (`?crd=`). */
+  crd?: string;
   theme: "light" | "dark";
 }
 
@@ -132,6 +134,7 @@ export function readParams(search: string = window.location.search): FrameParams
     api,
     openapi: p.get("openapi") ?? "/openapi.json",
     schema: p.get("schema") ?? "Contact",
+    crd: p.get("crd") ?? undefined,
     theme: p.get("theme") === "dark" ? "dark" : "light",
   };
 }
@@ -195,6 +198,7 @@ export function onSet(handler: (skipClient: boolean) => void): void {
 // ---------------------------------------------------------------------------
 
 export async function fetchOpenApi(params: FrameParams): Promise<unknown> {
+  if (params.crd) return fetchCrd(params.crd, params.schema);
   const res = await fetch(`${params.api}${params.openapi}`);
   if (!res.ok) throw new Error(`OpenAPI document: HTTP ${res.status}`);
   return res.json();
@@ -319,4 +323,19 @@ export function entriesByField(s: ViewState): Record<Field, Entry[]> {
     out[f] = list;
   }
   return out;
+}
+
+/**
+ * `?crd=`: fetch a Kubernetes CRD, translate its CEL with `translateCrd`, and return an OpenAPI-shaped
+ * document, so the frames read the rules the same way as from a backend. The CRD's messages join the
+ * catalog (the translated rules use `k8s.<Kind>.<n>` keys).
+ */
+async function fetchCrd(url: string, schema: string): Promise<unknown> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`CRD: HTTP ${res.status}`);
+  const { translateCrd } = await import("validonce/kubernetes");
+  const version = Object.values(translateCrd(await res.json()).versions)[0];
+  if (!version) throw new Error("the CRD has no versions");
+  Object.assign(messages, version.catalog);
+  return { openapi: "3.1.0", components: { schemas: { [schema]: version.schema } } };
 }

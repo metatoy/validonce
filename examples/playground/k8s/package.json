@@ -1,0 +1,11 @@
+{
+  "name": "validonce-playground-k8s",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Metatoy LLC",
+  "type": "module",
+  "description": "The playground's simulated Kubernetes API server (no cluster).",
+  "scripts": { "start": "node server.mjs" },
+  "dependencies": { "validonce": "workspace:*" }
+}

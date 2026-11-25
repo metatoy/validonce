@@ -29,6 +29,7 @@ class Signup(ValidonceModel):
     ]
 
 
+# playground:begin
 class Contact(ValidonceModel):
     # Field names are the wire names (see examples/CONTRACT.md).
     email: str | None = Field(default=None, json_schema_extra={"format": "email"})
@@ -47,6 +48,7 @@ class Contact(ValidonceModel):
         when(F.country == "US").require(F.postalCode, key="rules.postal_code_required_us"),
         F.availableTo.ge(F.availableFrom, key="rules.available_to_after_from"),
     ]
+# playground:end
 
 
 app = FastAPI(separate_input_output_schemas=False)

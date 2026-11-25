@@ -37,6 +37,7 @@ public sealed record Contact(
     [property: JsonPropertyName("availableFrom")] DateOnly? AvailableFrom,
     [property: JsonPropertyName("availableTo")] DateOnly? AvailableTo);
 
+// playground:begin
 public sealed class ContactValidator : ValidonceValidator<Contact>
 {
     private static readonly string[] Countries = ["US", "CA", "GB", "other"];
@@ -54,3 +55,4 @@ public sealed class ContactValidator : ValidonceValidator<Contact>
         RuleFor(x => x.Country).NotEmpty().Must(c => c is null || Countries.Contains(c)).WithMessage("Country must be one of US, CA, GB, other.");
     }
 }
+// playground:end
