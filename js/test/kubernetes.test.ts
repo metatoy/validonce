@@ -150,6 +150,14 @@ describe("CEL -> rule table", () => {
       { kind: "exactly_one_of", fields: ["a", "b"] },
     ],
     [
+      "(has(self.a) ? 1 : 0) + (has(self.b) ? 1 : 0) + (has(self.c) ? 1 : 0) == 1",
+      { kind: "exactly_one_of", fields: ["a", "b", "c"] },
+    ],
+    [
+      "1 == (has(self.a) ? 1 : 0) + (has(self.b) ? 1 : 0)",
+      { kind: "exactly_one_of", fields: ["a", "b"] },
+    ],
+    [
       "[has(self.a), has(self.b), has(self.c)].exists_one(v, v)",
       { kind: "exactly_one_of", fields: ["a", "b", "c"] },
     ],
@@ -193,6 +201,26 @@ describe("CEL -> rule table", () => {
 describe("unrecognised CEL stays server_only", () => {
   const cases: Array<[string, RegExp]> = [
     ["self.a + self.b > 3", /arithmetic operator '\+'/],
+    [
+      "(has(self.a) ? 1 : 0) + (has(self.b) ? 1 : 0) <= 1",
+      /only supported as '== 1'/,
+    ],
+    [
+      "(has(self.a) ? 1 : 0) + (has(self.b) ? 1 : 0) == 2",
+      /only supported as '== 1'/,
+    ],
+    [
+      "(has(self.a) ? 1 : 0) + (has(self.b) ? 2 : 0) == 1",
+      /arithmetic operator '\+'/,
+    ],
+    [
+      "(has(self.a) ? 1 : 0) + (self.plan == 'x' ? 1 : 0) == 1",
+      /arithmetic operator '\+'/,
+    ],
+    [
+      "(has(self.a) ? 1 : 0) + (has(self.a) ? 1 : 0) == 1",
+      /two or more distinct/,
+    ],
     ["(self.min + 1) > self.max", /arithmetic operator '\+'/],
     ["self.min - 1 > 3", /arithmetic operator '-'/],
     ["self.a.b == 1", /after self\.a/],

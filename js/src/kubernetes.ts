@@ -139,7 +139,8 @@ export type CelAst =
     }
   | { t: "in"; a: CelAst; vals: Lit[] }
   | { t: "cond"; c: CelAst; a: CelAst; b: CelAst }
-  | { t: "one"; names: string[] };
+  | { t: "one"; names: string[] }
+  | { t: "sum"; terms: CelAst[] };
 
 export type CelResult =
   | { ok: true; ast: CelAst }
@@ -281,8 +282,16 @@ class Parser {
     while (this.eatP("&&")) a = { t: "and", a, b: this.rel() };
     return a;
   }
+  /** `x + y + …`; only ever recognised as a sum of has() ternaries. */
+  private add(): CelAst {
+    const first = this.unary();
+    if (!this.isP("+")) return first;
+    const terms = [first];
+    while (this.eatP("+")) terms.push(this.unary());
+    return { t: "sum", terms };
+  }
   private rel(): CelAst {
-    const a = this.unary();
+    const a = this.add();
     const t = this.peek();
     if (t.k === "p" && (RELOPS as readonly string[]).includes(t.v)) {
       this.i++;
@@ -290,7 +299,7 @@ class Parser {
         t: "cmp",
         op: t.v as (typeof RELOPS)[number],
         a,
-        b: this.unary(),
+        b: this.add(),
       };
     }
     if (t.k === "id" && t.v === "in") {
@@ -748,12 +757,34 @@ function usesOf(shape: Shape, info: (n: string) => FieldInfo): FieldUse[] {
   return raw.map(([n, role]) => ({ field: info(n), role }));
 }
 
+/** `(has(a) ? 1 : 0) + (has(b) ? 1 : 0) + … == 1` (either side), nothing else. */
+function sumExactlyOne(ast: CelAst & { t: "cmp" }): Shape {
+  const [sum, other] = ast.a.t === "sum" ? [ast.a, ast.b] : [ast.b, ast.a];
+  if (sum.t !== "sum") return unrec("arithmetic operator '+' is not supported");
+  const names: string[] = [];
+  for (const t of sum.terms) {
+    const one = (x: CelAst, v: number) =>
+      x.t === "lit" && x.v === v && x.num === "int";
+    if (t.t !== "cond" || t.c.t !== "has" || !one(t.a, 1) || !one(t.b, 0))
+      return unrec("arithmetic operator '+' is not supported");
+    names.push(t.c.name);
+  }
+  if (
+    ast.op !== "==" ||
+    !(other.t === "lit" && other.v === 1 && other.num === "int")
+  )
+    return unrec("a sum of has() ternaries is only supported as '== 1'");
+  return fieldsShape("exactly_one_of", names);
+}
+
 function recognise(ast: CelAst, info: (n: string) => FieldInfo): Recognition {
   try {
     const shape: Shape =
-      ast.t === "cmp" && !(ast.a.t === "has" && ast.b.t === "has")
-        ? recogniseCompare(ast, info)
-        : recogniseCondition(ast);
+      ast.t === "cmp" && (ast.a.t === "sum" || ast.b.t === "sum")
+        ? sumExactlyOne(ast)
+        : ast.t === "cmp" && !(ast.a.t === "has" && ast.b.t === "has")
+          ? recogniseCompare(ast, info)
+          : recogniseCondition(ast);
     const row: RowId =
       shape.kind === "compare"
         ? (`compare.${shape.type}` as RowId)
