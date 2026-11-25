@@ -116,6 +116,173 @@
             }
           ]
         }
+      },
+      "Contact": {
+        "type": "object",
+        "required": [
+          "country"
+        ],
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "pattern": "^\\+?[0-9 ()-]{7,20}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "street": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "postalCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "US"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "CA"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "GB"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "other"
+                ]
+              }
+            ]
+          },
+          "availableFrom": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "availableTo": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "x-validonce": {
+          "version": 1,
+          "rules": [
+            {
+              "id": "Contact.at_least_one_of.email",
+              "kind": "at_least_one_of",
+              "fields": [
+                "email",
+                "phone"
+              ],
+              "message": {
+                "key": "rules.contact_email_or_phone"
+              }
+            },
+            {
+              "id": "Contact.all_or_none.street",
+              "kind": "all_or_none",
+              "fields": [
+                "street",
+                "city",
+                "postalCode"
+              ],
+              "message": {
+                "key": "rules.address_all_or_none"
+              }
+            },
+            {
+              "id": "Contact.required_when.postalCode",
+              "kind": "required_when",
+              "field": "postalCode",
+              "when": {
+                "eq": {
+                  "field": "country",
+                  "value": "US"
+                }
+              },
+              "message": {
+                "key": "rules.postal_code_required_us"
+              }
+            },
+            {
+              "id": "Contact.compare.availableTo",
+              "kind": "compare",
+              "left": {
+                "field": "availableTo"
+              },
+              "op": "ge",
+              "right": {
+                "field": "availableFrom"
+              },
+              "type": "date",
+              "message": {
+                "key": "rules.available_to_after_from"
+              }
+            }
+          ]
+        }
       }
     }
   },
@@ -128,6 +295,25 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/Signup"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
+    "/contacts": {
+      "post": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Contact"
               }
             }
           }

@@ -9,7 +9,8 @@
     "build": "esbuild src/main.ts src/export-openapi.ts --bundle --platform=node --format=esm --target=node20 --packages=external --outdir=dist",
     "typecheck": "tsc --noEmit",
     "start": "pnpm build && node dist/main.js",
-    "export-openapi": "pnpm build && node dist/export-openapi.js"
+    "export-openapi": "pnpm build && node dist/export-openapi.js",
+    "test": "vitest run"
   },
   "dependencies": {
     "@fastify/cors": "11.4.3",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@types/node": "22.20.5",
     "esbuild": "0.28.2",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "vitest": "5.1.1"
   }
 }
