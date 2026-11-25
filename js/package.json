@@ -84,10 +84,14 @@
     "./orval": {
       "types": "./dist/orval.d.ts",
       "import": "./dist/orval.js"
+    },
+    "./kubb": {
+      "types": "./dist/kubb.d.ts",
+      "import": "./dist/kubb.js"
     }
   },
   "scripts": {
-    "build": "esbuild src/index.ts src/zod.ts src/openapi.ts src/server-errors.ts src/messages.ts src/deps.ts src/react-hook-form.ts src/angular.ts src/rules.ts src/fastify.ts src/nestjs.ts src/dom.ts src/dom-element.ts src/vue.ts src/kubernetes.ts src/hey-api.ts --bundle --splitting --format=esm --platform=neutral --target=es2022 --external:zod --external:react-hook-form --external:react --external:@angular/core --external:@angular/forms --external:fastify --external:@nestjs/common --external:@nestjs/core --external:@nestjs/swagger --external:reflect-metadata --external:rxjs --external:vue --external:vee-validate --external:@hey-api/openapi-ts \"--external:node:*\" --outdir=dist && esbuild src/orval.ts --bundle --format=esm --platform=node --target=node20 --external:orval --external:zod --outfile=dist/orval.js && esbuild src/cli.ts --bundle --format=esm --platform=node --target=node20 --external:zod --outfile=dist/cli.js \"--banner:js=#!/usr/bin/env node\" && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "build": "esbuild src/index.ts src/zod.ts src/openapi.ts src/server-errors.ts src/messages.ts src/deps.ts src/react-hook-form.ts src/angular.ts src/rules.ts src/fastify.ts src/nestjs.ts src/dom.ts src/dom-element.ts src/vue.ts src/kubernetes.ts src/hey-api.ts --bundle --splitting --format=esm --platform=neutral --target=es2022 --external:zod --external:react-hook-form --external:react --external:@angular/core --external:@angular/forms --external:fastify --external:@nestjs/common --external:@nestjs/core --external:@nestjs/swagger --external:reflect-metadata --external:rxjs --external:vue --external:vee-validate --external:@hey-api/openapi-ts \"--external:node:*\" --outdir=dist && esbuild src/orval.ts --bundle --format=esm --platform=node --target=node20 --external:orval --external:zod --outfile=dist/orval.js && esbuild src/kubb.ts --bundle --format=esm --platform=node --target=node20 --external:zod --external:kubb --external:@kubb/* --outfile=dist/kubb.js && esbuild src/cli.ts --bundle --format=esm --platform=node --target=node20 --external:zod --outfile=dist/cli.js \"--banner:js=#!/usr/bin/env node\" && tsc -p tsconfig.build.json --emitDeclarationOnly",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "biome check ."
@@ -103,6 +107,8 @@
     "@fastify/swagger": "9.9.5",
     "@hey-api/openapi-ts": "0.99.0",
     "@hookform/resolvers": "7.0.8",
+    "@kubb/adapter-oas": "5.23.4",
+    "@kubb/plugin-zod": "5.11.1",
     "@nestjs/common": "12.6.0",
     "@nestjs/core": "12.6.0",
     "@nestjs/platform-express": "12.6.0",
@@ -112,6 +118,7 @@
     "esbuild": "0.28.2",
     "fastify": "5.12.8",
     "happy-dom": "21.0.4",
+    "kubb": "5.23.4",
     "orval": "8.49.0",
     "react": "19.3.1",
     "react-hook-form": "7.92.0",
@@ -130,6 +137,7 @@
     "@nestjs/common": ">=11.0.0",
     "@nestjs/swagger": ">=11.0.0",
     "fastify": ">=5.0.0",
+    "kubb": ">=5.23.0",
     "orval": "^8.0.0",
     "react-hook-form": "^7.55.0",
     "reflect-metadata": ">=0.2.0",
@@ -154,6 +162,9 @@
       "optional": true
     },
     "fastify": {
+      "optional": true
+    },
+    "kubb": {
       "optional": true
     },
     "orval": {

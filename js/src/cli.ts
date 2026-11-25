@@ -4,8 +4,8 @@
 import { readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { collect, sortKeys } from "./collect";
 import { translateCrd, translateKubernetesOpenApi } from "./kubernetes";
-import { allRulesFromOpenApi } from "./openapi";
 import { type RuleSet, ValidonceFormatError } from "./types";
 import { type WrapStyle, wrap } from "./wrap";
 
@@ -56,34 +56,6 @@ Exit codes: 0 done, 1 no x-validonce found or wrap could not match (nothing is w
 function version(): string {
   const url = new URL("../package.json", import.meta.url);
   return (JSON.parse(readFileSync(url, "utf8")) as { version: string }).version;
-}
-
-function sortKeys(v: unknown): unknown {
-  if (Array.isArray(v)) return v.map(sortKeys);
-  if (typeof v === "object" && v !== null) {
-    const o = v as Record<string, unknown>;
-    return Object.fromEntries(
-      Object.keys(o)
-        .sort()
-        .map((k) => [k, sortKeys(o[k])]),
-    );
-  }
-  return v;
-}
-
-/** `Name-Input` is reported as `Name` unless a plain `Name` already exists. */
-function collect(doc: unknown, wanted: string[]): Record<string, RuleSet> {
-  const all = allRulesFromOpenApi(doc);
-  const named: Record<string, RuleSet> = {};
-  for (const [name, rs] of Object.entries(all)) {
-    const plain = name.endsWith("-Input") ? name.slice(0, -6) : name;
-    named[plain !== name && !Object.hasOwn(all, plain) ? plain : name] = rs;
-  }
-  if (wanted.length === 0) return named;
-  const out: Record<string, RuleSet> = {};
-  for (const w of wanted)
-    if (Object.hasOwn(named, w)) out[w] = named[w] as RuleSet;
-  return out;
 }
 
 function render(
