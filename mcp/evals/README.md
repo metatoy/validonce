@@ -8,15 +8,19 @@ A [promptfoo](https://www.promptfoo.dev) harness that measures how well a coding
 
 ## What is measured
 
-Cases: the five `testbeds/before/*` fixtures (migrate the three Signup rules) and five `testbeds/tricky/*` fixtures (migrate nothing: arithmetic, nested object, coercion, conditional format, async DB). Each fixture's answer is its `expected.json`; it is never copied to the agent. Every case runs 3 times per agent.
+Cases: the five `testbeds/before/*` fixtures (migrate the three Signup rules) and five `testbeds/tricky/*` fixtures (migrate nothing: arithmetic, nested object, coercion, conditional format, async DB). The **0.5 stacks** add six `testbeds/stacks/*` fixtures (Go + go-playground, Spring + Jakarta, NestJS + class-validator, Express + Joi, Vue + VeeValidate/yup, a Kubernetes CRD) and four decoys (Go arithmetic, a Jakarta check on a repository, Joi coercion, a class-validator format behind `@ValidateIf`). `VALIDONCE_EVAL_CASES=<ids>` picks cases. Each fixture's answer is its `expected.json`; it is never copied to the agent. Every case runs 3 times per agent.
 
 Deterministic assertions (`assertions/`): `differential` (the agent's `validonce-rules.json` vs the ORIGINAL validator, via `generate_inputs` and `compare_results`; hard gate), `rules` (recall and precision vs `expected.json`), `keep` (kept checks still hand-written, reason in the report), `scope` (diff against a pristine copy touches only allowed files), `builds` (project still builds or loads), `report` (`MIGRATION_REPORT.md` has the headings of `skills/validonce-migrate/assets/report-template.md`). `metrics` records tokens, cost, credits, turns and seconds as named metrics (weight 0). `rubric` (report clarity, weight 0.1) is **disabled** unless `VALIDONCE_EVAL_RUBRIC=1`, because it calls a model.
 
 Contract given to the agent (`prompt.txt`): do the full migration the skill describes (validonce rules in the fixture's own validator code, duplicates removed, the rest kept hand-written), consent to run the old validator in `.validonce-scratch/`, and write `validonce-rules.json` and `MIGRATION_REPORT.md` in the project root. `scope` allows exactly the fixture's `allowedFiles` (in its `expected.json`: validator source, manifest, the two outputs, `.validonce-scratch/**`).
 
-`builds` also checks that the migrated validator exports the same rules as `validonce-rules.json` where the stack can export: Python (`ValidonceModel.export_rules()`, via `exporters/export_pydantic.py`) and C# (`ValidonceValidator<T>.ExportRules()`, via `exporters/dotnet`). For TypeScript the rules JSON is the source, so it only checks the module still imports.
+`builds` also checks that the migrated validator exports the same rules as `validonce-rules.json` where the stack can export: Python (`ValidonceModel.export_rules()`, via `exporters/export_pydantic.py`) C# (`ValidonceValidator<T>.ExportRules()`, via `exporters/dotnet`). Java (`@ValidonceRules`, via `exporters/java/ExportRules.java`) and Go (package-level `validonce.MustBuild` rule sets, via a test written into a copy of the package). For TypeScript the rules JSON is the source, so it only checks the module still imports.
 
 Offline dependencies in the scratch dirs: npm `validonce` is a link in `node_modules` to the workspace `js/`; Python uses `python/.venv` (pydantic plus the editable workspace `validonce`); C# gets a `nuget.config` pointing at a local feed (`$TMPDIR/validonce-evals/_feed`, packed once from `dotnet/src/Validonce` and `Validonce.FluentValidation`, version 0.2.0). Re-pack by deleting that feed folder after changing the .NET library.
+
+For the new stacks the differential runs the project's **own entry point** before and after the migration (`lib/stacks.mjs`): the Go HTTP handler in process, the Java bean with the skill's `Runner.java`, the Express route on a fake app, the VeeValidate schema whatever library it is after the migration. NestJS runs the DTO with `run-js.mjs` (which evaluates the rules a migrated class carries) and `wired` in `expected.json` requires the pipe on the route. Kubernetes has no old validator: a hand-written reading of the CEL (`oracles/kubernetes.mjs`) stands in, the CRD must be byte-identical, and every `server_only` rule needs its reason in the report. Where no rules can be exported (NestJS, Express, Vue), the differential's whole-model proof is what ties the code to the rules file.
+
+Go gets a private copy of a module cache that holds the workspace's Go module as v0.5.0 (`$TMPDIR/validonce-evals/_go-*`); Java gets one directory of jars linked at `libs/` (`_javalibs-*`, resolved once with Gradle). Both need the network the first time only, when the cache is built outside any agent run.
 
 ## Free dry run (no model, no credits)
 
@@ -25,6 +29,8 @@ export PATH=/opt/homebrew/opt/node@22/bin:$PATH
 pnpm --filter validonce-mcp build          # mcp/dist is what the agents and assertions use
 pnpm --filter validonce-mcp-evals dry-run  # replay-good and replay-bad on zod, pydantic, tricky-arithmetic
 ```
+
+Pass a pattern for other cases: `node dry-run.mjs 'stacks|tricky'`.
 
 `providers/replay.mjs` applies a recorded migration from `replay/<case>/{good,bad}/` instead of calling an agent. Good must pass everything; bad must fail `differential`.
 

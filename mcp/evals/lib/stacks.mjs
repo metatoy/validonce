@@ -4,13 +4,15 @@
 // Offline toolchains and whole-project runners for the Go, Java and wrapped-JavaScript fixtures. The skill's runners
 // (skills/validonce-migrate/scripts) run an isolated validator; the grader needs to run the project's own entry point,
 // before and after the migration, and (Go, Java) to export the migrated rules.
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { evalsDir, repoRoot, scratchRoot, skillsDir, testbeds } from "./util.mjs";
 
 const VALIDONCE_GO = "v0.5.0";
-const GO_ROOT = "_go-2"; // bump when go/ or the warm-up below changes
+// Keyed on what the cache holds, so a dependency bump in the runner or in go/ rebuilds it.
+const GO_ROOT = `_go-${createHash("sha256").update(["skills/validonce-migrate/scripts/run-go/go.mod", "go/go.mod"].map((f) => readFileSync(join(repoRoot, f))).join("\n")).digest("hex").slice(0, 8)}`;
 const sh = (cmd, args, opts = {}) => {
   const r = spawnSync(cmd, args, { encoding: "utf8", timeout: 300_000, ...opts });
   if (r.status !== 0) throw new Error(`${cmd} ${args.slice(0, 3).join(" ")} failed (exit ${r.status}): ${`${r.stderr ?? ""}${r.stdout ?? ""}${r.error ?? ""}`.slice(-500)}`);
@@ -159,7 +161,7 @@ func main() {
 `;
 const goModule = (dir) => /^module\s+(\S+)/m.exec(readFileSync(join(dir, "go.mod"), "utf8"))[1];
 const graderGo = () => {
-  const root = join(scratchRoot(), "_go-grader-2");
+  const root = join(scratchRoot(), `${GO_ROOT}-grader`);
   if (!existsSync(root)) { const from = ensureGo(); mkdirSync(root, { recursive: true }); for (const d of ["mod", "build"]) clone(join(from, d), join(root, d)); }
   return { ...process.env, ...goEnv(root) };
 };
