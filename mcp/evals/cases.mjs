@@ -99,7 +99,7 @@ export const CASES = {
   },
 };
 
-// ---- The 0.5 stacks (Plan I) ----
+// ---- The 0.5 stacks ----
 const CONTACT_PROPERTIES = {
   ...Object.fromEntries(["email", "phone", "street", "city", "postalCode"].map((f) => [f, { type: ["string", "null"] }])),
   country: { type: "string", enum: ["US", "CA", "GB", "other"] },
@@ -192,7 +192,7 @@ Object.assign(CASES, {
   "tricky-nestjs-format": { dir: "tricky/format-nestjs", group: "tricky", stack: "js", deps: ["class-transformer", "class-validator", "reflect-metadata"], build: nestCheck("address.dto.ts") },
 });
 
-// Hold-out cases (Plan C Part 5): public apps measured once, kept OUTSIDE this repo (third-party code, scratch copies).
+// Hold-out cases: public apps measured once, kept OUTSIDE this repo (third-party code, scratch copies).
 // VALIDONCE_HOLDOUT_CASES points at a module exporting HOLDOUT: { [id]: case } where each case has an absolute
 // `root` (its fixture folder, holding expected.json) and group "holdout". They run with VALIDONCE_EVAL_GROUP=holdout.
 if (process.env.VALIDONCE_HOLDOUT_CASES) {

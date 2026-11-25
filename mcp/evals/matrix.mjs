@@ -17,5 +17,5 @@ Cost estimate method: tokens per run are UNKNOWN until a pilot. Pilot first: 1 r
 (cost_usd / credits / tokens_total metrics), take the mean per case group, then:
   Claude   estimate = runs x mean cost_usd (USD; opus rates apply)
   Copilot  estimate = runs x mean credits (1 credit = $0.01; Pro+ has 7,000 credits a month)
-A tuning round re-runs the whole matrix once per changed variant (at most 3 rounds, Part 4b); state each round's run count
+A tuning round re-runs the whole matrix once per changed variant (at most 3 rounds); state each round's run count
 and estimate before it starts. Hard caps: Claude maxBudgetUsd per run (default 5), run timeout 20 min.`);

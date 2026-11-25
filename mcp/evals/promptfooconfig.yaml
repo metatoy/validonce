@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2026 Metatoy LLC
 # yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
-# Plan C Part 4b: measures the validonce migration agent. LOCAL ONLY. Never run `promptfoo share`.
+# Measures the validonce migration agent. LOCAL ONLY. Never run `promptfoo share`.
 description: validonce migration agent (Claude and Copilot, tuning set)
 
 # Nothing leaves this machine: no sharing, no cloud sync. The npm scripts also set PROMPTFOO_DISABLE_TELEMETRY=1.

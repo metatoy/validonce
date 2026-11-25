@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <!-- Copyright 2026 Metatoy LLC -->
-# validonce migration evals (Plan C, Part 4b)
+# validonce migration evals
 
 A [promptfoo](https://www.promptfoo.dev) harness that measures how well a coding agent migrates hand-written validation to validonce, using the `validonce-migrate` skill and the `validonce-mcp` server. Claude and Copilot run on the same cases with the same scoring. Copilot is measured by hand in VS Code (agent mode, see below); the Copilot CLI provider is optional.
 
@@ -50,7 +50,7 @@ Caps: Claude `maxBudgetUsd` per run (default 5), 60 turns, 20 minute timeout; Co
 
 ### Variants (tuning)
 
-`SKILL_VARIANT=<name>` selects the skill directory installed in each scratch dir: `baseline` is `skills/validonce-migrate`; any other name is `mcp/evals/variants/<name>/` (a copy of the skill directory with one change), or give an absolute path. Run once per variant and compare; keep a change only if neither agent gets worse (at most 3 rounds). The Part 5 public apps are a hold-out set: never tune on them.
+`SKILL_VARIANT=<name>` selects the skill directory installed in each scratch dir: `baseline` is `skills/validonce-migrate`; any other name is `mcp/evals/variants/<name>/` (a copy of the skill directory with one change), or give an absolute path. Run once per variant and compare; keep a change only if neither agent gets worse (at most 3 rounds). The public apps are a hold-out set: never tune on them.
 
 ### Copilot in VS Code (manual run)
 
