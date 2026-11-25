@@ -72,6 +72,34 @@ jobs:
         run: pnpm typecheck && pnpm build
         working-directory: examples/vue-form
 
+  k8s-cel-diff:
+    # Differential test: Kubernetes' own CEL (Go) against the translated rules (TypeScript). Not a required check.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: tools/k8s-cel-diff/go.sum
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        working-directory: js
+      - name: Kubernetes verdicts
+        working-directory: tools/k8s-cel-diff
+        run: go vet ./... && mkdir -p out && go run . -json > out/verdicts.json
+      - name: Fixtures are up to date
+        working-directory: tools/k8s-cel-diff
+        run: node gen-fixtures.mjs && git diff --exit-code -- ../../conformance/kubernetes
+      - name: Translate, evaluate, compare
+        working-directory: tools/k8s-cel-diff
+        run: node translate-and-eval.mjs out/verdicts.json
+
   python:
     runs-on: ubuntu-latest
     strategy:

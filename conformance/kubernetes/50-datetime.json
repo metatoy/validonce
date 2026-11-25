@@ -1,0 +1,1683 @@
+[
+ {
+  "id": "ts.le.noformat",
+  "description": "timestamp(a) <= timestamp(b), format none; b fixed to 2026-01-02T10:00:00Z",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "timestamp(self.a) <= timestamp(self.b)"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T15:30:00+05:30",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T15:30:00+05:30 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0004Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0004Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0001Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0001Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.123456789Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00.123456789Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02t10:00:00z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02t10:00:00z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02 10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02 10:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T24:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T24:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T23:59:60Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T23:59:60Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-02-30T10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-02-30T10:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "0000-01-01T00:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=0000-01-01T00:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00+24:00",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00+24:00 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a= b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=x b=2026-01-02T10:00:00Z"
+   }
+  ]
+ },
+ {
+  "id": "ts.le.date-time",
+  "description": "timestamp(a) <= timestamp(b), format date-time; b fixed to 2026-01-02T10:00:00Z",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "b": {
+     "type": "string",
+     "format": "date-time"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "timestamp(self.a) <= timestamp(self.b)"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T15:30:00+05:30",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T15:30:00+05:30 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0004Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0004Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0001Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0001Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.123456789Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00.123456789Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02t10:00:00z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02t10:00:00z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02 10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02 10:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T24:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T24:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T23:59:60Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T23:59:60Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-02-30T10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-02-30T10:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "0000-01-01T00:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=0000-01-01T00:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00+24:00",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00+24:00 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a= b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=x b=2026-01-02T10:00:00Z"
+   }
+  ]
+ },
+ {
+  "id": "ts.gt.subms",
+  "description": "timestamp(a) > timestamp(b): sub-millisecond difference",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "timestamp(self.a) > timestamp(self.b)"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "gt",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0009Z",
+     "b": "2026-01-02T10:00:00.0001Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0009Z b=2026-01-02T10:00:00.0001Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0019Z",
+     "b": "2026-01-02T10:00:00.0011Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0019Z b=2026-01-02T10:00:00.0011Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0020Z",
+     "b": "2026-01-02T10:00:00.0019Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0020Z b=2026-01-02T10:00:00.0019Z"
+   }
+  ]
+ },
+ {
+  "id": "ts.eq.offset",
+  "description": "timestamp(a) == timestamp(b) across offsets",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "timestamp(self.a) == timestamp(self.b)"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "eq",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-02T15:30:00+05:30"
+    },
+    "note": "a=2026-01-02T10:00:00Z b=2026-01-02T15:30:00+05:30"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-02T10:00:00-00:00"
+    },
+    "note": "a=2026-01-02T10:00:00Z b=2026-01-02T10:00:00-00:00"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-02T05:00:00-05:00"
+    },
+    "note": "a=2026-01-02T10:00:00Z b=2026-01-02T05:00:00-05:00"
+   }
+  ]
+ },
+ {
+  "id": "ts.le.optional",
+  "description": "timestamp(a) <= timestamp(b), missing/blank operand, no guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "timestamp(self.a) <= timestamp(self.b)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\""
+   },
+   {
+    "data": {
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=MISSING b=\"2026-01-02T10:00:00Z\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=null b=\"2026-01-02T10:00:00Z\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=\"\" b=\"2026-01-02T10:00:00Z\""
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": null
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=null"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": ""
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=\"2026-01-02T10:00:00Z\""
+   }
+  ]
+ },
+ {
+  "id": "ts.le.guarded",
+  "description": "same, with has() guards",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!has(self.a) || !has(self.b) || timestamp(self.a) <= timestamp(self.b)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\""
+   },
+   {
+    "data": {
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=MISSING b=\"2026-01-02T10:00:00Z\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=null b=\"2026-01-02T10:00:00Z\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=\"\" b=\"2026-01-02T10:00:00Z\""
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": null
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=null"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": ""
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=\"2026-01-02T10:00:00Z\""
+   }
+  ]
+ },
+ {
+  "id": "ts.date.concat",
+  "description": "date strings via timestamp(a + 'T00:00:00Z')",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date"
+    },
+    "b": {
+     "type": "string",
+     "format": "date"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "timestamp(self.a + 'T00:00:00Z') <= timestamp(self.b + 'T00:00:00Z')"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "date"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-10"
+    },
+    "note": "a=2026-01-02 b=2026-01-10"
+   },
+   {
+    "data": {
+     "a": "2026-01-10",
+     "b": "2026-01-02"
+    },
+    "note": "a=2026-01-10 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02"
+    },
+    "note": "a=2026-01-02 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "2026-02-30",
+     "b": "2026-03-01"
+    },
+    "note": "a=2026-02-30 b=2026-03-01"
+   },
+   {
+    "data": {
+     "a": "2026-1-2",
+     "b": "2026-01-10"
+    },
+    "note": "a=2026-1-2 b=2026-01-10"
+   },
+   {
+    "data": {
+     "a": "0000-01-01",
+     "b": "2026-01-10"
+    },
+    "note": "a=0000-01-01 b=2026-01-10"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-10"
+    },
+    "note": "a=2026-01-02T10:00:00Z b=2026-01-10"
+   }
+  ]
+ },
+ {
+  "id": "ts.lit",
+  "description": "timestamp(a) >= literal",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "timestamp(self.a) >= timestamp('2026-01-01T00:00:00Z')"
+    }
+   ],
+   "required": [
+    "a"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "ge",
+    "right": {
+     "value": "2026-01-01T00:00:00Z"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2025-12-31T23:59:59Z"
+    },
+    "note": "a=\"2025-12-31T23:59:59Z\""
+   },
+   {
+    "data": {
+     "a": "2026-01-01T00:00:00Z"
+    },
+    "note": "a=\"2026-01-01T00:00:00Z\""
+   },
+   {
+    "data": {
+     "a": "2026-01-01T01:00:00+02:00"
+    },
+    "note": "a=\"2026-01-01T01:00:00+02:00\""
+   }
+  ]
+ },
+ {
+  "id": "ts.native.date",
+  "description": "format: date fields compared natively: a <= b",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date"
+    },
+    "b": {
+     "type": "string",
+     "format": "date"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "date"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-10"
+    },
+    "note": "a=2026-01-02 b=2026-01-10"
+   },
+   {
+    "data": {
+     "a": "2026-01-10",
+     "b": "2026-01-02"
+    },
+    "note": "a=2026-01-10 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02"
+    },
+    "note": "a=2026-01-02 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "0000-01-01",
+     "b": "2026-01-02"
+    },
+    "note": "a=0000-01-01 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "9999-12-31",
+     "b": "2026-01-02"
+    },
+    "note": "a=9999-12-31 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "2024-02-29",
+     "b": "2024-03-01"
+    },
+    "note": "a=2024-02-29 b=2024-03-01"
+   },
+   {
+    "data": {
+     "a": "2023-02-29",
+     "b": "2024-03-01"
+    },
+    "note": "a=2023-02-29 b=2024-03-01"
+   },
+   {
+    "data": {
+     "a": "2026-1-2",
+     "b": "2026-01-10"
+    },
+    "note": "a=2026-1-2 b=2026-01-10"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-10"
+    },
+    "note": "a=2026-01-02T10:00:00Z b=2026-01-10"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "2026-01-10"
+    },
+    "note": "a= b=2026-01-10"
+   }
+  ]
+ },
+ {
+  "id": "ts.wrapped.date",
+  "description": "format: date fields wrapped: timestamp(a) <= timestamp(b)",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date"
+    },
+    "b": {
+     "type": "string",
+     "format": "date"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "timestamp(self.a) <= timestamp(self.b)"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "date"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-10"
+    },
+    "note": "a=2026-01-02 b=2026-01-10"
+   },
+   {
+    "data": {
+     "a": "2026-01-10",
+     "b": "2026-01-02"
+    },
+    "note": "a=2026-01-10 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02"
+    },
+    "note": "a=2026-01-02 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "0000-01-01",
+     "b": "2026-01-02"
+    },
+    "note": "a=0000-01-01 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "9999-12-31",
+     "b": "2026-01-02"
+    },
+    "note": "a=9999-12-31 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "2024-02-29",
+     "b": "2024-03-01"
+    },
+    "note": "a=2024-02-29 b=2024-03-01"
+   },
+   {
+    "data": {
+     "a": "2023-02-29",
+     "b": "2024-03-01"
+    },
+    "note": "a=2023-02-29 b=2024-03-01"
+   },
+   {
+    "data": {
+     "a": "2026-1-2",
+     "b": "2026-01-10"
+    },
+    "note": "a=2026-1-2 b=2026-01-10"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-10"
+    },
+    "note": "a=2026-01-02T10:00:00Z b=2026-01-10"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "2026-01-10"
+    },
+    "note": "a= b=2026-01-10"
+   }
+  ]
+ },
+ {
+  "id": "ts.native.date.guarded",
+  "description": "format: date optional, has() guards",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date"
+    },
+    "b": {
+     "type": "string",
+     "format": "date"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!has(self.a) || !has(self.b) || self.a <= self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "date"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\""
+   },
+   {
+    "data": {
+     "b": "2026-01-02"
+    },
+    "note": "a=MISSING b=\"2026-01-02\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "2026-01-02"
+    },
+    "note": "a=null b=\"2026-01-02\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "2026-01-02"
+    },
+    "note": "a=\"\" b=\"2026-01-02\""
+   },
+   {
+    "data": {
+     "a": "2026-01-02"
+    },
+    "note": "a=\"2026-01-02\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": null
+    },
+    "note": "a=\"2026-01-02\" b=null"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": ""
+    },
+    "note": "a=\"2026-01-02\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02"
+    },
+    "note": "a=\"2026-01-02\" b=\"2026-01-02\""
+   }
+  ]
+ },
+ {
+  "id": "ts.native.date.unguarded",
+  "description": "format: date optional, no guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date"
+    },
+    "b": {
+     "type": "string",
+     "format": "date"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "date"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": "2026-01-02"
+    },
+    "note": "a=MISSING b=\"2026-01-02\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "2026-01-02"
+    },
+    "note": "a=null b=\"2026-01-02\""
+   },
+   {
+    "data": {
+     "a": "2026-01-02"
+    },
+    "note": "a=\"2026-01-02\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": null
+    },
+    "note": "a=\"2026-01-02\" b=null"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02"
+    },
+    "note": "a=\"2026-01-02\" b=\"2026-01-02\""
+   }
+  ]
+ },
+ {
+  "id": "ts.native.datetime",
+  "description": "format: date-time fields compared natively: a <= b",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "b": {
+     "type": "string",
+     "format": "date-time"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T15:30:00+05:30",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T15:30:00+05:30 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0004Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0004Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.123456789Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00.123456789Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T09:59:59-00:00",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T09:59:59-00:00 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02t10:00:00z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02t10:00:00z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00+24:00",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00+24:00 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "0000-01-01T00:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=0000-01-01T00:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a= b=2026-01-02T10:00:00Z"
+   }
+  ]
+ },
+ {
+  "id": "ts.native.datetime.gt",
+  "description": "native a > b: sub-ms",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "b": {
+     "type": "string",
+     "format": "date-time"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a > self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "gt",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0009Z",
+     "b": "2026-01-02T10:00:00.0001Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0009Z b=2026-01-02T10:00:00.0001Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:01Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:01Z b=2026-01-02T10:00:00Z"
+   }
+  ]
+ },
+ {
+  "id": "ts.native.datetime.guarded",
+  "description": "format: date-time optional, has() guards",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "b": {
+     "type": "string",
+     "format": "date-time"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!has(self.a) || !has(self.b) || self.a <= self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\""
+   },
+   {
+    "data": {
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=MISSING b=\"2026-01-02T10:00:00Z\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=null b=\"2026-01-02T10:00:00Z\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=\"\" b=\"2026-01-02T10:00:00Z\""
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": null
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=null"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": ""
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=\"2026-01-02T10:00:00Z\" b=\"2026-01-02T10:00:00Z\""
+   }
+  ]
+ },
+ {
+  "id": "ts.native.datetime.lit",
+  "description": "native a >= timestamp literal",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date-time"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a >= timestamp('2026-01-01T00:00:00Z')"
+    }
+   ],
+   "required": [
+    "a"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "ge",
+    "right": {
+     "value": "2026-01-01T00:00:00Z"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2025-12-31T23:59:59Z"
+    },
+    "note": "a=\"2025-12-31T23:59:59Z\""
+   },
+   {
+    "data": {
+     "a": "2026-01-01T00:00:00Z"
+    },
+    "note": "a=\"2026-01-01T00:00:00Z\""
+   },
+   {
+    "data": {
+     "a": "2026-01-01T01:00:00+02:00"
+    },
+    "note": "a=\"2026-01-01T01:00:00+02:00\""
+   }
+  ]
+ }
+]

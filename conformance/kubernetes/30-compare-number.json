@@ -1,0 +1,3003 @@
+[
+ {
+  "id": "num.int-int.lt",
+  "description": "int a < int b, no guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a < self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "lt",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "b": -1
+    },
+    "note": "a=MISSING b=-1"
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 0
+    },
+    "note": "a=null b=0"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 1
+    },
+    "note": "a=null b=1"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 2
+    },
+    "note": "a=null b=2"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": -1
+    },
+    "note": "a=null b=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": null
+    },
+    "note": "a=0 b=null"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": -1
+    },
+    "note": "a=0 b=-1"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": null
+    },
+    "note": "a=1 b=null"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": -1
+    },
+    "note": "a=1 b=-1"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": null
+    },
+    "note": "a=2 b=null"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": -1
+    },
+    "note": "a=2 b=-1"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": null
+    },
+    "note": "a=-1 b=null"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 0
+    },
+    "note": "a=-1 b=0"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 1
+    },
+    "note": "a=-1 b=1"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 2
+    },
+    "note": "a=-1 b=2"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": -1
+    },
+    "note": "a=-1 b=-1"
+   }
+  ]
+ },
+ {
+  "id": "num.int-int.le",
+  "description": "int a <= int b, no guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "b": -1
+    },
+    "note": "a=MISSING b=-1"
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 0
+    },
+    "note": "a=null b=0"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 1
+    },
+    "note": "a=null b=1"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 2
+    },
+    "note": "a=null b=2"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": -1
+    },
+    "note": "a=null b=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": null
+    },
+    "note": "a=0 b=null"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": -1
+    },
+    "note": "a=0 b=-1"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": null
+    },
+    "note": "a=1 b=null"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": -1
+    },
+    "note": "a=1 b=-1"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": null
+    },
+    "note": "a=2 b=null"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": -1
+    },
+    "note": "a=2 b=-1"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": null
+    },
+    "note": "a=-1 b=null"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 0
+    },
+    "note": "a=-1 b=0"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 1
+    },
+    "note": "a=-1 b=1"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 2
+    },
+    "note": "a=-1 b=2"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": -1
+    },
+    "note": "a=-1 b=-1"
+   }
+  ]
+ },
+ {
+  "id": "num.int-int.gt",
+  "description": "int a > int b, no guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a > self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "gt",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "b": -1
+    },
+    "note": "a=MISSING b=-1"
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 0
+    },
+    "note": "a=null b=0"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 1
+    },
+    "note": "a=null b=1"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 2
+    },
+    "note": "a=null b=2"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": -1
+    },
+    "note": "a=null b=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": null
+    },
+    "note": "a=0 b=null"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": -1
+    },
+    "note": "a=0 b=-1"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": null
+    },
+    "note": "a=1 b=null"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": -1
+    },
+    "note": "a=1 b=-1"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": null
+    },
+    "note": "a=2 b=null"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": -1
+    },
+    "note": "a=2 b=-1"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": null
+    },
+    "note": "a=-1 b=null"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 0
+    },
+    "note": "a=-1 b=0"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 1
+    },
+    "note": "a=-1 b=1"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 2
+    },
+    "note": "a=-1 b=2"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": -1
+    },
+    "note": "a=-1 b=-1"
+   }
+  ]
+ },
+ {
+  "id": "num.int-int.ge",
+  "description": "int a >= int b, no guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a >= self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "ge",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "b": -1
+    },
+    "note": "a=MISSING b=-1"
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 0
+    },
+    "note": "a=null b=0"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 1
+    },
+    "note": "a=null b=1"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 2
+    },
+    "note": "a=null b=2"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": -1
+    },
+    "note": "a=null b=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": null
+    },
+    "note": "a=0 b=null"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": -1
+    },
+    "note": "a=0 b=-1"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": null
+    },
+    "note": "a=1 b=null"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": -1
+    },
+    "note": "a=1 b=-1"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": null
+    },
+    "note": "a=2 b=null"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": -1
+    },
+    "note": "a=2 b=-1"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": null
+    },
+    "note": "a=-1 b=null"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 0
+    },
+    "note": "a=-1 b=0"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 1
+    },
+    "note": "a=-1 b=1"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 2
+    },
+    "note": "a=-1 b=2"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": -1
+    },
+    "note": "a=-1 b=-1"
+   }
+  ]
+ },
+ {
+  "id": "num.int-int.eq",
+  "description": "int a == int b, no guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a == self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "eq",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "b": -1
+    },
+    "note": "a=MISSING b=-1"
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 0
+    },
+    "note": "a=null b=0"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 1
+    },
+    "note": "a=null b=1"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 2
+    },
+    "note": "a=null b=2"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": -1
+    },
+    "note": "a=null b=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": null
+    },
+    "note": "a=0 b=null"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": -1
+    },
+    "note": "a=0 b=-1"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": null
+    },
+    "note": "a=1 b=null"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": -1
+    },
+    "note": "a=1 b=-1"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": null
+    },
+    "note": "a=2 b=null"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": -1
+    },
+    "note": "a=2 b=-1"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": null
+    },
+    "note": "a=-1 b=null"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 0
+    },
+    "note": "a=-1 b=0"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 1
+    },
+    "note": "a=-1 b=1"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 2
+    },
+    "note": "a=-1 b=2"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": -1
+    },
+    "note": "a=-1 b=-1"
+   }
+  ]
+ },
+ {
+  "id": "num.int-int.ne",
+  "description": "int a != int b, no guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a != self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "ne",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "b": -1
+    },
+    "note": "a=MISSING b=-1"
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 0
+    },
+    "note": "a=null b=0"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 1
+    },
+    "note": "a=null b=1"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 2
+    },
+    "note": "a=null b=2"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": -1
+    },
+    "note": "a=null b=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": null
+    },
+    "note": "a=0 b=null"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": -1
+    },
+    "note": "a=0 b=-1"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": null
+    },
+    "note": "a=1 b=null"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": -1
+    },
+    "note": "a=1 b=-1"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": null
+    },
+    "note": "a=2 b=null"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": -1
+    },
+    "note": "a=2 b=-1"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": null
+    },
+    "note": "a=-1 b=null"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 0
+    },
+    "note": "a=-1 b=0"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 1
+    },
+    "note": "a=-1 b=1"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 2
+    },
+    "note": "a=-1 b=2"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": -1
+    },
+    "note": "a=-1 b=-1"
+   }
+  ]
+ },
+ {
+  "id": "num.int-int.guarded",
+  "description": "int a <= int b with has() guards",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!has(self.a) || !has(self.b) || self.a <= self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "b": -1
+    },
+    "note": "a=MISSING b=-1"
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 0
+    },
+    "note": "a=null b=0"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 1
+    },
+    "note": "a=null b=1"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 2
+    },
+    "note": "a=null b=2"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": -1
+    },
+    "note": "a=null b=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": null
+    },
+    "note": "a=0 b=null"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": -1
+    },
+    "note": "a=0 b=-1"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": null
+    },
+    "note": "a=1 b=null"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": -1
+    },
+    "note": "a=1 b=-1"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": null
+    },
+    "note": "a=2 b=null"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": -1
+    },
+    "note": "a=2 b=-1"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": null
+    },
+    "note": "a=-1 b=null"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 0
+    },
+    "note": "a=-1 b=0"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 1
+    },
+    "note": "a=-1 b=1"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 2
+    },
+    "note": "a=-1 b=2"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": -1
+    },
+    "note": "a=-1 b=-1"
+   }
+  ]
+ },
+ {
+  "id": "num.int-int.required",
+  "description": "int a <= int b, both required",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   }
+  ]
+ },
+ {
+  "id": "num.dbl-dbl.le",
+  "description": "number a <= number b",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "number"
+    },
+    "b": {
+     "type": "number"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": 0.1,
+     "b": 0.1
+    },
+    "note": "a=0.1 b=0.1"
+   },
+   {
+    "data": {
+     "a": 0.1,
+     "b": 0.2
+    },
+    "note": "a=0.1 b=0.2"
+   },
+   {
+    "data": {
+     "a": 0.1,
+     "b": 0.30000000000000004
+    },
+    "note": "a=0.1 b=0.30000000000000004"
+   },
+   {
+    "data": {
+     "a": 0.1,
+     "b": 0.3
+    },
+    "note": "a=0.1 b=0.3"
+   },
+   {
+    "data": {
+     "a": 0.1,
+     "b": 1
+    },
+    "note": "a=0.1 b=1"
+   },
+   {
+    "data": {
+     "a": 0.1,
+     "b": 1.5
+    },
+    "note": "a=0.1 b=1.5"
+   },
+   {
+    "data": {
+     "a": 0.2,
+     "b": 0.1
+    },
+    "note": "a=0.2 b=0.1"
+   },
+   {
+    "data": {
+     "a": 0.2,
+     "b": 0.2
+    },
+    "note": "a=0.2 b=0.2"
+   },
+   {
+    "data": {
+     "a": 0.2,
+     "b": 0.30000000000000004
+    },
+    "note": "a=0.2 b=0.30000000000000004"
+   },
+   {
+    "data": {
+     "a": 0.2,
+     "b": 0.3
+    },
+    "note": "a=0.2 b=0.3"
+   },
+   {
+    "data": {
+     "a": 0.2,
+     "b": 1
+    },
+    "note": "a=0.2 b=1"
+   },
+   {
+    "data": {
+     "a": 0.2,
+     "b": 1.5
+    },
+    "note": "a=0.2 b=1.5"
+   },
+   {
+    "data": {
+     "a": 0.30000000000000004,
+     "b": 0.1
+    },
+    "note": "a=0.30000000000000004 b=0.1"
+   },
+   {
+    "data": {
+     "a": 0.30000000000000004,
+     "b": 0.2
+    },
+    "note": "a=0.30000000000000004 b=0.2"
+   },
+   {
+    "data": {
+     "a": 0.30000000000000004,
+     "b": 0.30000000000000004
+    },
+    "note": "a=0.30000000000000004 b=0.30000000000000004"
+   },
+   {
+    "data": {
+     "a": 0.30000000000000004,
+     "b": 0.3
+    },
+    "note": "a=0.30000000000000004 b=0.3"
+   },
+   {
+    "data": {
+     "a": 0.30000000000000004,
+     "b": 1
+    },
+    "note": "a=0.30000000000000004 b=1"
+   },
+   {
+    "data": {
+     "a": 0.30000000000000004,
+     "b": 1.5
+    },
+    "note": "a=0.30000000000000004 b=1.5"
+   },
+   {
+    "data": {
+     "a": 0.3,
+     "b": 0.1
+    },
+    "note": "a=0.3 b=0.1"
+   },
+   {
+    "data": {
+     "a": 0.3,
+     "b": 0.2
+    },
+    "note": "a=0.3 b=0.2"
+   },
+   {
+    "data": {
+     "a": 0.3,
+     "b": 0.30000000000000004
+    },
+    "note": "a=0.3 b=0.30000000000000004"
+   },
+   {
+    "data": {
+     "a": 0.3,
+     "b": 0.3
+    },
+    "note": "a=0.3 b=0.3"
+   },
+   {
+    "data": {
+     "a": 0.3,
+     "b": 1
+    },
+    "note": "a=0.3 b=1"
+   },
+   {
+    "data": {
+     "a": 0.3,
+     "b": 1.5
+    },
+    "note": "a=0.3 b=1.5"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0.1
+    },
+    "note": "a=1 b=0.1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0.2
+    },
+    "note": "a=1 b=0.2"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0.30000000000000004
+    },
+    "note": "a=1 b=0.30000000000000004"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0.3
+    },
+    "note": "a=1 b=0.3"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1.5
+    },
+    "note": "a=1 b=1.5"
+   },
+   {
+    "data": {
+     "a": 1.5,
+     "b": 0.1
+    },
+    "note": "a=1.5 b=0.1"
+   },
+   {
+    "data": {
+     "a": 1.5,
+     "b": 0.2
+    },
+    "note": "a=1.5 b=0.2"
+   },
+   {
+    "data": {
+     "a": 1.5,
+     "b": 0.30000000000000004
+    },
+    "note": "a=1.5 b=0.30000000000000004"
+   },
+   {
+    "data": {
+     "a": 1.5,
+     "b": 0.3
+    },
+    "note": "a=1.5 b=0.3"
+   },
+   {
+    "data": {
+     "a": 1.5,
+     "b": 1
+    },
+    "note": "a=1.5 b=1"
+   },
+   {
+    "data": {
+     "a": 1.5,
+     "b": 1.5
+    },
+    "note": "a=1.5 b=1.5"
+   }
+  ]
+ },
+ {
+  "id": "num.int-dbl.le",
+  "description": "int a <= number b (mixed)",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "number"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1.5
+    },
+    "note": "a=1 b=1.5"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1.5
+    },
+    "note": "a=2 b=1.5"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   }
+  ]
+ },
+ {
+  "id": "num.dbl-int.le",
+  "description": "number a <= int b (mixed)",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "number"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1.5,
+     "b": 1
+    },
+    "note": "a=1.5 b=1"
+   },
+   {
+    "data": {
+     "a": 1.5,
+     "b": 2
+    },
+    "note": "a=1.5 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   }
+  ]
+ },
+ {
+  "id": "num.int-dbl.eq",
+  "description": "int a == number b (mixed)",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "number"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a == self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "eq",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1.5
+    },
+    "note": "a=1 b=1.5"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1.5
+    },
+    "note": "a=2 b=1.5"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   }
+  ]
+ },
+ {
+  "id": "num.dbl-int.eq",
+  "description": "number a == int b (mixed)",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "number"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a == self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "eq",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1.5,
+     "b": 1
+    },
+    "note": "a=1.5 b=1"
+   },
+   {
+    "data": {
+     "a": 1.5,
+     "b": 2
+    },
+    "note": "a=1.5 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   }
+  ]
+ },
+ {
+  "id": "num.lit.int-ge0",
+  "description": "integer a >= 0, has() guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!has(self.a) || self.a >= 0"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "ge",
+    "right": {
+     "value": 0
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING"
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1"
+   }
+  ]
+ },
+ {
+  "id": "num.lit.int-ge0.noguard",
+  "description": "integer a >= 0, no guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a >= 0"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "ge",
+    "right": {
+     "value": 0
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0"
+   }
+  ]
+ },
+ {
+  "id": "num.lit.dbl-ge-int",
+  "description": "number a >= int literal 1",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "number"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a >= 1"
+    }
+   ],
+   "required": [
+    "a"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "ge",
+    "right": {
+     "value": 1
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": 0.5
+    },
+    "note": "a=0.5"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1"
+   },
+   {
+    "data": {
+     "a": 1.5
+    },
+    "note": "a=1.5"
+   }
+  ]
+ },
+ {
+  "id": "num.lit.dbl-ge-dbl",
+  "description": "number a >= double literal 0.5",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "number"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a >= 0.5"
+    }
+   ],
+   "required": [
+    "a"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "ge",
+    "right": {
+     "value": 0.5
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0"
+   },
+   {
+    "data": {
+     "a": 0.5
+    },
+    "note": "a=0.5"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1"
+   }
+  ]
+ },
+ {
+  "id": "num.lit.int-ge-dbl",
+  "description": "integer a >= double literal 1.5",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a >= 1.5"
+    }
+   ],
+   "required": [
+    "a"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "ge",
+    "right": {
+     "value": 1.5
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2"
+   }
+  ]
+ },
+ {
+  "id": "num.int.big",
+  "description": "int64 beyond 2^53: CEL ints are exact, validonce numbers are IEEE doubles",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": 9007199254740993,
+     "b": 9007199254740992
+    },
+    "note": "a=2^53+1 b=2^53 (JS parses a to 2^53)"
+   }
+  ]
+ }
+]
