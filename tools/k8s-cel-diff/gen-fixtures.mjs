@@ -209,5 +209,48 @@ put(G, one("grp.at_least_one.mixed", "list / int / bool members", { props: mixed
 put(G, one("grp.exactly_one.mixed", "list / int / bool members", { props: mixed }, [EXO], [{ kind: "exactly_one_of", fields: three }], objs(mixedCases)));
 put(G, one("grp.all_or_none.mixed", "list / int / bool members", { props: mixed }, ["has(self.a) == has(self.b)"], [{ kind: "all_or_none", fields: ["a", "b"] }], objs(mixedCases)));
 
+
+// ---------- 7. guard pairs: each rule shape with the guard holding and failing ----------
+// `expect` is the intended outcome of the translator's guard: "translated" (guard holds, rule is exact)
+// or "server_only" (guard fails, translating would be inexact).
+const GD = "70-guards.json";
+const gput = (id, expect, desc, sch, rules, vo, ins) => put(GD, { ...one(id, desc, sch, rules, vo, ins), expect });
+const REQP = { required: ["plan"] };
+const FS = [M, null, "", "x"];
+// required_when: condition field required; target field blank-proof or not; defaulted or not.
+gput("guard.rw.holds", "translated", "plan required, f minLength 1", { props: { plan: S, f: MIN }, extra: REQP }, [RULE_PRO], rwPro, [...single("f", FS, { plan: "pro" }), ...single("f", [M, "x"], { plan: "free" })]);
+gput("guard.rw.fails.blankTarget", "server_only", "plan required, f plain string (\"\" is present)", { props: { plan: S, f: S }, extra: REQP }, [RULE_PRO], rwPro, [...single("f", FS, { plan: "pro" })]);
+gput("guard.rw.fails.default", "server_only", "f has a default", { props: { plan: S, f: { type: "string", minLength: 1, default: "d" } }, extra: REQP }, [RULE_PRO], rwPro, single("f", [M, null, "x"], { plan: "pro" }));
+gput("guard.rw.fails.optionalCond", "server_only", "plan optional: bare == errors on a missing plan", { props: { plan: S, f: MIN } }, [RULE_PRO], rwPro, [...single("f", [M, "x"], { plan: "pro" }), { data: {}, note: "plan=MISSING" }, { data: { f: "x" }, note: "plan=MISSING f=x" }]);
+gput("guard.present.holds", "translated", "g and f minLength 1", { props: { g: MIN, f: MIN } }, ["!has(self.g) || has(self.f)"], [{ ...rwf, when: { present: { field: "g" } } }], inputs({}, ["g", "f"], [M, "x"]));
+gput("guard.present.fails", "server_only", "g, f plain strings", { props: { g: S, f: S } }, ["!has(self.g) || has(self.f)"], [{ ...rwf, when: { present: { field: "g" } } }], inputs({}, ["g", "f"], [M, null, "", "x"]));
+// compare number
+gput("guard.num.holds.required", "translated", "both operands required", { ...IN2, extra: REQ }, ["self.a <= self.b"], cmp("number", "le", "a", "b"), inputs({}, ["a", "b"], [M, 0, 1, 2]));
+gput("guard.num.holds.hasGuard", "translated", "has() guards", IN2, ["!has(self.a) || !has(self.b) || self.a <= self.b"], cmp("number", "le", "a", "b"), inputs({}, ["a", "b"], nv));
+gput("guard.num.fails.optional", "server_only", "bare compare on optional operands", IN2, ["self.a <= self.b"], cmp("number", "le", "a", "b"), inputs({}, ["a", "b"], nv));
+gput("guard.num.holds.literal", "translated", "required operand vs literal", { ...A1, extra: { required: ["a"] } }, ["self.a >= 0"], cmp("number", "ge", "a", "#0"), single("a", [M, -1, 0, 5]));
+// compare string
+gput("guard.str.holds", "translated", "required, minLength 1", { props: { a: MIN, b: MIN }, extra: REQ }, ["self.a < self.b"], cmp("string", "lt", "a", "b"), pairs([M, "", "a", "B", "\u{10000}", "\uffff", "e\u0301", "\u00e9"]));
+gput("guard.str.fails.blank", "server_only", "required but \"\" allowed", { ...AB, extra: REQ }, ["self.a < self.b"], cmp("string", "lt", "a", "b"), pairs([M, "", "a", "b"]));
+gput("guard.str.fails.optional", "server_only", "optional operands, bare", { props: { a: MIN, b: MIN } }, ["self.a < self.b"], cmp("string", "lt", "a", "b"), pairs([M, "a", "b"]));
+// compare date / date-time
+gput("guard.date.holds", "translated", "format: date, required", { props: { a: DA, b: DA }, extra: REQ }, ["self.a <= self.b"], cmp("date", "le", "a", "b"), ts2(dpairs.slice(0, 7)));
+gput("guard.date.fails.optional", "server_only", "format: date, optional, bare", { props: { a: DA, b: DA } }, ["self.a <= self.b"], cmp("date", "le", "a", "b"), pairs([M, "2026-01-02"]));
+const DTP = { type: "string", format: "date-time", pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$" };
+gput("guard.datetime.holds.pattern", "translated", "format: date-time + <=3 fraction digits, required", { props: { a: DTP, b: DTP }, extra: REQ }, ["self.a > self.b"], cmp("datetime", "gt", "a", "b"), ts2([["2026-01-02T10:00:00.009Z", "2026-01-02T10:00:00.001Z"], ["2026-01-02T15:30:00+05:30", B], ["2026-01-02T10:00:00.0009Z", "2026-01-02T10:00:00.0001Z"], ["2026-01-02T10:00:01Z", B]]));
+gput("guard.datetime.fails.subms", "server_only", "format: date-time, no fraction limit", { props: { a: DT, b: DT }, extra: REQ }, ["self.a > self.b"], cmp("datetime", "gt", "a", "b"), ts2([["2026-01-02T10:00:00.0009Z", "2026-01-02T10:00:00.0001Z"], ["2026-01-02T10:00:01Z", B]]));
+gput("guard.datetime.fails.plainString", "server_only", "plain string through timestamp()", { props: { a: S, b: S }, extra: REQ }, ["timestamp(self.a) <= timestamp(self.b)"], cmp("datetime", "le", "a", "b"), ts2([[B, B], ["", B], ["2026-01-02", B], ["2026-01-02T10:00:00.0004Z", B]]));
+// groups
+const gm3 = { a: MIN, b: MIN, c: MIN };
+const grpG = (id, expect, desc, props, rule, vo, names = three) => gput(id, expect, desc, { props }, [rule], vo, inputs({}, names, gv));
+grpG("guard.alo.holds", "translated", "minLength 1 members", gm3, ALO, [{ kind: "at_least_one_of", fields: three }]);
+grpG("guard.alo.fails", "server_only", "plain string members", { a: S, b: S, c: S }, ALO, [{ kind: "at_least_one_of", fields: three }]);
+grpG("guard.exo.holds", "translated", "minLength 1 members", gm3, EXO, [{ kind: "exactly_one_of", fields: three }]);
+grpG("guard.exo.holds.sum", "translated", "sum-of-ternaries, minLength 1 members", gm3, "(has(self.a) ? 1 : 0) + (has(self.b) ? 1 : 0) + (has(self.c) ? 1 : 0) == 1", [{ kind: "exactly_one_of", fields: three }]);
+grpG("guard.exo.fails", "server_only", "plain string members", { a: S, b: S, c: S }, EXO, [{ kind: "exactly_one_of", fields: three }]);
+grpG("guard.exo.fails.default", "server_only", "one member has a default", { a: MIN, b: MIN, c: { ...MIN, default: "d" } }, EXO, [{ kind: "exactly_one_of", fields: three }]);
+grpG("guard.aon.holds", "translated", "minLength 1 members", { a: MIN, b: MIN }, AON2, [{ kind: "all_or_none", fields: ["a", "b"] }], ["a", "b"]);
+grpG("guard.aon.fails", "server_only", "plain string members", { a: S, b: S }, AON2, [{ kind: "all_or_none", fields: ["a", "b"] }], ["a", "b"]);
+
 for (const [f, cs] of Object.entries(files)) writeFileSync(join(out, f), `${JSON.stringify(cs, null, 1).replace(/(?<!\\)"RAW:([^"]+)"/g, "$1")}\n`);
 console.log(Object.entries(files).map(([f, cs]) => `${f}: ${cs.length} cases, ${cs.reduce((n, c) => n + c.inputs.length, 0)} inputs`).join("\n"));
