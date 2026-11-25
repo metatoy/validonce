@@ -68,4 +68,15 @@ class ContactApiTest {
         send("{\"email\":\"a@example.test\",\"country\":\"CA\",\"city\":\"" + "x".repeat(20000) + "\"}")
                 .andExpect(status().isPayloadTooLarge());
     }
+
+    @Test
+    void chunkedBodyOverTheCapIsRejected() throws Exception {
+        String body = "{\"email\":\"a@example.test\",\"country\":\"CA\",\"city\":\"" + "x".repeat(20000) + "\"}";
+        mvc.perform(post("/contacts").contentType(MediaType.APPLICATION_JSON).content(body)
+                        .with(request -> {
+                            request.addHeader("Content-Length", "-1"); // no declared length, as with chunked transfer
+                            return request;
+                        }))
+                .andExpect(status().isPayloadTooLarge());
+    }
 }

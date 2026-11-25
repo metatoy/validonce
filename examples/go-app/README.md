@@ -24,7 +24,7 @@ Writes the document without starting a server, so the bytes are identical every 
 
 ## Contact (`POST /contacts`) and Docker
 
-The playground contract (see `examples/CONTRACT.md`): stateless, no body logging, 16 KB body cap (413), 200 `{"ok": true}`. `GET /healthz` is the health path. CORS also allows `https://playground.metatoy.com` and `http://localhost:5180`.
+The playground contract (see `examples/CONTRACT.md`): stateless, no body logging, 16 KB body cap (413), 200 `{"ok": true}`. `GET /healthz` is the health path (the Dockerfile ships a busybox `wget` so Coolify's in-container health check works). CORS also allows `https://playground.metatoy.com` and `http://localhost:5180`.
 
 ```
 docker build -f examples/go-app/Dockerfile -t validonce-go-app .   # context: repository root
