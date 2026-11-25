@@ -75,11 +75,11 @@ The server works with any MCP client. For other agents that read Agent Skills, c
 
 - **The server never runs your code.** Its tools take structured input and return data. One tool, `generate_inputs`, can write one new `.jsonl` file inside your project, and never overwrites a file.
 - **Your old validator runs only with your consent,** through the runner scripts, in a scratch directory:
-  - **Node (Zod, yup, Angular):** runs in `node --permission` with an empty environment and network APIs removed. Any import that needs I/O fails with a clear message.
+  - **Node (Zod, yup, Angular):** runs in `node --permission` with an empty environment and network APIs removed. Any import that needs I/O fails with a clear message, and the bundled `require` allows only the two pure builtins `url` and `util`; any other `require` throws.
   - **Python (Pydantic):** runs with `python -I` and sockets disabled.
   - **.NET (FluentValidation):** loads your built assembly. A validator that needs injected services is reported as "cannot prove", not guessed.
   - **Node, class-validator and Joi:** the same `node --permission` runner as Zod, yup and Angular, with `class-validator`, `class-transformer`, `reflect-metadata` or `joi` added to the allowed imports.
-  - **Go (go-playground/validator):** a small Go program that you build with your struct and run with `go run`. It has no sandbox of its own: it opens no connections itself, but your validators are your code.
+  - **Go (go-playground/validator):** a small Go program (its module needs Go 1.26.10) that you build with your struct and run with `go run`. It has no sandbox of its own: it opens no connections itself, but your validators are your code.
   - **Java (Jakarta Bean Validation):** one Java file launched on a plain JDK 21 against Hibernate Validator. It has no sandbox of its own, and a validator that needs injected beans is reported as "cannot prove".
 
   The runners are tripwires, not full sandboxes, and the Go and Java runners are not even that. For a hard network block, run any of them under `sandbox-exec` (macOS) or `unshare -n` (Linux).
