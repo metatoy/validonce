@@ -7,3 +7,4 @@ packages:
   - 'mcp/evals'
   - 'testbeds/before'
   - 'examples/*'
+  - 'examples/codegen-clients/*'
