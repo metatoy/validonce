@@ -21,3 +21,12 @@ cd examples/go-app && go run . --export-openapi ../../conformance/golden/go.open
 ```
 
 Writes the document without starting a server, so the bytes are identical every run.
+
+## Contact (`POST /contacts`) and Docker
+
+The playground contract (see `examples/CONTRACT.md`): stateless, no body logging, 16 KB body cap (413), 200 `{"ok": true}`. `GET /healthz` is the health path. CORS also allows `https://playground.metatoy.com` and `http://localhost:5180`.
+
+```
+docker build -f examples/go-app/Dockerfile -t validonce-go-app .   # context: repository root
+docker run --rm -p 8040:8040 validonce-go-app
+```
