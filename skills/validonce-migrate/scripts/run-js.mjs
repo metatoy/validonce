@@ -222,7 +222,18 @@ try {
     logLevel: "error",
     absWorkingDir: dirname(entry),
     tsconfigRaw: { compilerOptions: { experimentalDecorators: true, useDefineForClassFields: false } },
-    banner: { js: "// validonce runner bundle (generated)\nimport { createRequire as __vo_cr } from \"node:module\"; const require = __vo_cr(import.meta.url);" },
+    // Bundled CommonJS libraries need a `require`, but only for the two pure builtins allowed above.
+    banner: {
+      js: [
+        "// validonce runner bundle (generated)",
+        'import __vo_url from "node:url"; import __vo_util from "node:util";',
+        "const require = (id) => {",
+        "  if (/^(node:)?url$/.test(id)) return __vo_url;",
+        "  if (/^(node:)?util$/.test(id)) return __vo_util;",
+        "  throw new Error('validonce ' + 'runner: require(' + id + ') is not allowed');",
+        "};",
+      ].join("\n"),
+    },
   });
 } catch (e) {
   console.error(`validonce runner: cannot bundle ${entryName}: ${e.message}`);
