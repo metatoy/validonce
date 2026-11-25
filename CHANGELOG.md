@@ -2,7 +2,9 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
-## Unreleased
+## 0.5.0 (2026-11-25)
+
+Kubernetes custom resources and OpenAPI client generators. The CEL rules of a CRD now reach the browser, and the Zod schemas that kubb, Hey API and orval generate carry the cross-field rules.
 
 ### Added
 - **Kubernetes:** `validonce/kubernetes` translates the CEL rules of custom resources (`x-kubernetes-validations`) into `x-validonce`, so a console's forms enforce them before submit.
@@ -16,6 +18,11 @@ All notable changes to validonce. Versions follow semantic versioning; before 1.
   - `validonce/orval`: `withValidonce(config)`, which keeps existing hooks; `createValidonce()` returns the pieces separately.
   - `validonce wrap --style hey-api` matches Hey API's `z{Name}` exports.
   - Examples in `examples/codegen-clients/`. CI regenerates them and checks that the rules are enforced.
+### Changed
+- `scripts/prepare-release.mjs` also sets the version in `docs/getting-started-spring.md` and the kubb plugin's metadata.
+- The `tools/k8s-cel-diff` test tool uses `go.opentelemetry.io/otel` 1.47.0 (CI only, not published).
+
+### Added (examples and CI)
 - Example `examples/k8s-form` (a sample CRD and a React form). There's also a new CI job, `k8s-cel-diff`, which compares every translated rule with Kubernetes' verdicts on the same inputs.
 
 ## 0.4.0 (2026-11-24)

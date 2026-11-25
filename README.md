@@ -63,7 +63,7 @@ go get github.com/metatoy/validonce/go    # Go / Huma (Go 1.26+)
 pnpm add validonce zod                    # browser and TypeScript servers (npm install works too)
 ```
 
-Maven (Gradle Kotlin DSL): `implementation("com.metatoy:validonce-spring:0.4.0")`.
+Maven (Gradle Kotlin DSL): `implementation("com.metatoy:validonce-spring:0.5.0")`.
 
 ## Quick start
 

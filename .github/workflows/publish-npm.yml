@@ -3,7 +3,7 @@
 name: publish-npm
 # Publishes the npm packages through npm trusted publishing (no stored token), with provenance.
 # - validonce: when a GitHub Release tagged v<js/package.json version> is published, or by hand.
-#   A version with a pre-release suffix (0.4.0-rc.1) is published under the `next` tag.
+#   A version with a pre-release suffix (X.Y.Z-rc.1) is published under the `next` tag.
 # - validonce-mcp: when a Release tagged validonce-mcp-v<mcp/package.json version> is published, or by hand
 #   (package: validonce-mcp). It is STAGED (`npm stage publish`): the version goes live only after a
 #   maintainer approves it on npmjs.com with 2FA. Its trusted publisher allows staged publishing only.
