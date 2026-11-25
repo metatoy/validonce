@@ -997,6 +997,10 @@ function buildCompare(
 ): Shape & { kind: "compare" } {
   if (f.ts) return unrec("timestamp() against a literal is not supported");
   const type = fieldCompareType(info(f.field), false);
+  if ((type === "date" || type === "datetime") && typeof lit.v === "string")
+    return unrec(
+      "a timestamp field compared with a string literal doesn't compile in Kubernetes",
+    );
   const v = lit.v;
   if (v === null) return unrec("comparison with null is not supported");
   const ok =
