@@ -7,6 +7,8 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY dotnet/Directory.Build.props dotnet/global.json dotnet/
 COPY dotnet/src dotnet/src
+# Validonce embeds the regex findings table.
+COPY docs/regex-findings.json docs/regex-findings.json
 COPY examples/aspnet-app examples/aspnet-app
 RUN dotnet publish examples/aspnet-app/AspNetApp.csproj -c Release -o /out --no-self-contained \
     -p:UseAppHost=false
