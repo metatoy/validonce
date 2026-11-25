@@ -1,0 +1,74 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2026 Metatoy LLC -->
+<form novalidate (submit)="submit($event)">
+    <div class="field">
+      <label>
+        {{ labels.email }}
+        <input type="text" [formField]="f.email" (input)="edited('email')" data-testid="field-email" [attr.aria-invalid]="entries().email.length ? true : null" aria-describedby="error-wrap-email" />
+      </label>
+      <app-field-errors name="email" [entries]="entries().email" />
+    </div>
+    <div class="field">
+      <label>
+        {{ labels.phone }}
+        <input type="text" [formField]="f.phone" (input)="edited('phone')" data-testid="field-phone" [attr.aria-invalid]="entries().phone.length ? true : null" aria-describedby="error-wrap-phone" />
+      </label>
+      <app-field-errors name="phone" [entries]="entries().phone" />
+    </div>
+    <div class="field">
+      <label>
+        {{ labels.street }}
+        <input type="text" [formField]="f.street" (input)="edited('street')" data-testid="field-street" [attr.aria-invalid]="entries().street.length ? true : null" aria-describedby="error-wrap-street" />
+      </label>
+      <app-field-errors name="street" [entries]="entries().street" />
+    </div>
+  <div class="row">
+    <div class="field">
+      <label>
+        {{ labels.city }}
+        <input type="text" [formField]="f.city" (input)="edited('city')" data-testid="field-city" [attr.aria-invalid]="entries().city.length ? true : null" aria-describedby="error-wrap-city" />
+      </label>
+      <app-field-errors name="city" [entries]="entries().city" />
+    </div>
+    <div class="field">
+      <label>
+        {{ labels.postalCode }}
+        <input type="text" [formField]="f.postalCode" (input)="edited('postalCode')" data-testid="field-postalCode" [attr.aria-invalid]="entries().postalCode.length ? true : null" aria-describedby="error-wrap-postalCode" />
+      </label>
+      <app-field-errors name="postalCode" [entries]="entries().postalCode" />
+    </div>
+  </div>
+  <div class="field">
+    <label>
+      {{ labels.country }}
+      <select [formField]="f.country" (change)="edited('country')" data-testid="field-country" [attr.aria-invalid]="entries().country.length ? true : null" aria-describedby="error-wrap-country">
+        @for (c of countries; track c.value) {
+          <option [value]="c.value">{{ c.label }}</option>
+        }
+      </select>
+    </label>
+    <app-field-errors name="country" [entries]="entries().country" />
+  </div>
+  <div class="row">
+    <div class="field">
+      <label>
+        {{ labels.availableFrom }}
+        <input type="date" [formField]="f.availableFrom" (input)="edited('availableFrom')" data-testid="field-availableFrom" [attr.aria-invalid]="entries().availableFrom.length ? true : null" aria-describedby="error-wrap-availableFrom" />
+      </label>
+      <app-field-errors name="availableFrom" [entries]="entries().availableFrom" />
+    </div>
+    <div class="field">
+      <label>
+        {{ labels.availableTo }}
+        <input type="date" [formField]="f.availableTo" (input)="edited('availableTo')" data-testid="field-availableTo" [attr.aria-invalid]="entries().availableTo.length ? true : null" aria-describedby="error-wrap-availableTo" />
+      </label>
+      <app-field-errors name="availableTo" [entries]="entries().availableTo" />
+    </div>
+  </div>
+  <label class="toggle">
+    <input type="checkbox" data-testid="toggle-skip" [checked]="skipClient()" (change)="onSkip($event)" />
+    Skip browser checks
+  </label>
+  <button type="submit" class="submit" data-testid="submit">Submit</button>
+  <p class="status" data-testid="result" [hidden]="!saved()">Saved</p>
+</form>

@@ -1,0 +1,217 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/signups": {
+      "post": {
+        "summary": "Create Signup",
+        "operationId": "create_signup_signups_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Signup"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "type": "object",
+                  "title": "Response Create Signup Signups Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Signup": {
+        "properties": {
+          "plan": {
+            "type": "string",
+            "enum": [
+              "free",
+              "pro"
+            ],
+            "title": "Plan"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Email"
+          },
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan",
+          "email",
+          "start",
+          "quantity"
+        ],
+        "title": "Signup",
+        "x-validonce": {
+          "rules": [
+            {
+              "field": "company",
+              "id": "Signup.required_when.company",
+              "kind": "required_when",
+              "message": {
+                "key": "rules.company_required"
+              },
+              "when": {
+                "eq": {
+                  "field": "plan",
+                  "value": "pro"
+                }
+              }
+            },
+            {
+              "id": "Signup.compare.end",
+              "kind": "compare",
+              "left": {
+                "field": "end"
+              },
+              "message": {
+                "key": "rules.end_after_start"
+              },
+              "op": "ge",
+              "right": {
+                "field": "start"
+              },
+              "type": "date"
+            },
+            {
+              "id": "Signup.compare.quantity",
+              "kind": "compare",
+              "left": {
+                "field": "quantity"
+              },
+              "message": {
+                "key": "rules.quantity_min",
+                "params": {
+                  "min": 1
+                }
+              },
+              "op": "ge",
+              "right": {
+                "value": 1
+              },
+              "type": "number"
+            }
+          ],
+          "version": 1
+        }
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

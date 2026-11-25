@@ -6,6 +6,20 @@
  */
 import * as zod from 'zod';
 
+export const Contact = zod.object({
+  "email": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "street": zod.string().nullable(),
+  "city": zod.string().nullable(),
+  "postalCode": zod.string().nullable(),
+  "country": zod.string().nullable(),
+  "availableFrom": zod.iso.date().nullable(),
+  "availableTo": zod.iso.date().nullable()
+});
+
+export type Contact = zod.input<typeof Contact>;
+export type ContactOutput = zod.output<typeof Contact>;
+
 export const signupQuantityRegExpTwo = new RegExp('^-?(?:0|[1-9]\\d*)$');
 
 
@@ -23,3 +37,8 @@ export type SignupOutput = zod.output<typeof Signup>;
 export const PostSignupsBody = Signup
 
 export const PostSignupsResponse = zod.unknown()
+
+
+export const PostContactsBody = Contact
+
+export const PostContactsResponse = zod.unknown()

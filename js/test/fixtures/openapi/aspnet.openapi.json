@@ -1,0 +1,146 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "AspNetApp | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/signups": {
+      "post": {
+        "tags": [
+          "AspNetApp"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Signup"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Signup": {
+        "required": [
+          "plan",
+          "company",
+          "email",
+          "start",
+          "end",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "company": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "start": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "end": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "quantity": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        },
+        "x-validonce": {
+          "version": 1,
+          "rules": [
+            {
+              "id": "Signup.required_when.company",
+              "kind": "required_when",
+              "field": "company",
+              "when": {
+                "eq": {
+                  "field": "plan",
+                  "value": "pro"
+                }
+              },
+              "message": {
+                "key": "rules.company_required"
+              }
+            },
+            {
+              "id": "Signup.compare.end",
+              "kind": "compare",
+              "left": {
+                "field": "end"
+              },
+              "op": "ge",
+              "right": {
+                "field": "start"
+              },
+              "type": "date",
+              "message": {
+                "key": "rules.end_after_start"
+              }
+            },
+            {
+              "id": "Signup.compare.quantity",
+              "kind": "compare",
+              "left": {
+                "field": "quantity"
+              },
+              "op": "ge",
+              "right": {
+                "value": 1
+              },
+              "type": "number",
+              "message": {
+                "key": "rules.quantity_min",
+                "params": {
+                  "min": 1
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "AspNetApp"
+    }
+  ]
+}

@@ -46,10 +46,209 @@
           }
         }
       }
+    },
+    "/contacts": {
+      "post": {
+        "summary": "Create Contact",
+        "operationId": "create_contact_contacts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Contact"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "type": "object",
+                  "title": "Response Create Contact Contacts Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Contact": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "email",
+            "title": "Email"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\+?[0-9 ()-]{7,20}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "street": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Street"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "postalCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postalcode"
+          },
+          "country": {
+            "type": "string",
+            "enum": [
+              "US",
+              "CA",
+              "GB",
+              "other"
+            ],
+            "title": "Country"
+          },
+          "availableFrom": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availablefrom"
+          },
+          "availableTo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availableto"
+          }
+        },
+        "type": "object",
+        "required": [
+          "country"
+        ],
+        "title": "Contact",
+        "x-validonce": {
+          "rules": [
+            {
+              "fields": [
+                "email",
+                "phone"
+              ],
+              "id": "Contact.at_least_one_of.email",
+              "kind": "at_least_one_of",
+              "message": {
+                "key": "rules.contact_email_or_phone"
+              }
+            },
+            {
+              "fields": [
+                "street",
+                "city",
+                "postalCode"
+              ],
+              "id": "Contact.all_or_none.street",
+              "kind": "all_or_none",
+              "message": {
+                "key": "rules.address_all_or_none"
+              }
+            },
+            {
+              "field": "postalCode",
+              "id": "Contact.required_when.postalCode",
+              "kind": "required_when",
+              "message": {
+                "key": "rules.postal_code_required_us"
+              },
+              "when": {
+                "eq": {
+                  "field": "country",
+                  "value": "US"
+                }
+              }
+            },
+            {
+              "id": "Contact.compare.availableTo",
+              "kind": "compare",
+              "left": {
+                "field": "availableTo"
+              },
+              "message": {
+                "key": "rules.available_to_after_from"
+              },
+              "op": "ge",
+              "right": {
+                "field": "availableFrom"
+              },
+              "type": "date"
+            }
+          ],
+          "version": 1
+        }
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {

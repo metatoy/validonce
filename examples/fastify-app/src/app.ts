@@ -6,7 +6,7 @@ import cors from "@fastify/cors";
 import swagger from "@fastify/swagger";
 import { Type } from "@sinclair/typebox";
 import Fastify from "fastify";
-import { defineRules, fieldRefs, when } from "validonce/rules";
+import { allOrNone, atLeastOneOf, defineRules, fieldRefs, when } from "validonce/rules";
 import {
   ajvKeywords,
   swaggerRefResolver,
@@ -55,14 +55,73 @@ const Signup = withRules(
   rules,
 );
 
+const contactFields = [
+  "email",
+  "phone",
+  "street",
+  "city",
+  "postalCode",
+  "country",
+  "availableFrom",
+  "availableTo",
+] as const;
+const C = fieldRefs(...contactFields);
+
+const contactRules = defineRules(
+  "Contact",
+  [
+    atLeastOneOf(C.email, C.phone, { key: "rules.contact_email_or_phone" }),
+    allOrNone(C.street, C.city, C.postalCode, { key: "rules.address_all_or_none" }),
+    when(C.country.eq("US")).require(C.postalCode, { key: "rules.postal_code_required_us" }),
+    C.availableTo.ge(C.availableFrom, {
+      key: "rules.available_to_after_from",
+      type: "date",
+    }),
+  ],
+  { fields: contactFields },
+);
+
+const optionalString = (opts = {}) => Type.Optional(Type.Union([Type.String(opts), Type.Null()]));
+
+const Contact = withRules(
+  Type.Object(
+    {
+      email: optionalString({ format: "email" }),
+      phone: optionalString({ pattern: "^\\+?[0-9 ()-]{7,20}$" }),
+      street: optionalString(),
+      city: optionalString(),
+      postalCode: optionalString(),
+      country: Type.Union([
+        Type.Literal("US"),
+        Type.Literal("CA"),
+        Type.Literal("GB"),
+        Type.Literal("other"),
+      ]),
+      availableFrom: optionalString({ format: "date" }),
+      availableTo: optionalString({ format: "date" }),
+    },
+    { $id: "Contact" },
+  ),
+  contactRules,
+);
+
+/** Contact bodies are tiny; anything over 16 KB is rejected with 413. */
+export const BODY_LIMIT = 16 * 1024;
+
 export async function buildApp() {
-  const app = Fastify({ ajv: { customOptions: { keywords: ajvKeywords } } });
+  const app = Fastify({
+    ajv: { customOptions: { keywords: ajvKeywords } },
+    bodyLimit: BODY_LIMIT,
+    logger: false, // never log request bodies
+  });
   await app.register(cors, {
     origin: [
       "http://localhost:5173",
       "http://127.0.0.1:5173",
       "http://localhost:4200",
       "http://127.0.0.1:4200",
+      "https://playground.metatoy.com",
+      "http://localhost:5180",
     ],
     methods: ["GET", "POST"],
   });
@@ -71,6 +130,7 @@ export async function buildApp() {
     refResolver: swaggerRefResolver,
   });
   app.addSchema(Signup);
+  app.addSchema(Contact);
 
   app.get("/openapi.json", { schema: { hide: true } }, async () => app.swagger());
   app.post(
@@ -78,6 +138,12 @@ export async function buildApp() {
     { schema: { body: { $ref: "Signup#" } }, preHandler: validonceHook(Signup) },
     async () => ({ ok: true }),
   );
+  app.post(
+    "/contacts",
+    { schema: { body: { $ref: "Contact#" } }, preHandler: validonceHook(Contact) },
+    async () => ({ ok: true }),
+  );
+  app.get("/", { schema: { hide: true } }, async () => ({ ok: true }));
   await app.ready();
   return app;
 }

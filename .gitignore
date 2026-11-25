@@ -33,3 +33,7 @@ spec/
 # go
 examples/go-app/go-app
 !examples/codegen-clients/*/src/gen/*.gen.ts
+
+# Angular CLI build cache
+.angular/
+**/test-results/

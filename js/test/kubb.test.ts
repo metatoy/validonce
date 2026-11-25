@@ -10,10 +10,7 @@ import { createKubb } from "kubb";
 import { describe, expect, test } from "vitest";
 import { pluginValidonce, writeCompanion } from "../src/kubb";
 
-const golden = resolve(
-  __dirname,
-  "../../conformance/golden/aspnet.openapi.json",
-);
+const golden = resolve(__dirname, "./fixtures/openapi/aspnet.openapi.json");
 
 describe("pluginValidonce", () => {
   test("kubb run writes a companion wrapping signupSchema with the three rules", async () => {

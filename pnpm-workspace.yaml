@@ -7,4 +7,5 @@ packages:
   - 'mcp/evals'
   - 'testbeds/before'
   - 'examples/*'
+  - 'examples/playground/frames/*'
   - 'examples/codegen-clients/*'

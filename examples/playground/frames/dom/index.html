@@ -1,0 +1,147 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2026 Metatoy LLC -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>validonce contact form (plain HTML)</title>
+  </head>
+  <body>
+    <main>
+      <p class="load-error" id="load-error" data-testid="load-error" hidden></p>
+      <p id="loading">Loading rules…</p>
+      <!-- Plain HTML. validonce/dom adds the checks once the rules have loaded. -->
+      <form id="contact" novalidate hidden>
+        <div class="field">
+          <label>
+            Email
+            <input type="text" name="email" data-testid="field-email" />
+          </label>
+          <div class="errors" id="error-wrap-email" hidden>
+            <div class="line">
+              <span data-validonce-error="email" data-testid="error-email"></span>
+              <span class="badge" data-testid="badge-server-email" hidden>from the server</span>
+              <button type="button" class="more" data-testid="more-email" hidden></button>
+            </div>
+            <ul data-testid="error-more-email" hidden></ul>
+          </div>
+        </div>
+        <div class="field">
+          <label>
+            Phone
+            <input type="text" name="phone" data-testid="field-phone" />
+          </label>
+          <div class="errors" id="error-wrap-phone" hidden>
+            <div class="line">
+              <span data-validonce-error="phone" data-testid="error-phone"></span>
+              <span class="badge" data-testid="badge-server-phone" hidden>from the server</span>
+              <button type="button" class="more" data-testid="more-phone" hidden></button>
+            </div>
+            <ul data-testid="error-more-phone" hidden></ul>
+          </div>
+        </div>
+        <div class="field">
+          <label>
+            Street
+            <input type="text" name="street" data-testid="field-street" />
+          </label>
+          <div class="errors" id="error-wrap-street" hidden>
+            <div class="line">
+              <span data-validonce-error="street" data-testid="error-street"></span>
+              <span class="badge" data-testid="badge-server-street" hidden>from the server</span>
+              <button type="button" class="more" data-testid="more-street" hidden></button>
+            </div>
+            <ul data-testid="error-more-street" hidden></ul>
+          </div>
+        </div>
+        <div class="row">
+        <div class="field">
+          <label>
+            City
+            <input type="text" name="city" data-testid="field-city" />
+          </label>
+          <div class="errors" id="error-wrap-city" hidden>
+            <div class="line">
+              <span data-validonce-error="city" data-testid="error-city"></span>
+              <span class="badge" data-testid="badge-server-city" hidden>from the server</span>
+              <button type="button" class="more" data-testid="more-city" hidden></button>
+            </div>
+            <ul data-testid="error-more-city" hidden></ul>
+          </div>
+        </div>
+        <div class="field">
+          <label>
+            Postal code
+            <input type="text" name="postalCode" data-testid="field-postalCode" />
+          </label>
+          <div class="errors" id="error-wrap-postalCode" hidden>
+            <div class="line">
+              <span data-validonce-error="postalCode" data-testid="error-postalCode"></span>
+              <span class="badge" data-testid="badge-server-postalCode" hidden>from the server</span>
+              <button type="button" class="more" data-testid="more-postalCode" hidden></button>
+            </div>
+            <ul data-testid="error-more-postalCode" hidden></ul>
+          </div>
+        </div>
+        </div>
+        <div class="field">
+          <label>
+            Country
+            <select name="country" data-testid="field-country">
+              <option value="US" selected>United States</option>
+              <option value="CA">Canada</option>
+              <option value="GB">United Kingdom</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <div class="errors" id="error-wrap-country" hidden>
+            <div class="line">
+              <span data-validonce-error="country" data-testid="error-country"></span>
+              <span class="badge" data-testid="badge-server-country" hidden>from the server</span>
+              <button type="button" class="more" data-testid="more-country" hidden></button>
+            </div>
+            <ul data-testid="error-more-country" hidden></ul>
+          </div>
+        </div>
+        <div class="row">
+        <div class="field">
+          <label>
+            Available from
+            <input type="date" name="availableFrom" data-testid="field-availableFrom" />
+          </label>
+          <div class="errors" id="error-wrap-availableFrom" hidden>
+            <div class="line">
+              <span data-validonce-error="availableFrom" data-testid="error-availableFrom"></span>
+              <span class="badge" data-testid="badge-server-availableFrom" hidden>from the server</span>
+              <button type="button" class="more" data-testid="more-availableFrom" hidden></button>
+            </div>
+            <ul data-testid="error-more-availableFrom" hidden></ul>
+          </div>
+        </div>
+        <div class="field">
+          <label>
+            Available to
+            <input type="date" name="availableTo" data-testid="field-availableTo" />
+          </label>
+          <div class="errors" id="error-wrap-availableTo" hidden>
+            <div class="line">
+              <span data-validonce-error="availableTo" data-testid="error-availableTo"></span>
+              <span class="badge" data-testid="badge-server-availableTo" hidden>from the server</span>
+              <button type="button" class="more" data-testid="more-availableTo" hidden></button>
+            </div>
+            <ul data-testid="error-more-availableTo" hidden></ul>
+          </div>
+        </div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="skip" data-testid="toggle-skip" />
+          Skip browser checks
+        </label>
+        <button type="submit" class="submit" data-testid="submit">Submit</button>
+        <p class="status" id="result" data-testid="result" hidden>Saved</p>
+      </form>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

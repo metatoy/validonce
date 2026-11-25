@@ -9,7 +9,7 @@ import { describe, expect, test, vi } from "vitest";
 import { createValidonce, withValidonce } from "../src/orval";
 
 const here = (p: string) => new URL(p, import.meta.url).pathname;
-const golden = here("../../conformance/golden/aspnet.openapi.json");
+const golden = here("./fixtures/openapi/aspnet.openapi.json");
 const doc = JSON.parse(readFileSync(golden, "utf8"));
 const ZOD = "export const Signup = z.object({});\n";
 

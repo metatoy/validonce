@@ -184,7 +184,7 @@ jobs:
       - run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
       - name: Example builds and vets
         working-directory: examples/go-app
-        run: go vet ./... && go build ./... && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
+        run: go vet ./... && go build ./... && go test ./... && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
   java:
     # Gradle build: the evaluator on the 125 shared cases (both sides), the Spring integration and the
     # example app, plus an unsigned dry-run of the Central Portal bundle.
@@ -215,6 +215,92 @@ jobs:
           jar=$(find "$dir" -name 'validonce-core-*.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar')
           gpg --verify "$jar.asc" "$jar"
           [ "$(find "$dir" -name '*.asc' | wc -l)" -ge 10 ] || { echo "too few signatures"; exit 1; }
+
+  examples:
+    # The example backends' own tests (the Signup and Contact contracts, the 16 KB body cap, CORS),
+    # then each backend's container image: built, started, and checked through curl or wget, which
+    # Coolify needs inside the image for its health check.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - uses: astral-sh/setup-uv@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        working-directory: js
+      - name: ASP.NET example tests
+        run: dotnet test examples/aspnet-app.Tests -c Release
+      - name: FastAPI example tests
+        working-directory: examples/fastapi-app
+        run: uv run --group dev pytest -q test_app.py
+      - name: Fastify and NestJS example tests
+        run: |
+          pnpm --dir examples/fastify-app test
+          pnpm --dir examples/nestjs-app test
+
+  images:
+    # The playground's container images, one per backend.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: aspnet, dockerfile: examples/aspnet-app/Dockerfile, port: 5080, health: /openapi/v1.json, probe: curl }
+          - { name: fastapi, dockerfile: examples/fastapi-app/Dockerfile, port: 8010, health: /openapi.json, probe: curl }
+          - { name: fastify, dockerfile: examples/fastify-app/Dockerfile, port: 8020, health: /, probe: curl }
+          - { name: nestjs, dockerfile: examples/nestjs-app/Dockerfile, port: 8030, health: /, probe: curl }
+          - { name: go, dockerfile: examples/go-app/Dockerfile, port: 8040, health: /healthz, probe: wget }
+          - { name: spring, dockerfile: examples/spring-app/Dockerfile, port: 8050, health: /healthz, probe: wget }
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build
+        run: docker build -f ${{ matrix.dockerfile }} -t validonce-${{ matrix.name }} .
+      - name: Start and check health from inside the container
+        run: |
+          docker run -d --name app validonce-${{ matrix.name }}
+          for i in $(seq 1 60); do
+            if [ "${{ matrix.probe }}" = curl ]; then
+              docker exec app curl -fsS -o /dev/null http://127.0.0.1:${{ matrix.port }}${{ matrix.health }} && ok=1 && break
+            else
+              docker exec app wget -q -O /dev/null http://127.0.0.1:${{ matrix.port }}${{ matrix.health }} && ok=1 && break
+            fi
+            sleep 2
+          done
+          docker logs app | tail -20
+          [ "${ok:-}" = 1 ] || { echo "::error::${{ matrix.name }} image did not become healthy"; exit 1; }
+
+  e2e-playground-frames:
+    # The playground's four Contact forms (React, Angular, Vue, web components) against a stub OpenAPI
+    # document and a stub 422: errors under the right fields, the server badge, postMessage events.
+    runs-on: ubuntu-latest
+    env:
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        working-directory: js
+      - name: Build the four frames
+        run: for fw in react angular vue dom; do pnpm --filter "validonce-playground-frame-$fw" build || exit 1; done
+      - name: Install the Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: examples/playground/frames/e2e
+      - name: End-to-end tests
+        run: pnpm --filter validonce-playground-frames-e2e e2e
 
   conformance-schema:
     runs-on: ubuntu-latest

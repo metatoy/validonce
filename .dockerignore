@@ -13,7 +13,10 @@
 .git
 .demo
 .devcontainer
-dotnet
 assets
 **/bin
 **/obj
+**/.angular
+java/build
+java/*/build
+java/.gradle

@@ -2,6 +2,17 @@
 
 import * as z from 'zod';
 
+export const zContact = z.object({
+    email: z.string().nullable(),
+    phone: z.string().nullable(),
+    street: z.string().nullable(),
+    city: z.string().nullable(),
+    postalCode: z.string().nullable(),
+    country: z.string().nullable(),
+    availableFrom: z.iso.date().nullable(),
+    availableTo: z.iso.date().nullable()
+});
+
 export const zSignup = z.object({
     plan: z.string().nullable(),
     company: z.string().nullable(),
@@ -15,3 +26,5 @@ export const zSignup = z.object({
 });
 
 export const zPostSignupsBody = zSignup;
+
+export const zPostContactsBody = zContact;
