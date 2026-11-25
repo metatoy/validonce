@@ -32,10 +32,13 @@ spec:
                   enum: [free, pro]
                 company:
                   type: string
+                  minLength: 1
                 email:
                   type: string
+                  minLength: 1
                 phone:
                   type: string
+                  minLength: 1
                 start:
                   type: string
                   format: date
@@ -44,8 +47,12 @@ spec:
                   format: date
                 minReplicas:
                   type: integer
+                  format: int32
+                  minimum: 0
                 maxReplicas:
                   type: integer
+                  format: int32
+                  minimum: 0
               x-kubernetes-validations:
                 # required_when
                 - rule: "self.plan != 'pro' || has(self.company)"
