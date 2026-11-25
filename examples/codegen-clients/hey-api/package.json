@@ -1,0 +1,23 @@
+{
+  "name": "validonce-example-codegen-hey-api",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Metatoy LLC",
+  "type": "module",
+  "scripts": {
+    "generate": "openapi-ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "validonce": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "0.99.0",
+    "@types/node": "22.20.5",
+    "typescript": "5.9.3",
+    "vitest": "5.1.1"
+  }
+}

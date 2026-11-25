@@ -93,6 +93,24 @@ describe("wrap matching on real generator output", () => {
     );
   });
 
+  test("hey-api style matches z{Name}, in auto and explicit", () => {
+    for (const extra of [[], ["--style", "hey-api"]]) {
+      const r = wrap(golden("fastapi"), fixture("hey-api-fastapi"), ...extra);
+      expect(r.code).toBe(0);
+      expect(r.text).toContain(
+        'export const zSignup = _withRules(_gen.zSignup, _rules["Signup"]);',
+      );
+    }
+    const bad = wrap(
+      golden("fastapi"),
+      fixture("hey-api-fastapi"),
+      "--style",
+      "kubb",
+    );
+    expect(bad.code).toBe(1);
+    expect(bad.err).toContain("no matching export");
+  });
+
   test("--style restricts matching", () => {
     const r = wrap(
       golden("fastapi"),

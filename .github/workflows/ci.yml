@@ -66,6 +66,17 @@ jobs:
       - name: Kubernetes example builds
         run: pnpm build
         working-directory: examples/k8s-form
+      - name: Generator plugins regenerate cleanly and enforce the rules
+        # kubb, Hey API and orval each regenerate their client from the golden Signup OpenAPI with the
+        # validonce plugin; the committed output must not change, and the generated schemas must
+        # enforce the three Signup rules.
+        if: matrix.node == 22
+        run: |
+          for e in kubb hey-api orval; do
+            (cd "examples/codegen-clients/$e" && pnpm generate && pnpm test) || exit 1
+          done
+          git diff --exit-code examples/codegen-clients
+          test -z "$(git status --porcelain examples/codegen-clients)" || { git status --porcelain examples/codegen-clients; echo "generated output is stale"; exit 1; }
       - name: Angular example builds
         # Angular 22's CLI needs Node 22.22.3 or later; the library itself supports Node 20.
         if: matrix.node == 22

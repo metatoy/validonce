@@ -4,7 +4,7 @@
 import { ruleFields } from "./fields";
 import type { RuleSet } from "./types";
 
-export type WrapStyle = "auto" | "orval" | "kubb";
+export type WrapStyle = "auto" | "orval" | "kubb" | "hey-api";
 
 export interface WrapInput {
   /** The parsed OpenAPI document (for each schema's `properties`). */
@@ -154,10 +154,23 @@ export function wrap(input: WrapInput): WrapResult {
       const raws = [...new Set([name, key])];
       const found = new Set<string>();
       for (const raw of raws) {
-        if (input.style !== "kubb" && exported.has(pascal(raw)))
+        if (
+          input.style !== "kubb" &&
+          input.style !== "hey-api" &&
+          exported.has(pascal(raw))
+        )
           found.add(pascal(raw));
-        if (input.style !== "orval" && exported.has(`${camel(raw)}Schema`))
+        if (
+          input.style !== "orval" &&
+          input.style !== "hey-api" &&
+          exported.has(`${camel(raw)}Schema`)
+        )
           found.add(`${camel(raw)}Schema`);
+        if (
+          (input.style === "auto" || input.style === "hey-api") &&
+          exported.has(`z${pascal(raw)}`)
+        )
+          found.add(`z${pascal(raw)}`);
       }
       const hint = [...(aliases.get(pascal(name)) ?? [])];
       if (found.size === 1) target = [...found][0];
@@ -168,8 +181,15 @@ export function wrap(input: WrapInput): WrapResult {
       else {
         const tried = raws
           .flatMap((r) => [
-            ...(input.style !== "kubb" ? [pascal(r)] : []),
-            ...(input.style !== "orval" ? [`${camel(r)}Schema`] : []),
+            ...(input.style === "orval" || input.style === "auto"
+              ? [pascal(r)]
+              : []),
+            ...(input.style === "kubb" || input.style === "auto"
+              ? [`${camel(r)}Schema`]
+              : []),
+            ...(input.style === "hey-api" || input.style === "auto"
+              ? [`z${pascal(r)}`]
+              : []),
           ])
           .join(", ");
         errors.push(
