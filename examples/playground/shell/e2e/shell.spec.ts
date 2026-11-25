@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
 import { serveDist, stubApi } from "./stub";
 
 // The shell's built site (shell/dist, frames included) is served here, and the production API host
-// (play-api.metatoy.com) is stubbed with a backend that always answers 422, so no backend is needed.
+// (play-<backend>.metatoy.com) is stubbed with a backend that always answers 422, so no backend is needed.
 
 let server: Server;
 let origin = "";
@@ -30,7 +30,7 @@ test("the pickers write the URL and load the chosen frame", async ({ page }) => 
   await expect(page.getByTestId("share-url")).toContainText("?backend=go&frontend=vue");
   const src = await page.getByTestId("frame").getAttribute("src");
   expect(src).toContain("/frames/vue/index.html");
-  expect(src).toContain("api=https%3A%2F%2Fplay-api.metatoy.com%2Fgo");
+  expect(src).toContain("api=https%3A%2F%2Fplay-go.metatoy.com");
   await expect(page.frameLocator("[data-testid=frame]").getByTestId("field-email")).toBeVisible();
   // The footer follows the pair.
   await expect(page.getByRole("link", { name: /Codespaces/ })).toHaveAttribute(
@@ -84,7 +84,7 @@ test("the toggle skips browser checks; the 422 comes back with numbered markers"
 
   // The response panel and the 422 body.
   await expect(page.getByTestId("status")).toHaveText("422");
-  await expect(page.getByTestId("request-line")).toContainText("play-api.metatoy.com/go/contacts");
+  await expect(page.getByTestId("request-line")).toContainText("play-go.metatoy.com/contacts");
   const response = page.getByTestId("panel-response");
   await expect(response).toContainText('"ruleId": "Contact.required_when.postalCode"');
   // Two server issues, numbered 1 and 2 in the order sent, in all three panels.

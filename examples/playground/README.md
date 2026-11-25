@@ -13,7 +13,7 @@ on the server.
 ## The shell
 
 - **State is in the URL:** `?backend=go&frontend=vue`. Backends: `aspnet`, `fastapi`, `fastify`, `nestjs`, `go`, `spring`, `k8s`. Frontends: `react`, `angular`, `vue`, `dom`.
-- **Where the backends are** (`shell/src/backends.ts`): in dev, `localhost` ports 5080, 8010, 8020, 8030, 8040, 8050 (and 8060 for Kubernetes). A production build uses `https://play-api.metatoy.com/<backend>`; set `VITE_PLAYGROUND_API` at build time to use another base.
+- **Where the backends are** (`shell/src/backends.ts`): in dev, `localhost` ports 5080, 8010, 8020, 8030, 8040, 8050 (and 8060 for Kubernetes). A production build uses `https://play-<backend>.metatoy.com` (`play-aspnet`, `play-fastapi`, `play-fastify`, `play-nestjs`, `play-go`, `play-spring`, `play-k8s`); set `VITE_PLAYGROUND_API` at build time to use one base with `/<backend>` paths instead.
 - **The "Rule in ..." panel** is cut from the real example files at build time (`shell/scripts/prepare.mjs`). Each backend's Contact rules sit between `playground:begin` and `playground:end` marker comments, so the panel can't drift from the code. Move the markers if you move the rules.
 - **The "x-validonce" panel** is fetched live from the backend's OpenAPI document (for Kubernetes, translated from the CRD in the browser).
 - **The numbers** (1, 2, 3) mark the server's issues in all three panels, matched by `ruleId`.
