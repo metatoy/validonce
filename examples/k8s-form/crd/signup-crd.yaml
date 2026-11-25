@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+#
+# Sample CRD for the validonce Kubernetes example. Every rule kind validonce can translate
+# appears once, plus one CEL rule it cannot (the string-length rule), which stays server-only.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: signups.example.test
+spec:
+  group: example.test
+  scope: Namespaced
+  names:
+    plural: signups
+    singular: signup
+    kind: Signup
+    listKind: SignupList
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [plan]
+              properties:
+                plan:
+                  type: string
+                  enum: [free, pro]
+                company:
+                  type: string
+                  minLength: 1
+                email:
+                  type: string
+                  minLength: 1
+                phone:
+                  type: string
+                  minLength: 1
+                start:
+                  type: string
+                  format: date
+                end:
+                  type: string
+                  format: date
+                minReplicas:
+                  type: integer
+                  format: int32
+                  minimum: 0
+                maxReplicas:
+                  type: integer
+                  format: int32
+                  minimum: 0
+              x-kubernetes-validations:
+                # required_when
+                - rule: "self.plan != 'pro' || has(self.company)"
+                  message: "Company is required on the Pro plan"
+                  fieldPath: ".company"
+                # compare, date
+                - rule: "!has(self.start) || !has(self.end) || self.end >= self.start"
+                  message: "End date must be on or after the start date"
+                  fieldPath: ".end"
+                # compare, number
+                - rule: "!has(self.minReplicas) || !has(self.maxReplicas) || self.maxReplicas >= self.minReplicas"
+                  message: "Max replicas must be at least the min replicas"
+                  fieldPath: ".maxReplicas"
+                # at_least_one_of
+                - rule: "has(self.email) || has(self.phone)"
+                  message: "Give an email or a phone number"
+                  fieldPath: ".email"
+                # Not translatable (string function): kept as a server-only rule.
+                - rule: "!has(self.company) || self.company.size() <= 40"
+                  message: "Company must be 40 characters or fewer"
+                  fieldPath: ".company"

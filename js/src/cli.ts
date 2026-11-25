@@ -4,6 +4,7 @@
 import { readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { basename, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { translateCrd, translateKubernetesOpenApi } from "./kubernetes";
 import { allRulesFromOpenApi } from "./openapi";
 import { type RuleSet, ValidonceFormatError } from "./types";
 import { type WrapStyle, wrap } from "./wrap";
@@ -20,6 +21,7 @@ Usage:
   validonce extract <openapi.json> [-o <file>] [--schema <Name>]... [--format ts|json]
   validonce wrap --openapi <openapi.json> --zod <schemas.ts> -o <schemas.rules.ts>
                  [--style auto|orval|kubb] [--map <Name>=<export>]...
+  validonce k8s <crd.json|openapi.json|-> [-o <file>] [--catalog <file>] [--report]
 
 Options:
   -o, --out <file>     write to <file> (default: standard output; "-" is also standard output)
@@ -37,6 +39,15 @@ generated (export const Signup = withRules(gen.Signup, rules.Signup)):
   --style <s>          export naming: auto (default), orval (Signup) or kubb (signupSchema)
   --map Name=export    use this export for schema Name (repeatable); needed for per-operation
                        exports such as CreateSignupBody
+
+k8s translates Kubernetes CEL rules (x-kubernetes-validations) into x-validonce. The input is a
+CustomResourceDefinition (kubectl get crd <name> -o json) or a Kubernetes OpenAPI v3 document
+(/openapi/v3/apis/<group>/<version>). The output is an OpenAPI 3.1 document: for a CRD, one
+component schema per served version (Kind, or Kind_<version> when there are several), with
+x-validonce next to each translated rule. Rules that can't be translated exactly stay server_only
+or are only reported; a dry run against the API server covers them.
+  --catalog <file>     write the message catalog (rule message keys to the CEL messages)
+  --report             print one line per CEL rule (translated or server_only, and why) to stderr
 
 Exit codes: 0 done, 1 no x-validonce found or wrap could not match (nothing is written),
 2 usage error or unreadable input.
@@ -200,6 +211,100 @@ function wrapCommand(
  * The CLI. Returns the exit code (0, 1 or 2); never calls `process.exit`.
  * Nothing is written when the code is not 0.
  */
+function k8sCommand(
+  args: string[],
+  out: (s: string) => void,
+  err: (s: string) => void,
+  usage: (msg: string) => number,
+): number {
+  let input: string | undefined;
+  let outFile: string | undefined;
+  let catalogFile: string | undefined;
+  let report = false;
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i] as string;
+    if (a === "-h" || a === "--help") {
+      out(HELP);
+      return 0;
+    }
+    if (a === "--report") report = true;
+    else if (a === "-o" || a === "--out" || a === "--catalog") {
+      const v = args[++i];
+      if (v === undefined) return usage(`${a} needs a value`);
+      if (a === "--catalog") catalogFile = v;
+      else outFile = v;
+    } else if (a.startsWith("-") && a !== "-")
+      return usage(`unknown option "${a}"`);
+    else if (input === undefined) input = a;
+    else return usage(`unexpected argument "${a}"`);
+  }
+  if (input === undefined)
+    return usage("k8s needs an input file (or - for standard input)");
+  let doc: unknown;
+  try {
+    doc = JSON.parse(readFileSync(input === "-" ? 0 : input, "utf8"));
+  } catch (e) {
+    err(
+      `validonce: cannot read ${input} as JSON: ${(e as Error).message}\n(Convert YAML first, e.g. kubectl get crd <name> -o json.)\n`,
+    );
+    return 2;
+  }
+  const kind = (doc as { kind?: unknown } | null)?.kind;
+  let result: unknown;
+  let catalog: Record<string, string> = {};
+  let lines: {
+    schema: string;
+    schemaPath: string;
+    index: number;
+    outcome: string;
+    reason?: string;
+  }[] = [];
+  if (kind === "CustomResourceDefinition") {
+    const name = String(
+      (doc as { spec?: { names?: { kind?: string } } }).spec?.names?.kind ??
+        "Resource",
+    );
+    const { versions } = translateCrd(doc);
+    const keys = Object.keys(versions).sort();
+    const schemas: Record<string, unknown> = {};
+    for (const v of keys) {
+      const t = versions[v] as (typeof versions)[string];
+      schemas[keys.length === 1 ? name : `${name}_${v}`] = t.schema;
+      catalog = { ...catalog, ...t.catalog };
+      lines = lines.concat(t.report);
+    }
+    result = {
+      openapi: "3.1.0",
+      info: { title: `${name} (from CRD)`, version: keys.join(", ") },
+      paths: {},
+      components: { schemas },
+    };
+  } else {
+    const t = translateKubernetesOpenApi(doc);
+    result = t.doc;
+    catalog = t.catalog;
+    lines = t.report;
+  }
+  const text = `${JSON.stringify(sortKeys(result), null, 2)}\n`;
+  if (outFile === undefined || outFile === "-") out(text);
+  else writeFileSync(outFile, text);
+  if (catalogFile !== undefined)
+    writeFileSync(
+      catalogFile,
+      `${JSON.stringify(sortKeys(catalog), null, 2)}\n`,
+    );
+  if (report)
+    for (const l of lines)
+      err(
+        `${l.schema}${l.schemaPath || ""}[${l.index}]: ${l.outcome}${l.reason ? ` (${l.reason})` : ""}\n`,
+      );
+  const translated = lines.filter((l) => l.outcome === "translated").length;
+  err(
+    `validonce k8s: ${translated} of ${lines.length} CEL rules translated; the rest are server_only\n`,
+  );
+  return 0;
+}
+
 export function main(argv: readonly string[], io?: Partial<Io>): number {
   const out = io?.out ?? ((s: string) => void process.stdout.write(s));
   const err = io?.err ?? ((s: string) => void process.stderr.write(s));
@@ -219,6 +324,7 @@ export function main(argv: readonly string[], io?: Partial<Io>): number {
     return 0;
   }
   if (args[0] === "wrap") return wrapCommand(args.slice(1), out, err, usage);
+  if (args[0] === "k8s") return k8sCommand(args.slice(1), out, err, usage);
   if (args[0] !== "extract") return usage(`unknown command "${args[0]}"`);
   args.shift();
 

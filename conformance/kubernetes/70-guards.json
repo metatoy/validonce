@@ -1,0 +1,5585 @@
+[
+ {
+  "id": "guard.rw.holds",
+  "description": "plan required, f minLength 1",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan == 'pro') || has(self.f)"
+    }
+   ],
+   "required": [
+    "plan"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": null
+    },
+    "note": "f=null"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": ""
+    },
+    "note": "f=\"\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "x"
+    },
+    "note": "f=\"x\""
+   },
+   {
+    "data": {
+     "plan": "free"
+    },
+    "note": "f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "x"
+    },
+    "note": "f=\"x\""
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.rw.fails.blankTarget",
+  "description": "plan required, f plain string (\"\" is present)",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan == 'pro') || has(self.f)"
+    }
+   ],
+   "required": [
+    "plan"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": null
+    },
+    "note": "f=null"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": ""
+    },
+    "note": "f=\"\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "x"
+    },
+    "note": "f=\"x\""
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.rw.fails.default",
+  "description": "f has a default",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string",
+     "minLength": 1,
+     "default": "d"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan == 'pro') || has(self.f)"
+    }
+   ],
+   "required": [
+    "plan"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": null
+    },
+    "note": "f=null"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "x"
+    },
+    "note": "f=\"x\""
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.rw.fails.optionalCond",
+  "description": "plan optional: bare == errors on a missing plan",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan == 'pro') || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "x"
+    },
+    "note": "f=\"x\""
+   },
+   {
+    "data": {},
+    "note": "plan=MISSING"
+   },
+   {
+    "data": {
+     "f": "x"
+    },
+    "note": "plan=MISSING f=x"
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.present.holds",
+  "description": "g and f minLength 1",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "g": {
+     "type": "string",
+     "minLength": 1
+    },
+    "f": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!has(self.g) || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "present": {
+      "field": "g"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "g=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": "x"
+    },
+    "note": "g=MISSING f=\"x\""
+   },
+   {
+    "data": {
+     "g": "x"
+    },
+    "note": "g=\"x\" f=MISSING"
+   },
+   {
+    "data": {
+     "g": "x",
+     "f": "x"
+    },
+    "note": "g=\"x\" f=\"x\""
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.present.fails",
+  "description": "g, f plain strings",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "g": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!has(self.g) || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "present": {
+      "field": "g"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "g=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": null
+    },
+    "note": "g=MISSING f=null"
+   },
+   {
+    "data": {
+     "f": ""
+    },
+    "note": "g=MISSING f=\"\""
+   },
+   {
+    "data": {
+     "f": "x"
+    },
+    "note": "g=MISSING f=\"x\""
+   },
+   {
+    "data": {
+     "g": null
+    },
+    "note": "g=null f=MISSING"
+   },
+   {
+    "data": {
+     "g": null,
+     "f": null
+    },
+    "note": "g=null f=null"
+   },
+   {
+    "data": {
+     "g": null,
+     "f": ""
+    },
+    "note": "g=null f=\"\""
+   },
+   {
+    "data": {
+     "g": null,
+     "f": "x"
+    },
+    "note": "g=null f=\"x\""
+   },
+   {
+    "data": {
+     "g": ""
+    },
+    "note": "g=\"\" f=MISSING"
+   },
+   {
+    "data": {
+     "g": "",
+     "f": null
+    },
+    "note": "g=\"\" f=null"
+   },
+   {
+    "data": {
+     "g": "",
+     "f": ""
+    },
+    "note": "g=\"\" f=\"\""
+   },
+   {
+    "data": {
+     "g": "",
+     "f": "x"
+    },
+    "note": "g=\"\" f=\"x\""
+   },
+   {
+    "data": {
+     "g": "x"
+    },
+    "note": "g=\"x\" f=MISSING"
+   },
+   {
+    "data": {
+     "g": "x",
+     "f": null
+    },
+    "note": "g=\"x\" f=null"
+   },
+   {
+    "data": {
+     "g": "x",
+     "f": ""
+    },
+    "note": "g=\"x\" f=\"\""
+   },
+   {
+    "data": {
+     "g": "x",
+     "f": "x"
+    },
+    "note": "g=\"x\" f=\"x\""
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.num.holds.required",
+  "description": "both operands required, integers bounded",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer",
+     "minimum": -1000,
+     "maximum": 1000
+    },
+    "b": {
+     "type": "integer",
+     "minimum": -1000,
+     "maximum": 1000
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.num.holds.hasGuard",
+  "description": "has() guards, integers bounded",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer",
+     "minimum": -1000,
+     "maximum": 1000
+    },
+    "b": {
+     "type": "integer",
+     "minimum": -1000,
+     "maximum": 1000
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!has(self.a) || !has(self.b) || self.a <= self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "b": -1
+    },
+    "note": "a=MISSING b=-1"
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 0
+    },
+    "note": "a=null b=0"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 1
+    },
+    "note": "a=null b=1"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 2
+    },
+    "note": "a=null b=2"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": -1
+    },
+    "note": "a=null b=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": null
+    },
+    "note": "a=0 b=null"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": -1
+    },
+    "note": "a=0 b=-1"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": null
+    },
+    "note": "a=1 b=null"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": -1
+    },
+    "note": "a=1 b=-1"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": null
+    },
+    "note": "a=2 b=null"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": -1
+    },
+    "note": "a=2 b=-1"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": null
+    },
+    "note": "a=-1 b=null"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 0
+    },
+    "note": "a=-1 b=0"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 1
+    },
+    "note": "a=-1 b=1"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 2
+    },
+    "note": "a=-1 b=2"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": -1
+    },
+    "note": "a=-1 b=-1"
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.num.fails.optional",
+  "description": "bare compare on optional operands",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer"
+    },
+    "b": {
+     "type": "integer"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": 0
+    },
+    "note": "a=MISSING b=0"
+   },
+   {
+    "data": {
+     "b": 1
+    },
+    "note": "a=MISSING b=1"
+   },
+   {
+    "data": {
+     "b": 2
+    },
+    "note": "a=MISSING b=2"
+   },
+   {
+    "data": {
+     "b": -1
+    },
+    "note": "a=MISSING b=-1"
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 0
+    },
+    "note": "a=null b=0"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 1
+    },
+    "note": "a=null b=1"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": 2
+    },
+    "note": "a=null b=2"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": -1
+    },
+    "note": "a=null b=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": null
+    },
+    "note": "a=0 b=null"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 0
+    },
+    "note": "a=0 b=0"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 1
+    },
+    "note": "a=0 b=1"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": 2
+    },
+    "note": "a=0 b=2"
+   },
+   {
+    "data": {
+     "a": 0,
+     "b": -1
+    },
+    "note": "a=0 b=-1"
+   },
+   {
+    "data": {
+     "a": 1
+    },
+    "note": "a=1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": null
+    },
+    "note": "a=1 b=null"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 0
+    },
+    "note": "a=1 b=0"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 1
+    },
+    "note": "a=1 b=1"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": 2
+    },
+    "note": "a=1 b=2"
+   },
+   {
+    "data": {
+     "a": 1,
+     "b": -1
+    },
+    "note": "a=1 b=-1"
+   },
+   {
+    "data": {
+     "a": 2
+    },
+    "note": "a=2 b=MISSING"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": null
+    },
+    "note": "a=2 b=null"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 0
+    },
+    "note": "a=2 b=0"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 1
+    },
+    "note": "a=2 b=1"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": 2
+    },
+    "note": "a=2 b=2"
+   },
+   {
+    "data": {
+     "a": 2,
+     "b": -1
+    },
+    "note": "a=2 b=-1"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1 b=MISSING"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": null
+    },
+    "note": "a=-1 b=null"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 0
+    },
+    "note": "a=-1 b=0"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 1
+    },
+    "note": "a=-1 b=1"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": 2
+    },
+    "note": "a=-1 b=2"
+   },
+   {
+    "data": {
+     "a": -1,
+     "b": -1
+    },
+    "note": "a=-1 b=-1"
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.num.holds.literal",
+  "description": "required operand vs literal",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "integer",
+     "minimum": -1000,
+     "maximum": 1000
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a >= 0"
+    }
+   ],
+   "required": [
+    "a"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "ge",
+    "right": {
+     "value": 0
+    },
+    "type": "number"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING"
+   },
+   {
+    "data": {
+     "a": -1
+    },
+    "note": "a=-1"
+   },
+   {
+    "data": {
+     "a": 0
+    },
+    "note": "a=0"
+   },
+   {
+    "data": {
+     "a": 5
+    },
+    "note": "a=5"
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.str.holds",
+  "description": "required, minLength 1",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "minLength": 1
+    },
+    "b": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a < self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "lt",
+    "right": {
+     "field": "b"
+    },
+    "type": "string"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\""
+   },
+   {
+    "data": {
+     "b": "a"
+    },
+    "note": "a=MISSING b=\"a\""
+   },
+   {
+    "data": {
+     "b": "B"
+    },
+    "note": "a=MISSING b=\"B\""
+   },
+   {
+    "data": {
+     "b": "𐀀"
+    },
+    "note": "a=MISSING b=\"𐀀\""
+   },
+   {
+    "data": {
+     "b": "￿"
+    },
+    "note": "a=MISSING b=\"￿\""
+   },
+   {
+    "data": {
+     "b": "é"
+    },
+    "note": "a=MISSING b=\"é\""
+   },
+   {
+    "data": {
+     "b": "é"
+    },
+    "note": "a=MISSING b=\"é\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "a"
+    },
+    "note": "a=\"\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "B"
+    },
+    "note": "a=\"\" b=\"B\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "𐀀"
+    },
+    "note": "a=\"\" b=\"𐀀\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "￿"
+    },
+    "note": "a=\"\" b=\"￿\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "é"
+    },
+    "note": "a=\"\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "é"
+    },
+    "note": "a=\"\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "a"
+    },
+    "note": "a=\"a\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": ""
+    },
+    "note": "a=\"a\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": "a"
+    },
+    "note": "a=\"a\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": "B"
+    },
+    "note": "a=\"a\" b=\"B\""
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": "𐀀"
+    },
+    "note": "a=\"a\" b=\"𐀀\""
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": "￿"
+    },
+    "note": "a=\"a\" b=\"￿\""
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": "é"
+    },
+    "note": "a=\"a\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": "é"
+    },
+    "note": "a=\"a\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "B"
+    },
+    "note": "a=\"B\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "B",
+     "b": ""
+    },
+    "note": "a=\"B\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "B",
+     "b": "a"
+    },
+    "note": "a=\"B\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "B",
+     "b": "B"
+    },
+    "note": "a=\"B\" b=\"B\""
+   },
+   {
+    "data": {
+     "a": "B",
+     "b": "𐀀"
+    },
+    "note": "a=\"B\" b=\"𐀀\""
+   },
+   {
+    "data": {
+     "a": "B",
+     "b": "￿"
+    },
+    "note": "a=\"B\" b=\"￿\""
+   },
+   {
+    "data": {
+     "a": "B",
+     "b": "é"
+    },
+    "note": "a=\"B\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "B",
+     "b": "é"
+    },
+    "note": "a=\"B\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "𐀀"
+    },
+    "note": "a=\"𐀀\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "𐀀",
+     "b": ""
+    },
+    "note": "a=\"𐀀\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "𐀀",
+     "b": "a"
+    },
+    "note": "a=\"𐀀\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "𐀀",
+     "b": "B"
+    },
+    "note": "a=\"𐀀\" b=\"B\""
+   },
+   {
+    "data": {
+     "a": "𐀀",
+     "b": "𐀀"
+    },
+    "note": "a=\"𐀀\" b=\"𐀀\""
+   },
+   {
+    "data": {
+     "a": "𐀀",
+     "b": "￿"
+    },
+    "note": "a=\"𐀀\" b=\"￿\""
+   },
+   {
+    "data": {
+     "a": "𐀀",
+     "b": "é"
+    },
+    "note": "a=\"𐀀\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "𐀀",
+     "b": "é"
+    },
+    "note": "a=\"𐀀\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "￿"
+    },
+    "note": "a=\"￿\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "￿",
+     "b": ""
+    },
+    "note": "a=\"￿\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "￿",
+     "b": "a"
+    },
+    "note": "a=\"￿\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "￿",
+     "b": "B"
+    },
+    "note": "a=\"￿\" b=\"B\""
+   },
+   {
+    "data": {
+     "a": "￿",
+     "b": "𐀀"
+    },
+    "note": "a=\"￿\" b=\"𐀀\""
+   },
+   {
+    "data": {
+     "a": "￿",
+     "b": "￿"
+    },
+    "note": "a=\"￿\" b=\"￿\""
+   },
+   {
+    "data": {
+     "a": "￿",
+     "b": "é"
+    },
+    "note": "a=\"￿\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "￿",
+     "b": "é"
+    },
+    "note": "a=\"￿\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "é"
+    },
+    "note": "a=\"é\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": ""
+    },
+    "note": "a=\"é\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "a"
+    },
+    "note": "a=\"é\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "B"
+    },
+    "note": "a=\"é\" b=\"B\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "𐀀"
+    },
+    "note": "a=\"é\" b=\"𐀀\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "￿"
+    },
+    "note": "a=\"é\" b=\"￿\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "é"
+    },
+    "note": "a=\"é\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "é"
+    },
+    "note": "a=\"é\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "é"
+    },
+    "note": "a=\"é\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": ""
+    },
+    "note": "a=\"é\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "a"
+    },
+    "note": "a=\"é\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "B"
+    },
+    "note": "a=\"é\" b=\"B\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "𐀀"
+    },
+    "note": "a=\"é\" b=\"𐀀\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "￿"
+    },
+    "note": "a=\"é\" b=\"￿\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "é"
+    },
+    "note": "a=\"é\" b=\"é\""
+   },
+   {
+    "data": {
+     "a": "é",
+     "b": "é"
+    },
+    "note": "a=\"é\" b=\"é\""
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.str.fails.blank",
+  "description": "required but \"\" allowed",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a < self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "lt",
+    "right": {
+     "field": "b"
+    },
+    "type": "string"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\""
+   },
+   {
+    "data": {
+     "b": "a"
+    },
+    "note": "a=MISSING b=\"a\""
+   },
+   {
+    "data": {
+     "b": "b"
+    },
+    "note": "a=MISSING b=\"b\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "a"
+    },
+    "note": "a=\"\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "b"
+    },
+    "note": "a=\"\" b=\"b\""
+   },
+   {
+    "data": {
+     "a": "a"
+    },
+    "note": "a=\"a\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": ""
+    },
+    "note": "a=\"a\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": "a"
+    },
+    "note": "a=\"a\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": "b"
+    },
+    "note": "a=\"a\" b=\"b\""
+   },
+   {
+    "data": {
+     "a": "b"
+    },
+    "note": "a=\"b\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "b",
+     "b": ""
+    },
+    "note": "a=\"b\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "b",
+     "b": "a"
+    },
+    "note": "a=\"b\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "b",
+     "b": "b"
+    },
+    "note": "a=\"b\" b=\"b\""
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.str.fails.optional",
+  "description": "optional operands, bare",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "minLength": 1
+    },
+    "b": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a < self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "lt",
+    "right": {
+     "field": "b"
+    },
+    "type": "string"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": "a"
+    },
+    "note": "a=MISSING b=\"a\""
+   },
+   {
+    "data": {
+     "b": "b"
+    },
+    "note": "a=MISSING b=\"b\""
+   },
+   {
+    "data": {
+     "a": "a"
+    },
+    "note": "a=\"a\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": "a"
+    },
+    "note": "a=\"a\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "a",
+     "b": "b"
+    },
+    "note": "a=\"a\" b=\"b\""
+   },
+   {
+    "data": {
+     "a": "b"
+    },
+    "note": "a=\"b\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "b",
+     "b": "a"
+    },
+    "note": "a=\"b\" b=\"a\""
+   },
+   {
+    "data": {
+     "a": "b",
+     "b": "b"
+    },
+    "note": "a=\"b\" b=\"b\""
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.date.holds",
+  "description": "format: date, required",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date"
+    },
+    "b": {
+     "type": "string",
+     "format": "date"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "date"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-10"
+    },
+    "note": "a=2026-01-02 b=2026-01-10"
+   },
+   {
+    "data": {
+     "a": "2026-01-10",
+     "b": "2026-01-02"
+    },
+    "note": "a=2026-01-10 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02"
+    },
+    "note": "a=2026-01-02 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "0000-01-01",
+     "b": "2026-01-02"
+    },
+    "note": "a=0000-01-01 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "9999-12-31",
+     "b": "2026-01-02"
+    },
+    "note": "a=9999-12-31 b=2026-01-02"
+   },
+   {
+    "data": {
+     "a": "2024-02-29",
+     "b": "2024-03-01"
+    },
+    "note": "a=2024-02-29 b=2024-03-01"
+   },
+   {
+    "data": {
+     "a": "2023-02-29",
+     "b": "2024-03-01"
+    },
+    "note": "a=2023-02-29 b=2024-03-01"
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.date.fails.optional",
+  "description": "format: date, optional, bare",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date"
+    },
+    "b": {
+     "type": "string",
+     "format": "date"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a <= self.b"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "date"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": "2026-01-02"
+    },
+    "note": "a=MISSING b=\"2026-01-02\""
+   },
+   {
+    "data": {
+     "a": "2026-01-02"
+    },
+    "note": "a=\"2026-01-02\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02"
+    },
+    "note": "a=\"2026-01-02\" b=\"2026-01-02\""
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.datetime.holds.pattern",
+  "description": "format: date-time + <=3 fraction digits, required",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date-time",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "b": {
+     "type": "string",
+     "format": "date-time",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a > self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "gt",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.009Z",
+     "b": "2026-01-02T10:00:00.001Z"
+    },
+    "note": "a=2026-01-02T10:00:00.009Z b=2026-01-02T10:00:00.001Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T15:30:00+05:30",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T15:30:00+05:30 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0009Z",
+     "b": "2026-01-02T10:00:00.0001Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0009Z b=2026-01-02T10:00:00.0001Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:01Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:01Z b=2026-01-02T10:00:00Z"
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.datetime.fails.subms",
+  "description": "format: date-time, no fraction limit",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "b": {
+     "type": "string",
+     "format": "date-time"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "self.a > self.b"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "gt",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0009Z",
+     "b": "2026-01-02T10:00:00.0001Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0009Z b=2026-01-02T10:00:00.0001Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:01Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:01Z b=2026-01-02T10:00:00Z"
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.datetime.fails.plainString",
+  "description": "plain string through timestamp()",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "timestamp(self.a) <= timestamp(self.b)"
+    }
+   ],
+   "required": [
+    "a",
+    "b"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "compare",
+    "left": {
+     "field": "a"
+    },
+    "op": "le",
+    "right": {
+     "field": "b"
+    },
+    "type": "datetime"
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00Z b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a= b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02 b=2026-01-02T10:00:00Z"
+   },
+   {
+    "data": {
+     "a": "2026-01-02T10:00:00.0004Z",
+     "b": "2026-01-02T10:00:00Z"
+    },
+    "note": "a=2026-01-02T10:00:00.0004Z b=2026-01-02T10:00:00Z"
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.alo.holds",
+  "description": "minLength 1 members",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "minLength": 1
+    },
+    "b": {
+     "type": "string",
+     "minLength": 1
+    },
+    "c": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "has(self.a) || has(self.b) || has(self.c)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "at_least_one_of",
+    "fields": [
+     "a",
+     "b",
+     "c"
+    ]
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "c": null
+    },
+    "note": "a=MISSING b=MISSING c=null"
+   },
+   {
+    "data": {
+     "c": ""
+    },
+    "note": "a=MISSING b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "c": "x"
+    },
+    "note": "a=MISSING b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null c=MISSING"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": null
+    },
+    "note": "a=MISSING b=null c=null"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": ""
+    },
+    "note": "a=MISSING b=null c=\"\""
+   },
+   {
+    "data": {
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=MISSING b=null c=\"x\""
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": null
+    },
+    "note": "a=MISSING b=\"\" c=null"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "b": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": null
+    },
+    "note": "a=MISSING b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": null
+    },
+    "note": "a=null b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": ""
+    },
+    "note": "a=null b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "c": "x"
+    },
+    "note": "a=null b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": null
+    },
+    "note": "a=null b=null c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": ""
+    },
+    "note": "a=null b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=null b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": null
+    },
+    "note": "a=null b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": ""
+    },
+    "note": "a=null b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=null b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x"
+    },
+    "note": "a=null b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": null
+    },
+    "note": "a=null b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=null b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=null b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": null
+    },
+    "note": "a=\"\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null
+    },
+    "note": "a=\"x\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"x\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"x\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"x\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": ""
+    },
+    "note": "a=\"x\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=\"x\""
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.alo.fails",
+  "description": "plain string members",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    },
+    "c": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "has(self.a) || has(self.b) || has(self.c)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "at_least_one_of",
+    "fields": [
+     "a",
+     "b",
+     "c"
+    ]
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "c": null
+    },
+    "note": "a=MISSING b=MISSING c=null"
+   },
+   {
+    "data": {
+     "c": ""
+    },
+    "note": "a=MISSING b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "c": "x"
+    },
+    "note": "a=MISSING b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null c=MISSING"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": null
+    },
+    "note": "a=MISSING b=null c=null"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": ""
+    },
+    "note": "a=MISSING b=null c=\"\""
+   },
+   {
+    "data": {
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=MISSING b=null c=\"x\""
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": null
+    },
+    "note": "a=MISSING b=\"\" c=null"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "b": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": null
+    },
+    "note": "a=MISSING b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": null
+    },
+    "note": "a=null b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": ""
+    },
+    "note": "a=null b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "c": "x"
+    },
+    "note": "a=null b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": null
+    },
+    "note": "a=null b=null c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": ""
+    },
+    "note": "a=null b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=null b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": null
+    },
+    "note": "a=null b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": ""
+    },
+    "note": "a=null b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=null b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x"
+    },
+    "note": "a=null b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": null
+    },
+    "note": "a=null b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=null b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=null b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": null
+    },
+    "note": "a=\"\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null
+    },
+    "note": "a=\"x\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"x\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"x\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"x\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": ""
+    },
+    "note": "a=\"x\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=\"x\""
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.exo.holds",
+  "description": "minLength 1 members",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "minLength": 1
+    },
+    "b": {
+     "type": "string",
+     "minLength": 1
+    },
+    "c": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "[has(self.a), has(self.b), has(self.c)].exists_one(x, x)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "exactly_one_of",
+    "fields": [
+     "a",
+     "b",
+     "c"
+    ]
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "c": null
+    },
+    "note": "a=MISSING b=MISSING c=null"
+   },
+   {
+    "data": {
+     "c": ""
+    },
+    "note": "a=MISSING b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "c": "x"
+    },
+    "note": "a=MISSING b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null c=MISSING"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": null
+    },
+    "note": "a=MISSING b=null c=null"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": ""
+    },
+    "note": "a=MISSING b=null c=\"\""
+   },
+   {
+    "data": {
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=MISSING b=null c=\"x\""
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": null
+    },
+    "note": "a=MISSING b=\"\" c=null"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "b": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": null
+    },
+    "note": "a=MISSING b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": null
+    },
+    "note": "a=null b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": ""
+    },
+    "note": "a=null b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "c": "x"
+    },
+    "note": "a=null b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": null
+    },
+    "note": "a=null b=null c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": ""
+    },
+    "note": "a=null b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=null b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": null
+    },
+    "note": "a=null b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": ""
+    },
+    "note": "a=null b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=null b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x"
+    },
+    "note": "a=null b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": null
+    },
+    "note": "a=null b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=null b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=null b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": null
+    },
+    "note": "a=\"\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null
+    },
+    "note": "a=\"x\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"x\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"x\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"x\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": ""
+    },
+    "note": "a=\"x\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=\"x\""
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.exo.holds.sum",
+  "description": "sum-of-ternaries, minLength 1 members",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "minLength": 1
+    },
+    "b": {
+     "type": "string",
+     "minLength": 1
+    },
+    "c": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "(has(self.a) ? 1 : 0) + (has(self.b) ? 1 : 0) + (has(self.c) ? 1 : 0) == 1"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "exactly_one_of",
+    "fields": [
+     "a",
+     "b",
+     "c"
+    ]
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "c": null
+    },
+    "note": "a=MISSING b=MISSING c=null"
+   },
+   {
+    "data": {
+     "c": ""
+    },
+    "note": "a=MISSING b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "c": "x"
+    },
+    "note": "a=MISSING b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null c=MISSING"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": null
+    },
+    "note": "a=MISSING b=null c=null"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": ""
+    },
+    "note": "a=MISSING b=null c=\"\""
+   },
+   {
+    "data": {
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=MISSING b=null c=\"x\""
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": null
+    },
+    "note": "a=MISSING b=\"\" c=null"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "b": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": null
+    },
+    "note": "a=MISSING b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": null
+    },
+    "note": "a=null b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": ""
+    },
+    "note": "a=null b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "c": "x"
+    },
+    "note": "a=null b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": null
+    },
+    "note": "a=null b=null c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": ""
+    },
+    "note": "a=null b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=null b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": null
+    },
+    "note": "a=null b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": ""
+    },
+    "note": "a=null b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=null b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x"
+    },
+    "note": "a=null b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": null
+    },
+    "note": "a=null b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=null b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=null b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": null
+    },
+    "note": "a=\"\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null
+    },
+    "note": "a=\"x\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"x\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"x\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"x\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": ""
+    },
+    "note": "a=\"x\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=\"x\""
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.exo.fails",
+  "description": "plain string members",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    },
+    "c": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "[has(self.a), has(self.b), has(self.c)].exists_one(x, x)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "exactly_one_of",
+    "fields": [
+     "a",
+     "b",
+     "c"
+    ]
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "c": null
+    },
+    "note": "a=MISSING b=MISSING c=null"
+   },
+   {
+    "data": {
+     "c": ""
+    },
+    "note": "a=MISSING b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "c": "x"
+    },
+    "note": "a=MISSING b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null c=MISSING"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": null
+    },
+    "note": "a=MISSING b=null c=null"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": ""
+    },
+    "note": "a=MISSING b=null c=\"\""
+   },
+   {
+    "data": {
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=MISSING b=null c=\"x\""
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": null
+    },
+    "note": "a=MISSING b=\"\" c=null"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "b": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": null
+    },
+    "note": "a=MISSING b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": null
+    },
+    "note": "a=null b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": ""
+    },
+    "note": "a=null b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "c": "x"
+    },
+    "note": "a=null b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": null
+    },
+    "note": "a=null b=null c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": ""
+    },
+    "note": "a=null b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=null b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": null
+    },
+    "note": "a=null b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": ""
+    },
+    "note": "a=null b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=null b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x"
+    },
+    "note": "a=null b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": null
+    },
+    "note": "a=null b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=null b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=null b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": null
+    },
+    "note": "a=\"\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null
+    },
+    "note": "a=\"x\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"x\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"x\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"x\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": ""
+    },
+    "note": "a=\"x\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=\"x\""
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.exo.fails.default",
+  "description": "one member has a default",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "minLength": 1
+    },
+    "b": {
+     "type": "string",
+     "minLength": 1
+    },
+    "c": {
+     "type": "string",
+     "minLength": 1,
+     "default": "d"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "[has(self.a), has(self.b), has(self.c)].exists_one(x, x)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "exactly_one_of",
+    "fields": [
+     "a",
+     "b",
+     "c"
+    ]
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "c": null
+    },
+    "note": "a=MISSING b=MISSING c=null"
+   },
+   {
+    "data": {
+     "c": ""
+    },
+    "note": "a=MISSING b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "c": "x"
+    },
+    "note": "a=MISSING b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null c=MISSING"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": null
+    },
+    "note": "a=MISSING b=null c=null"
+   },
+   {
+    "data": {
+     "b": null,
+     "c": ""
+    },
+    "note": "a=MISSING b=null c=\"\""
+   },
+   {
+    "data": {
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=MISSING b=null c=\"x\""
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": null
+    },
+    "note": "a=MISSING b=\"\" c=null"
+   },
+   {
+    "data": {
+     "b": "",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "b": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": null
+    },
+    "note": "a=MISSING b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=MISSING b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=MISSING b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": null
+    },
+    "note": "a=null b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "c": ""
+    },
+    "note": "a=null b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "c": "x"
+    },
+    "note": "a=null b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": null
+    },
+    "note": "a=null b=null c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": ""
+    },
+    "note": "a=null b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=null b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": null
+    },
+    "note": "a=null b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": ""
+    },
+    "note": "a=null b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=null b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x"
+    },
+    "note": "a=null b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": null
+    },
+    "note": "a=null b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=null b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=null b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": null
+    },
+    "note": "a=\"\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"\" b=\"x\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=MISSING c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=MISSING c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=MISSING c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null
+    },
+    "note": "a=\"x\" b=null c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": null
+    },
+    "note": "a=\"x\" b=null c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": ""
+    },
+    "note": "a=\"x\" b=null c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null,
+     "c": "x"
+    },
+    "note": "a=\"x\" b=null c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": ""
+    },
+    "note": "a=\"x\" b=\"\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"\" c=\"x\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": null
+    },
+    "note": "a=\"x\" b=\"x\" c=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": ""
+    },
+    "note": "a=\"x\" b=\"x\" c=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x",
+     "c": "x"
+    },
+    "note": "a=\"x\" b=\"x\" c=\"x\""
+   }
+  ],
+  "expect": "server_only"
+ },
+ {
+  "id": "guard.aon.holds",
+  "description": "minLength 1 members",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string",
+     "minLength": 1
+    },
+    "b": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "has(self.a) == has(self.b)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "all_or_none",
+    "fields": [
+     "a",
+     "b"
+    ]
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\""
+   },
+   {
+    "data": {
+     "b": "x"
+    },
+    "note": "a=MISSING b=\"x\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x"
+    },
+    "note": "a=null b=\"x\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x"
+    },
+    "note": "a=\"\" b=\"x\""
+   },
+   {
+    "data": {
+     "a": "x"
+    },
+    "note": "a=\"x\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null
+    },
+    "note": "a=\"x\" b=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": ""
+    },
+    "note": "a=\"x\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x"
+    },
+    "note": "a=\"x\" b=\"x\""
+   }
+  ],
+  "expect": "translated"
+ },
+ {
+  "id": "guard.aon.fails",
+  "description": "plain string members",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "a": {
+     "type": "string"
+    },
+    "b": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "has(self.a) == has(self.b)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "all_or_none",
+    "fields": [
+     "a",
+     "b"
+    ]
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "a=MISSING b=MISSING"
+   },
+   {
+    "data": {
+     "b": null
+    },
+    "note": "a=MISSING b=null"
+   },
+   {
+    "data": {
+     "b": ""
+    },
+    "note": "a=MISSING b=\"\""
+   },
+   {
+    "data": {
+     "b": "x"
+    },
+    "note": "a=MISSING b=\"x\""
+   },
+   {
+    "data": {
+     "a": null
+    },
+    "note": "a=null b=MISSING"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": null
+    },
+    "note": "a=null b=null"
+   },
+   {
+    "data": {
+     "a": null,
+     "b": ""
+    },
+    "note": "a=null b=\"\""
+   },
+   {
+    "data": {
+     "a": null,
+     "b": "x"
+    },
+    "note": "a=null b=\"x\""
+   },
+   {
+    "data": {
+     "a": ""
+    },
+    "note": "a=\"\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": null
+    },
+    "note": "a=\"\" b=null"
+   },
+   {
+    "data": {
+     "a": "",
+     "b": ""
+    },
+    "note": "a=\"\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "",
+     "b": "x"
+    },
+    "note": "a=\"\" b=\"x\""
+   },
+   {
+    "data": {
+     "a": "x"
+    },
+    "note": "a=\"x\" b=MISSING"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": null
+    },
+    "note": "a=\"x\" b=null"
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": ""
+    },
+    "note": "a=\"x\" b=\"\""
+   },
+   {
+    "data": {
+     "a": "x",
+     "b": "x"
+    },
+    "note": "a=\"x\" b=\"x\""
+   }
+  ],
+  "expect": "server_only"
+ }
+]

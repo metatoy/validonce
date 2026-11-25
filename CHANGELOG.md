@@ -2,6 +2,16 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
+## Unreleased
+
+### Added
+- **Kubernetes:** `validonce/kubernetes` translates the CEL rules of custom resources (`x-kubernetes-validations`) into `x-validonce`, so a console's forms enforce them before submit.
+  - **Functions:** `translateCrd`, `translateKubernetesOpenApi` (for `/openapi/v3/apis/<group>/<version>`), `rulesAt` and a per-rule report.
+  - **What translates:** only the CEL shapes that match the five rule kinds. Each is guarded by schema conditions proven against the API server's own CRD validation; see the table in `docs/kubernetes.md`.
+  - **The rest:** everything else stays `server_only`, and `dryRunIssues` places the API server's dry-run errors on the form's fields.
+  - **CLI:** `validonce k8s <crd.json|openapi.json|->` does the same at build time.
+- Example `examples/k8s-form` (a sample CRD and a React form). There's also a new CI job, `k8s-cel-diff`, which compares every translated rule with Kubernetes' verdicts on the same inputs.
+
 ## 0.4.0 (2026-11-24)
 
 New backends (Go, Java/Kotlin with Spring Boot, Fastify, NestJS) and new frontends (plain HTML and web components, Vue). Every backend returns the same 422 response, and every evaluator passes the 125 shared conformance cases.
