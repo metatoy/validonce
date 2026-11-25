@@ -2,7 +2,7 @@
 // Copyright 2026 Metatoy LLC
 
 // Where each backend lives. Dev: the example backends on their local ports (the same table the
-// react-form example uses). Production build: https://play-api.metatoy.com/<backend>. `VITE_PLAYGROUND_API`
+// react-form example uses). Production build: https://play-<backend>.metatoy.com (one host per backend: Cloudflare's free certificate covers one subdomain level). `VITE_PLAYGROUND_API`
 // (a base URL with no trailing slash) overrides the production base at build time; the e2e tests use it
 // to point the shell at a stub.
 
@@ -62,19 +62,18 @@ export interface Endpoint {
   crd?: string;
 }
 
-const PROD_BASE = "https://play-api.metatoy.com";
-
 function configuredBase(): string | undefined {
   const fromEnv = import.meta.env.VITE_PLAYGROUND_API as string | undefined;
   if (fromEnv) return fromEnv.replace(/\/$/, "");
-  return import.meta.env.MODE === "production" ? PROD_BASE : undefined;
+  return undefined;
 }
 
 export function endpointFor(id: BackendId, pageUrl: string = window.location.href): Endpoint {
   const base = configuredBase();
   const info = backendInfo(id);
   const dev = `http://localhost:${info.port}`;
-  const api = base ? `${base}/${id}` : dev;
+  const prod = import.meta.env.MODE === "production" ? `https://play-${id}.metatoy.com` : undefined;
+  const api = base ? `${base}/${id}` : (prod ?? dev);
   if (id === "k8s") {
     return { api, openapi: "", crd: new URL("k8s/contact-crd.json", pageUrl).href };
   }

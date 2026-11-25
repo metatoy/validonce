@@ -13,6 +13,8 @@ FROM busybox:stable-musl AS busybox
 
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=busybox /bin/busybox /bin/wget
+# Coolify runs the health check through /bin/sh, which distroless lacks; busybox provides it.
+COPY --from=busybox /bin/busybox /bin/sh
 COPY --from=build /out/go-app /go-app
 ENV ADDR=0.0.0.0:8040
 EXPOSE 8040

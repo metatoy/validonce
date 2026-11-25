@@ -103,13 +103,13 @@ export async function serveDist(): Promise<{ server: Server; origin: string }> {
   return { server, origin: `http://127.0.0.1:${(server.address() as AddressInfo).port}` };
 }
 
-/** Answer everything the shell and its frames ask of https://play-api.metatoy.com. */
+/** Answer everything the shell and its frames ask of the production backends (https://play-<backend>.metatoy.com). */
 export async function stubApi(context: BrowserContext): Promise<void> {
   const cors = {
     "access-control-allow-origin": "*",
     "access-control-allow-headers": "content-type",
   };
-  await context.route("https://play-api.metatoy.com/**", async (route) => {
+  await context.route(/^https:\/\/play-[a-z0-9]+\.metatoy\.com\//, async (route) => {
     const req = route.request();
     const path = new URL(req.url()).pathname;
     if (req.method() === "OPTIONS") {
