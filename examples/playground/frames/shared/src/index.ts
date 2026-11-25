@@ -264,6 +264,13 @@ export function touch(touched: Set<string>, field: string, rules: RulesLike): Se
   const next = new Set(touched);
   next.add(field);
   for (const dep of dependentFields(rules)[field] ?? []) next.add(dep);
+  // An all-or-none group is one address: editing one part shows the errors of all of it.
+  for (const rule of ruleList(rules)) {
+    const group = (rule as { kind: string; fields?: string[] }).fields;
+    if (rule.kind === "all_or_none" && group?.includes(field)) {
+      for (const f of group) next.add(f);
+    }
+  }
   return next;
 }
 

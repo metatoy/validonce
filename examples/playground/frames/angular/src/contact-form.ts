@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Metatoy LLC
 
-import { Component, computed, effect, input, signal } from "@angular/core";
+import { Component, computed, effect, inject, Injectable, input, signal } from "@angular/core";
 import { FormField, form, validateStandardSchema } from "@angular/forms/signals";
 import type { Issue, RuleSet } from "validonce";
 import { withRules } from "validonce/zod";
@@ -25,13 +25,24 @@ import {
 import { z } from "zod";
 import { FieldErrors } from "./field-errors";
 
+/** Holds the rules; set before the form is created, because the form's schema needs them at once. */
+@Injectable({ providedIn: "root" })
+export class RulesStore {
+  readonly rules = signal<RuleSet | null>(null);
+}
+
 @Component({
   selector: "app-contact-form",
   imports: [FormField, FieldErrors],
   templateUrl: "./contact-form.html",
 })
 export class ContactForm {
-  readonly rules = input.required<RuleSet>();
+  private readonly store = inject(RulesStore);
+  protected readonly rules = computed(() => {
+    const r = this.store.rules();
+    if (!r) throw new Error("rules not loaded");
+    return r;
+  });
   readonly api = input.required<string>();
 
   protected readonly labels = LABELS;
