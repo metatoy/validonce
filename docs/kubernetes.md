@@ -1,5 +1,7 @@
 # Kubernetes custom resources
 
+> **Try it first:** [the playground with a Kubernetes CRD](https://playground.metatoy.com/?backend=k8s&frontend=react) translates a CRD's CEL rules in the browser (the server step is simulated).
+
 Kubernetes custom resource definitions (CRDs) carry cross-field rules in their OpenAPI schemas, under `x-kubernetes-validations`. The rules are written in CEL (`self.maxReplicas >= self.minReplicas`), and only the API server enforces them. A console that edits these resources has no rules in the browser: users submit, get rejected, and read the server's message.
 
 validonce translates the CEL rules that match its five rule kinds into `x-validonce`. Every validonce frontend then enforces them instantly, with no hand-written client rules. Rules it cannot translate are kept as `server_only`, and a dry run asks the API server about them.

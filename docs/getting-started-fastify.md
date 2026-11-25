@@ -1,5 +1,7 @@
 # Getting started: Fastify
 
+> **Try it first:** [the playground with Fastify](https://playground.metatoy.com/?backend=fastify&frontend=react) runs this backend live, with React, Angular, Vue or a plain form.
+
 Write cross-field rules once with the TypeScript builders. Fastify enforces them in a `preHandler` and `@fastify/swagger` publishes them in OpenAPI. Needs Node 20+, `fastify>=5` and `@sinclair/typebox`.
 
 ## 1. Install

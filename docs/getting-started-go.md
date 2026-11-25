@@ -1,5 +1,7 @@
 # Getting started: Go
 
+> **Try it first:** [the playground with Go](https://playground.metatoy.com/?backend=go&frontend=react) runs this backend live, with React, Angular, Vue or a plain form.
+
 Write cross-field rules once next to a Go struct. The server enforces them, Huma publishes them in OpenAPI, and the browser forms read them. Needs Go 1.26 or later.
 
 ## 1. Install

@@ -9,7 +9,9 @@
 
 Write cross-field validation rules once, on the server, and enforce the same rules in the browser.
 
-Field rules such as types, lengths and patterns already travel from a backend's OpenAPI document to the frontend. Rules that involve more than one field do not: "company is required when the plan is Pro", "the end date must be on or after the start date". Teams write those twice, once in the backend and once in the form, and the two copies drift. validonce exports the rules from FluentValidation (C#) or Pydantic (Python) as data in your OpenAPI document, and a small TypeScript runtime applies them to your Zod schema, so React and Angular forms check the same rules and show each error on the right field.
+Field rules such as types, lengths and patterns already travel from a backend's OpenAPI document to the frontend. Rules that involve more than one field do not: "company is required when the plan is Pro", "the end date must be on or after the start date". Teams write those twice, once in the backend and once in the form, and the two copies drift. validonce exports the rules from your backend (ASP.NET Core, FastAPI, Fastify, NestJS, Go, Spring Boot, or a Kubernetes CRD's CEL) as data in your OpenAPI document, and a small runtime applies them in the browser, so React, Angular, Vue and plain HTML forms check the same rules and show each error on the right field.
+
+**[▶ Try it in the playground](https://playground.metatoy.com)**: pick a backend and a frontend and watch the same rules run in both. No install.
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/metatoy/validonce) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/metatoy/validonce/badge)](https://scorecard.dev/viewer/?uri=github.com/metatoy/validonce)
 

@@ -1,5 +1,7 @@
 # Getting started: NestJS
 
+> **Try it first:** [the playground with NestJS](https://playground.metatoy.com/?backend=nestjs&frontend=react) runs this backend live, with React, Angular, Vue or a plain form.
+
 Write cross-field rules once with the TypeScript builders. A class decorator carries them, a pipe enforces them and a post-processor publishes them in the `@nestjs/swagger` document. Needs Node 20+ and `@nestjs/common` and `@nestjs/swagger` 11 or later.
 
 ## 1. Install

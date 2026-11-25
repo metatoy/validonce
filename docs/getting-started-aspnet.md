@@ -1,5 +1,7 @@
 # Getting started: ASP.NET Core
 
+> **Try it first:** [the playground with ASP.NET Core](https://playground.metatoy.com/?backend=aspnet&frontend=react) runs this backend live, with React, Angular, Vue or a plain form.
+
 Write cross-field rules once in FluentValidation. The server enforces them and publishes them in OpenAPI. Needs .NET 10.
 
 ## 1. Install
