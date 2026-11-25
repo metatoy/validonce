@@ -88,4 +88,8 @@ A request that breaks a rule gets status 422 (change it with `AddValidonce(o => 
 - Validators are singletons. Keep them stateless.
 - Rule ids default to `TypeName.kind.wireField` and must be unique per validator. Use `.WithRuleId(...)` on a collision.
 
+## Migrate with an agent
+
+If your cross-field checks are already in FluentValidation (`When`, `Must`, `GreaterThanOrEqualTo(x => x.Other)`), an agent can move them. The [FluentValidation guide](../skills/validonce-migrate/references/fluentvalidation.md) maps each check to a `ValidonceValidator<T>`, and `generate_code` with target `csharp` writes it. The old validator then runs on generated inputs to prove the two agree. See [Migrating with an agent](agentic-migration.md). `suggest_client_wiring` (needs `validonce-mcp` 0.2.0 or later) returns the matching client set-up.
+
 Next: the [React guide](client-react.md) or [Angular guide](client-angular.md). Runnable example: [examples/aspnet-app](../examples/aspnet-app/README.md).

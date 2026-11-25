@@ -1,6 +1,6 @@
 # How validonce compares
 
-validonce covers one narrow job: **cross-field rules** (a field required when another has a value, one date after another, at least one of a group, and so on). They are written once on an ASP.NET Core or FastAPI server and enforced in Zod 4 clients from the OpenAPI document. Here is how that compares with the alternatives.
+validonce covers one narrow job: **cross-field rules** (a field required when another has a value, one date after another, at least one of a group, and so on). They are written once on the server (ASP.NET Core, FastAPI, Fastify, NestJS, Go, Spring Boot, or the CEL rules of a Kubernetes CRD) and enforced in the browser from the OpenAPI document. Here is how that compares with the alternatives.
 
 ## Writing the rules twice
 
@@ -29,6 +29,10 @@ The usual approach: a FluentValidation or Pydantic rule on the server, and a han
 ## valbridge
 
 [valbridge](https://github.com/vectorfy-co/valbridge) bridged Zod and Pydantic with conversion and code generation. Its repository was **archived** (read-only), with its last push on 2026-11-03. As we read it before archiving, it covered field rules and did not support custom (cross-field) validators.
+
+## Migrating existing checks
+
+Moving hand-written checks to a shared rule format is usually a manual job. validonce ships an MCP server (`validonce-mcp`) and an agent skill that read the checks in FluentValidation, Pydantic, Zod, yup, Angular, go-playground/validator, Jakarta Bean Validation, class-validator, Joi and VeeValidate, translate Kubernetes CEL, and compare the old validator with validonce on generated inputs. The agent proposes the change and you review the diff. See [agentic-migration.md](agentic-migration.md).
 
 ## What validonce does not do
 

@@ -1,6 +1,6 @@
 # validonce
 
-> Write cross-field validation rules once on the server (ASP.NET Core or FastAPI) and enforce the same rules in the browser (React, Angular, Zod). Rules travel in the OpenAPI document under `x-validonce`. Five rule kinds: required_when, compare, at_least_one_of, exactly_one_of, all_or_none.
+> Write cross-field validation rules once on the server (ASP.NET Core, FastAPI, Fastify, NestJS, Go with Huma, Spring Boot, or the CEL rules of a Kubernetes custom resource) and enforce the same rules in the browser (React, Angular, Vue, plain HTML and web components, Zod). Rules travel in the OpenAPI document under `x-validonce`. Five rule kinds: required_when, compare, at_least_one_of, exactly_one_of, all_or_none. Generator plugins carry the rules into the Zod schemas that kubb, Hey API and orval generate. An MCP server and a Claude Code plugin help an agent migrate existing checks and prove the result with a differential test.
 
 ## Docs
 
@@ -9,16 +9,35 @@
 - [How it works](https://github.com/metatoy/validonce/blob/main/docs/how-it-works.md): the flow from server rules to browser feedback
 - [Rule format v1](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md): the rule kinds, conditions, and exact semantics
 - [Rule format JSON Schema](https://schemas.metatoy.com/validonce/rules-v1.json): canonical schema of the `x-validonce` value; [dialect](https://schemas.metatoy.com/validonce/dialect-v1.json) for JSON Schema 2020-12 / OpenAPI 3.1 `jsonSchemaDialect`
+- [Loading rules at runtime](https://github.com/metatoy/validonce/blob/main/docs/live-rules.md): fetch rules when the page loads instead of at build time
 
-## Getting started
+## Getting started (server)
 
 - [ASP.NET Core](https://github.com/metatoy/validonce/blob/main/docs/getting-started-aspnet.md): write a ValidonceValidator<T>
 - [FastAPI](https://github.com/metatoy/validonce/blob/main/docs/getting-started-fastapi.md): write a ValidonceModel
+- [Fastify](https://github.com/metatoy/validonce/blob/main/docs/getting-started-fastify.md): defineRules and a TypeBox schema
+- [NestJS](https://github.com/metatoy/validonce/blob/main/docs/getting-started-nestjs.md): @ValidonceRules on a DTO
+- [Go](https://github.com/metatoy/validonce/blob/main/docs/getting-started-go.md): validonce.MustBuild with Huma or go-playground/validator
+- [Spring Boot](https://github.com/metatoy/validonce/blob/main/docs/getting-started-spring.md): a RuleDefinition<T> for Java and Kotlin
+- [Kubernetes custom resources](https://github.com/metatoy/validonce/blob/main/docs/kubernetes.md): translate CEL x-kubernetes-validations to rules
+
+## Getting started (client)
+
 - [React client](https://github.com/metatoy/validonce/blob/main/docs/client-react.md): react-hook-form and Zod
 - [Angular client](https://github.com/metatoy/validonce/blob/main/docs/client-angular.md): Signal and Reactive Forms
+- [Vue client](https://github.com/metatoy/validonce/blob/main/docs/client-vue.md): VeeValidate and Zod
+- [Plain HTML and web components](https://github.com/metatoy/validonce/blob/main/docs/client-dom.md): validonce/dom
+- [Generated clients](https://github.com/metatoy/validonce/blob/main/docs/client-codegen.md): the kubb, Hey API and orval plugins
+
+## AI tooling
+
+- [Migrating an existing project with an agent](https://github.com/metatoy/validonce/blob/main/docs/agentic-migration.md): what the agent does, safety and limits
+- [validonce-migrate skill](https://github.com/metatoy/validonce/blob/main/skills/validonce-migrate/SKILL.md): the steps and per-library guides for an agent
+- [Claude Code plugin](https://github.com/metatoy/validonce/blob/main/.claude-plugin/plugin.json): the skill and the MCP server together
+- [MCP server](https://github.com/metatoy/validonce/blob/main/mcp/README.md): tools to read, check, evaluate, generate and compare rules
 
 ## Optional
 
 - [AGENTS.md](https://github.com/metatoy/validonce/blob/main/AGENTS.md): guidance for coding agents
-- [MCP server](https://github.com/metatoy/validonce/blob/main/mcp/README.md): read-only tools to read, check and evaluate rules
 - [Comparison](https://github.com/metatoy/validonce/blob/main/docs/comparison.md): how validonce differs from other approaches
+- [Regex findings](https://github.com/metatoy/validonce/blob/main/docs/regex-findings.md): portability of `pattern` rules across regex engines

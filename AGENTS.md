@@ -12,7 +12,13 @@ Validation rules that involve more than one field ("company is required when pla
 |---|---|---|
 | ASP.NET Core | a `ValidonceValidator<T>` (FluentValidation) | `docs/getting-started-aspnet.md` |
 | FastAPI | a `ValidonceModel` (Pydantic), with `F` and `when` | `docs/getting-started-fastapi.md` |
-| TypeScript / Zod | `withRules(zodSchema)` on the client side, reading the server's rules | `docs/client-react.md`, `docs/client-angular.md` |
+| Fastify | `defineRules` from `validonce/rules`, with a TypeBox schema | `docs/getting-started-fastify.md` |
+| NestJS | `@ValidonceRules` on a DTO | `docs/getting-started-nestjs.md` |
+| Go | `validonce.MustBuild[T]`, with Huma or go-playground/validator | `docs/getting-started-go.md` |
+| Spring Boot | a `RuleDefinition<T>` with `@ValidonceRules` | `docs/getting-started-spring.md` |
+| Kubernetes | the CRD's CEL rules, translated (`validonce k8s`), not rewritten | `docs/kubernetes.md` |
+
+On the client, `withRules(zodSchema)` reads the server's rules: `docs/client-react.md`, `docs/client-angular.md`, `docs/client-vue.md`, `docs/client-dom.md`, `docs/client-codegen.md`.
 
 Rules always originate on the server. The client only reads them.
 
@@ -27,9 +33,22 @@ Rules always originate on the server. The client only reads them.
 - A rule that does not fit one of the five kinds stays a hand-written server check; do not bend a kind to fit it.
 - Use `server_only: true` for a rule the browser must not run.
 
-## MCP server
+## MCP server and skill
 
-`mcp/` is `validonce-mcp` (read-only tools: `read_openapi_rules`, `check_rules`, `evaluate`). Register it with `claude mcp add --transport stdio validonce -- npx -y validonce-mcp`. Use `check_rules` on a proposed rule set before presenting it.
+`mcp/` is `validonce-mcp`. Register it with `claude mcp add --transport stdio validonce -- npx -y validonce-mcp`. Eight tools; all are read-only except `generate_inputs` with `outFile`, which creates one new `.jsonl` file inside the workspace roots and never overwrites:
+
+- `read_openapi_rules`: the rules per schema in an OpenAPI JSON document.
+- `check_rules`: format, duplicate ids, field names and `compare` types. Use it on a proposed rule set before presenting it.
+- `evaluate`: run a rule set on sample payloads, as the server or the client.
+- `generate_inputs`: boundary-biased test inputs for a rule set (the one tool that can write a file).
+- `compare_results`: compare an old validator's results with validonce's on the same inputs.
+- `generate_code`: source for a rule set (C#, Python, Zod, react-hook-form, Angular, Go, Java, TypeScript `defineRules`, Vue, plain HTML).
+- `translate_kubernetes`: translate `x-kubernetes-validations` (CEL) in a CRD or Kubernetes OpenAPI document into rules.
+- `suggest_client_wiring`: copy-ready client snippets for React, Angular, Vue or plain HTML, with the kubb, Hey API or orval config.
+
+The tools added after 0.1.1 (`translate_kubernetes`, `suggest_client_wiring`, and the Go, Java, `typescript-rules`, Vue and plain HTML targets of `generate_code`) need `validonce-mcp` 0.2.0 or later.
+
+`skills/validonce-migrate/` is the agent skill that uses these tools to migrate existing checks and prove the result. Its per-library guides are in `skills/validonce-migrate/references/`; see `docs/agentic-migration.md`. The Claude Code plugin in `.claude-plugin/` bundles the skill and the server.
 
 ## Running tests
 
@@ -40,9 +59,11 @@ Run heavy commands one at a time.
 | C# (`dotnet/`) | `cd dotnet && dotnet test -c Release` |
 | TypeScript (`js/`) | `pnpm install && cd js && pnpm build && pnpm typecheck && pnpm test && pnpm lint` |
 | MCP server (`mcp/`) | after building `js/`: `cd mcp && pnpm build && pnpm typecheck && pnpm test` |
+| Go (`go/`) | `cd go && go test ./... && go vet ./...` |
+| Java (`java/`) | `cd java && ./gradlew check` |
 | Python (`python/`) | `cd python && uv run pytest -q && uv run ruff check . && uv run ruff format --check .` |
 
-Cross-language behavior is pinned by `conformance/`; change a rule's meaning in all four languages or none.
+Cross-language behavior is pinned by `conformance/`; change a rule's meaning in every language or none.
 
 ## Conventions
 

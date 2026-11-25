@@ -79,4 +79,8 @@ The document has the rules under `components.schemas.Signup["x-validonce"]`. A r
 - **Schema name** is the class name, so `@ValidonceRules` on `Signup` lands on `components.schemas.Signup`.
 - Without `ValidonceExceptionFilter` the 422 body is the same but its content type is `application/json`.
 
+## Migrate with an agent
+
+If your cross-field checks are class-validator decorators or custom validators on a DTO, an agent can move them. The [class-validator guide](../skills/validonce-migrate/references/class-validator.md) maps each check to `@ValidonceRules` and `ValidonceValidationPipe`, and `generate_code` with target `typescript-rules` and `framework: "nestjs"` writes the DTO and rules. The old DTO runs on generated inputs through the Node runner's `class-validator` kind. These need `validonce-mcp` 0.2.0 or later. See [Migrating with an agent](agentic-migration.md).
+
 Next: the [React guide](client-react.md) or [Angular guide](client-angular.md). Runnable example: [examples/nestjs-app](../examples/nestjs-app/README.md).

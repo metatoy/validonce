@@ -233,6 +233,16 @@ const issues = evaluate(parseRuleSet(raw).rules, data, { side: "client" });
 // [{ path, ruleId, key, params }]
 ```
 
+## Migrate with an agent
+
+To move existing cross-field checks to validonce rules, use the [`validonce-mcp`](https://www.npmjs.com/package/validonce-mcp) MCP server, alone or with the `validonce-migrate` skill in the Claude Code plugin. The agent finds the checks (for a TypeScript project: Zod, yup, class-validator, Joi, Angular and VeeValidate), writes the rules, and compares your old validator with validonce on generated inputs. It never commits for you.
+
+```sh
+claude mcp add --transport stdio validonce -- npx -y validonce-mcp
+```
+
+In Claude Code, `/plugin marketplace add metatoy/validonce` then `/plugin install validonce@validonce` adds the skill and the server together. Targets for Go, Java, Vue and plain HTML, Kubernetes CEL translation and client wiring need `validonce-mcp` 0.2.0 or later. Details: [Migrating with an agent](https://github.com/metatoy/validonce/blob/main/docs/agentic-migration.md); [server tools](https://github.com/metatoy/validonce/blob/main/mcp/README.md).
+
 ## More
 
 Guides for [React](https://github.com/metatoy/validonce/blob/main/docs/client-react.md), [Angular](https://github.com/metatoy/validonce/blob/main/docs/client-angular.md), [Vue](https://github.com/metatoy/validonce/blob/main/docs/client-vue.md) and [plain HTML and web components](https://github.com/metatoy/validonce/blob/main/docs/client-dom.md), the [rule format](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md), and the server packages: [github.com/metatoy/validonce](https://github.com/metatoy/validonce).

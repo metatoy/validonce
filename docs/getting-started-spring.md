@@ -92,4 +92,8 @@ Other `@Valid` failures (such as `@NotNull`) are listed under `errors`, field to
 - Ids default to `TypeName.kind.field`. Pass `.id(...)` on a collision.
 - The `x-validonce` schema is matched by the class's simple name, springdoc's default schema name.
 
+## Migrate with an agent
+
+If your cross-field checks are Jakarta Bean Validation constraints (class-level validators, `@AssertTrue` methods), an agent can move them. The [Jakarta guide](../skills/validonce-migrate/references/jakarta.md) maps each check to a `RuleDefinition<T>` with `@ValidonceRules`, and `generate_code` with target `java` writes the record and rules (notes cover Kotlin). The Java runner runs the old validator on generated inputs. These need `validonce-mcp` 0.2.0 or later. See [Migrating with an agent](agentic-migration.md).
+
 Next: the [React guide](client-react.md) or [Angular guide](client-angular.md). Runnable example: [examples/spring-app](../examples/spring-app/README.md).

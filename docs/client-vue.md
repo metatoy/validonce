@@ -1,5 +1,7 @@
 # Client: Vue
 
+> **Try it first:** [the playground with Vue](https://playground.metatoy.com/?backend=aspnet&frontend=vue) runs this frontend live against ASP.NET Core, FastAPI, Fastify, NestJS, Go, Spring Boot or a Kubernetes CRD.
+
 Use the server's rules in a Vue 3 form with VeeValidate and Zod 4. The same code works against ASP.NET Core and FastAPI.
 
 ```sh
@@ -105,5 +107,9 @@ if (!res.ok) {
 - `withRules` throws if a rule names a field the schema does not have.
 - VeeValidate 4 validates the whole schema and reads one field's errors from the result, so `validateField("end")` also runs the other rules. This is cheap for form-sized schemas.
 - `validonce/vue` imports `vue` (for `watch`); `vue` and `vee-validate` are optional peer dependencies of `validonce`.
+
+## Migrate with an agent
+
+If the form's cross-field checks are in VeeValidate (a Zod or yup schema passed to `validationSchema`, or `defineRule`), an agent can replace them with `withRules`. The [VeeValidate guide](../skills/validonce-migrate/references/vee-validate.md) maps each check, `generate_code` with target `vue` writes the composable and a single-file component, and `suggest_client_wiring` with `frontend: "vue"` returns copy-ready snippets. These need `validonce-mcp` 0.2.0 or later. See [Migrating with an agent](agentic-migration.md).
 
 Full working form: [examples/vue-form](../examples/vue-form/src/SignupForm.vue). Package reference: [js/README.md](../js/README.md#vee-validate-vue).
