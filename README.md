@@ -39,6 +39,9 @@ The server always enforces the rules. The browser runs them first to give fast f
 - Java and Kotlin: Spring Boot with Bean Validation and springdoc (`com.metatoy:validonce-spring`).
 - TypeScript client: Zod 4, react-hook-form helpers, Angular Signal Forms and Reactive Forms, Vue with VeeValidate, plain HTML and web components (`validonce/dom`), server-error mapping.
 - One shared conformance suite (125 cases) that every evaluator (C#, Python, TypeScript, Go, Java) passes.
+- Kubernetes: the CEL rules of custom resources (`x-kubernetes-validations`) translate to `x-validonce`, checked against the API server's own validation.
+- Generator plugins: the Zod schemas that kubb, Hey API and orval generate carry the cross-field rules.
+- AI-assisted migration: an MCP server (`validonce-mcp`) and a Claude Code plugin find your existing cross-field checks, rewrite them as validonce rules, and prove nothing changed with a differential test.
 - Regex portability linter for `pattern` rules.
 
 ## Supported stacks
@@ -57,6 +60,20 @@ The server always enforces the rules. The browser runs them first to give fast f
 | Client | Plain HTML, web components | `validonce/dom` | [HTML and web components](docs/client-dom.md) |
 | Client codegen | kubb, Hey API, orval (generated Zod schemas get the rules) | `validonce/kubb`, `validonce/hey-api`, `validonce/orval` | [Generated clients](docs/client-codegen.md) |
 | Rules from | Kubernetes CRDs (CEL `x-kubernetes-validations`) | `validonce/kubernetes`, `validonce k8s` | [Kubernetes](docs/kubernetes.md) |
+| AI tooling | Any MCP client; Claude Code (plugin: skill + server) | `validonce-mcp` (npm); `/plugin install validonce@validonce` | [Migrate with an agent](docs/agentic-migration.md) |
+
+## Migrate an existing project with an agent
+
+Already have cross-field checks in FluentValidation, Pydantic, Zod, yup or Angular? A coding agent can move them to validonce and prove that nothing changed:
+
+```text
+/plugin marketplace add metatoy/validonce      # Claude Code: the skill and the MCP server together
+/plugin install validonce@validonce
+
+claude mcp add --transport stdio validonce -- npx -y validonce-mcp   # or just the MCP server, in any MCP client
+```
+
+The agent finds each check, rewrites it as a validonce rule, and runs a **differential test**: your old validator and validonce on thousands of generated edge-case inputs must accept and reject exactly the same. Every run is graded by code, not by a model. In 49 graded runs (including a hold-out of three public apps), no migration changed what the validator accepts or rejects. Details and results: [docs/agentic-migration.md](docs/agentic-migration.md).
 
 ## Install
 
