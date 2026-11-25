@@ -91,6 +91,84 @@ describe("generate_code", () => {
     expect(ng.source).toContain('"Signup.compare.end"');
   });
 
+  it("go: struct with json tags, MustBuild rules, Huma note", () => {
+    const r = generateCode({ ...base, target: "go" });
+    expect(r.complete).toBe(true);
+    expect(r.source).toContain("package models");
+    expect(r.source).toContain("type Signup struct {");
+    expect(r.source).toContain('`json:"company,omitempty"`');
+    expect(r.source).toContain('`json:"start,omitempty" format:"date"`');
+    expect(r.source).toContain('validonce.When(validonce.Eq("plan", "pro")).Require("company", validonce.Key("rules.company_required"))');
+    expect(r.source).toContain('validonce.Cmp("end").Ge(validonce.Ref("start"), validonce.Key("rules.end_after_start"))');
+    expect(r.source).toContain('validonce.Params(map[string]any{"min": 1})');
+    expect(r.source).toContain("var SignupRules = validonce.MustBuild[Signup](");
+    expect(r.notes.join(" ")).toContain("humaonce.Transform(SignupRules, s)");
+    expect(r.names).toMatchObject({ company: "Company" });
+  });
+
+  it("go: a wire name Go cannot tag is reported as unexpressible", () => {
+    const rules = { version: 1, rules: [{ id: "A.1", kind: "at_least_one_of", fields: ['a"b', "c"], message: { key: "k" } }] };
+    const r = generateCode({ rules, target: "go", modelName: "A" });
+    expect(r.complete).toBe(false);
+    expect(r.unexpressible[0]!.ruleId).toBe("A.1");
+    expect(r.source).toContain("// NOT EXPRESSIBLE");
+  });
+
+  it("java: record, rules class and files", () => {
+    const r = generateCode({ ...base, target: "java", namespace: "app" });
+    expect(r.files!.map((f) => f.path)).toEqual(["Signup.java", "SignupRules.java"]);
+    expect(r.source).toContain("@ValidonceRules(SignupRules.class)");
+    expect(r.source).toContain("public record Signup(");
+    expect(r.source).toContain("LocalDate start");
+    expect(r.source).toContain("package app;");
+    expect(r.source).toContain('.requiredWhen("company", Condition.eq("plan", "pro")).key("rules.company_required")');
+    expect(r.source).toContain('.compare("end", Op.GE, "start").key("rules.end_after_start")');
+    expect(r.source).toContain('.compareValue("quantity", Op.GE, 1).key("rules.quantity_min").param("min", 1)');
+    expect(r.notes.join(" ")).toContain("Kotlin");
+  });
+
+  it("java: snake_case wire names get @JsonProperty, ids that differ are written", () => {
+    const rules = { version: 1, rules: [{ id: "custom", kind: "at_least_one_of", fields: ["max_qty", "min_qty"], message: { key: "k" } }] };
+    const r = generateCode({ rules, target: "java", modelName: "A" });
+    expect(r.source).toContain('@JsonProperty("max_qty") String maxQty');
+    expect(r.source).toContain('.atLeastOneOf("max_qty", "min_qty").key("k").id("custom")');
+  });
+
+  it("typescript-rules: fastify and nestjs", () => {
+    const f = generateCode({ ...base, target: "typescript-rules" });
+    expect(f.source).toContain('import { withRules } from "validonce/fastify";');
+    expect(f.source).toContain('when(F.plan.eq("pro")).require(F.company, { key: "rules.company_required", id: "Signup.required_when.company" })'.replace(', id: "Signup.required_when.company"', ""));
+    expect(f.source).toContain('F.end.ge(F.start, { key: "rules.end_after_start", type: "date" })');
+    expect(f.source).toContain('{ $id: "Signup" }');
+    const n = generateCode({ ...base, target: "typescript-rules", framework: "nestjs" });
+    expect(n.source).toContain("@ValidonceRules(rules)");
+    expect(n.source).toContain("export class Signup {");
+    expect(n.source).toContain("@IsOptional()");
+    expect(n.notes.join(" ")).toContain("ValidonceValidationPipe");
+  });
+
+  it("vue: composable and single-file component", () => {
+    const r = generateCode({ ...base, target: "vue", includeModel: true });
+    expect(r.files!.map((f) => f.path)).toEqual(["useSignupForm.ts", "SignupForm.vue"]);
+    expect(r.source).toContain("toVeeSchema(schema)");
+    expect(r.source).toContain("watchDependents(form, rules);");
+    expect(r.source).toContain('import { isoDate, withRules } from "validonce/zod";');
+    expect(r.files![1]!.source).toContain('v-model.number="quantity"');
+    expect(r.files![1]!.source).toContain("{{ errors.company }}");
+  });
+
+  it("dom: attachRules and matching markup", () => {
+    const r = generateCode({ ...base, target: "dom" });
+    expect(r.source).toContain('attachRules(form, rules, { messages })');
+    const html = r.files!.find((f) => f.language === "html")!.source;
+    expect(html).toContain('<form id="signup" novalidate>');
+    for (const w of ["plan", "company", "start", "end", "quantity"]) {
+      expect(html).toContain(`name="${w}"`);
+      expect(html).toContain(`data-validonce-error="${w}"`);
+    }
+    expect(html).toContain('<input type="date" name="start" />');
+  });
+
   it("rejects an invalid rule set", () => {
     expect(() => generateCode({ rules: { version: 2, rules: [] }, target: "csharp" })).toThrow(/Invalid rule set/);
   });

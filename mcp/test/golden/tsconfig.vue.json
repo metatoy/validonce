@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.targets.json",
+  "compilerOptions": { "jsx": "preserve" },
+  "include": ["out-targets/ts/**/*.ts", "out-targets/ts/**/*.vue", "env.d.ts"],
+  "exclude": ["out-targets/ts/export-entry.ts"]
+}

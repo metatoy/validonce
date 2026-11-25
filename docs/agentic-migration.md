@@ -22,14 +22,51 @@ The agent proposes the change and you review the diff. Nothing is committed for 
 claude mcp add --transport stdio validonce -- npx -y validonce-mcp
 ```
 
-For other agents that read Agent Skills, copy `skills/validonce-migrate/` into the folder your agent reads skills from, and add the server with your agent's MCP configuration. We only claim support for agents we have tested (see "What has been tested" below).
+### VS Code and GitHub Copilot
+
+One click: [Install in VS Code](vscode:mcp/install?%7B%22name%22%3A%22validonce%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22validonce-mcp%22%5D%7D) (opens VS Code and asks you to confirm). Or add `.vscode/mcp.json` to the project:
+
+```json
+{
+  "servers": {
+    "validonce": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "validonce-mcp"]
+    }
+  }
+}
+```
+
+Then pick **Agent** mode in Copilot Chat and enable the `validonce` tools. Workspace folders are passed to the server as its roots.
+
+### Cursor
+
+Add `.cursor/mcp.json` (or `~/.cursor/mcp.json` for every project):
+
+```json
+{
+  "mcpServers": {
+    "validonce": {
+      "command": "npx",
+      "args": ["-y", "validonce-mcp"]
+    }
+  }
+}
+```
+
+### Any other MCP client (generic stdio)
+
+Run `npx -y validonce-mcp` as a stdio server (Node 20 or later). The command is `npx`, the arguments are `-y validonce-mcp`, and there is nothing to configure: it needs no network, no API key and no environment variables. A client that sends no workspace roots gets the directory the server was started in.
+
+The server works with any MCP client. For other agents that read Agent Skills, copy `skills/validonce-migrate/` into the folder your agent reads skills from, and add the server with your agent's MCP configuration. We only claim **support** for agents that pass the graded evals (see "What has been tested" below); the configurations above are "works with any MCP client", not a support claim.
 
 ## What happens
 
-1. **Inventory.** The agent finds cross-field checks: FluentValidation `When`/`Must`/`GreaterThanOrEqualTo(x => x.Other)`, Pydantic `@model_validator`, Zod `refine`/`superRefine`, Angular group validators, yup `.when`/`.test`.
+1. **Inventory.** The agent finds cross-field checks: FluentValidation `When`/`Must`/`GreaterThanOrEqualTo(x => x.Other)`, Pydantic `@model_validator`, Zod `refine`/`superRefine`, Angular group validators, yup `.when`/`.test`, go-playground/validator tags, Jakarta Bean Validation, class-validator, Joi `.when`/`.custom`, VeeValidate. Kubernetes CRDs with CEL (`x-kubernetes-validations`) take a separate path: `translate_kubernetes` translates them and leaves the CEL as it is.
 2. **Classify.** Each check becomes one of the five rule kinds, or stays hand-written with a one-line reason. Arithmetic between fields, a format that depends on another field, async or database checks, rules on nested objects, and comparisons that rely on type coercion stay hand-written.
 3. **Propose and check.** The agent writes the rules and runs `check_rules` against your OpenAPI schema (field names, types, duplicate ids).
-4. **Generate.** `generate_code` writes the server code (C# `ValidonceValidator<T>` or Python `ValidonceModel`) and the client wiring (`withRules`, react-hook-form, Angular).
+4. **Generate.** `generate_code` writes the server code (C# `ValidonceValidator<T>` or Python `ValidonceModel`) and the client wiring (`withRules`, react-hook-form, Angular). `suggest_client_wiring` returns the set-up for React, Angular, Vue or plain HTML, including the kubb, Hey API and orval plugin configs, the dependent-field helpers and the server-error mapping.
 5. **Prove.** `generate_inputs` creates test inputs biased toward the edges the rules care about: every combination of blank and filled fields, equal values, ±1, date edges and time-zone offsets. With your consent, the agent runs your **old** validator on them in a sandbox (scripts in `skills/validonce-migrate/scripts/`). `compare_results` compares the old answers with validonce's.
 6. **Migrate only what passed.** A rule is migrated only when the old and new validators accept and reject exactly the same inputs, and the rule was triggered both ways often enough to count.
 7. **Report and hand over.** The agent writes a migration report (found, migrated, proven, kept and why, the commands to re-run the proof) and leaves the diff for you.

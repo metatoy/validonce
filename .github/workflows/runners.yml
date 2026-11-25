@@ -25,6 +25,16 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: 8.14.3
       - run: pnpm install --frozen-lockfile
       - name: Build validonce (the reference evaluate)
         run: pnpm build
@@ -34,6 +44,9 @@ jobs:
         working-directory: testbeds/before/pydantic
       - name: Each runner matches validonce evaluate on every input (zod, yup, angular, pydantic, fluentvalidation)
         run: node check.mjs
+        working-directory: testbeds/before
+      - name: The Plan I runners match validonce on every generated input (go-playground, Jakarta, class-validator, Joi, yup) for Signup and Contact
+        run: node check-sources.mjs
         working-directory: testbeds/before
       - name: A fixture that does I/O on import fails with the clear message
         run: |

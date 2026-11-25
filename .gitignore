@@ -37,3 +37,4 @@ examples/go-app/go-app
 # Angular CLI build cache
 .angular/
 **/test-results/
+mcp/test/golden/out-targets/

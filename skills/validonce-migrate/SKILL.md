@@ -1,13 +1,13 @@
 ---
 name: validonce-migrate
-description: Migrate hand-written cross-field validation (FluentValidation When/Must, Pydantic model_validator, Zod refine/superRefine, Angular group validators, yup when/test) to validonce rules written once on the server, prove nothing changed with a differential check, and remove the duplicated client checks. Use when asked to adopt validonce, share validation rules between API and browser, or deduplicate server and client validation.
+description: Migrate hand-written cross-field validation (FluentValidation When/Must, Pydantic model_validator, Zod refine/superRefine, Angular group validators, yup when/test, go-playground, Jakarta, class-validator, Joi, VeeValidate) and Kubernetes CEL rules to validonce rules written once on the server, prove nothing changed with a differential check, and remove the duplicated client checks. Use when asked to adopt validonce, share validation rules between API and browser, or deduplicate server and client validation.
 license: Apache-2.0
 compatibility: Needs the validonce-mcp MCP server (npx -y validonce-mcp). Running the old validator needs Node 22 (Zod, yup, Angular), the project's Python venv (Pydantic) or the .NET SDK (FluentValidation). Works in Claude Code and any agent that supports Agent Skills and MCP.
 metadata:
   author: Metatoy LLC
   version: "0.1.0"
   homepage: https://github.com/metatoy/validonce
-allowed-tools: mcp__validonce__read_openapi_rules mcp__validonce__check_rules mcp__validonce__evaluate mcp__validonce__generate_code mcp__validonce__generate_inputs mcp__validonce__compare_results Read Grep Glob
+allowed-tools: mcp__validonce__read_openapi_rules mcp__validonce__check_rules mcp__validonce__evaluate mcp__validonce__generate_code mcp__validonce__generate_inputs mcp__validonce__compare_results mcp__validonce__translate_kubernetes mcp__validonce__suggest_client_wiring Read Grep Glob
 ---
 
 # Migrate validation to validonce
@@ -65,8 +65,14 @@ Find where cross-field checks live. Detect the stack(s) from manifests, then gre
 | Zod | `*.schema.ts`, `schemas/`, forms | `.refine(`, `.superRefine(`, `.check(`, `ctx.addIssue` |
 | Angular | components, `validators/` | `ValidatorFn`, `AbstractControl`, `group.get(`, `setErrors(`, `FormGroup(` with `validators:` |
 | yup | forms, `schema.ts` | `.when(`, `.test(`, `this.parent`, `ref(` |
+| go-playground/validator | Go structs with `validate:"..."` tags | `required_if`, `required_with`, `required_without`, `eqfield`, `gtfield`, `gtefield`, `ltfield`, `excluded_if`, `RegisterStructValidation` |
+| Jakarta Bean Validation | Java/Kotlin beans, class-level constraints | `@AssertTrue`, `ConstraintValidator`, `@ScriptAssert`, `@GroupSequence`, `isValid(` comparing two fields |
+| class-validator | NestJS DTOs, `*.dto.ts` | `@ValidateIf`, `@Validate(`, `ValidatorConstraint`, `@IsNotEmpty` with `ValidateIf`, `@Equals` |
+| Joi | `*.schema.js/ts`, route validators | `Joi.when(`, `.when(`, `Joi.ref(`, `.or(`, `.xor(`, `.and(`, `.custom(` |
+| VeeValidate | Vue forms | `defineRule`, `useForm({ validationSchema`, `useFieldValue`, `@vee-validate/rules` with `target` |
+| Kubernetes CRDs | `*.yaml` CRDs, operator manifests | `x-kubernetes-validations`, `rule:` with `self.` (CEL) |
 
-Note the **model name, wire field names** (after `[JsonPropertyName]`, Pydantic `alias`, naming policies, camelCase) and where the same rule is repeated on the client. Check whether the project already serves an OpenAPI document; `read_openapi_rules` shows existing `x-validonce` rules and the schemas without any. Reference guides: `references/fluentvalidation.md`, `pydantic.md`, `zod.md`, `angular.md`, `yup.md`.
+Note the **model name, wire field names** (after `[JsonPropertyName]`, Pydantic `alias`, naming policies, camelCase) and where the same rule is repeated on the client. Check whether the project already serves an OpenAPI document; `read_openapi_rules` shows existing `x-validonce` rules and the schemas without any. Reference guides: `references/fluentvalidation.md`, `pydantic.md`, `zod.md`, `angular.md`, `yup.md`, `go-playground.md`, `jakarta.md`, `class-validator.md`, `joi.md`, `vee-validate.md`, `kubernetes.md`.
 
 ### 2. Classify
 
@@ -75,6 +81,8 @@ For each check decide: one of the five kinds, or "does not map" (table above). W
 Field-level checks (type, length, enum, regex, plain required) are **not** validonce rules: they stay in the schema and already travel as JSON Schema. A single-field bound (`quantity >= 1`) may stay field-level (JSON Schema `minimum`) or become a `compare` with a constant value; either is fine, so say which you chose in the report.
 
 ### 3. Propose server rules
+
+For go-playground, Jakarta, class-validator, Joi and VeeValidate, read the matching `references/<name>.md` first (`go-playground.md`, `jakarta.md`, `class-validator.md`, `joi.md`, `vee-validate.md`): each lists what maps to which kind and the traps. **Kubernetes CRDs take their own branch (below): translate them, do not hand-write rules.**
 
 Write the rule set as JSON: `{ "version": 1, "rules": [...] }`. Give each rule a stable `id` (`Model.kind.field` is the default), a `message.key` (reuse existing translation keys when the project has them; put values the message needs in `message.params`), `path` when the old error was reported on a different field than the rule's default, and `server_only: true` for a rule the browser must not run.
 
@@ -124,6 +132,25 @@ Only now, and only for proven rules:
 - Client: replace the duplicated client checks with `withRules(...)` (Zod, react-hook-form), `validonceGroupValidator(...)` (Angular Reactive Forms) or `validonce wrap` (orval/kubb-generated Zod). `generate_code` with `target: "zod" | "react-hook-form" | "angular-reactive"` writes the wiring. Prefer reading rules from the API (`rulesFromOpenApi`) or `validonce extract` over pasting them.
 - Re-run the project's own tests and build **after your last edit**, and import or build the migrated model once more. Report the results; do not "fix" unrelated failures.
 - Error locations: a rule reports on its field (or `path`, which must name a real field of the model). An old model-level error (`__root__`, empty `loc`) moving onto the field is an improvement; never point a rule at a made-up field to keep the old location.
+
+### 10b. Wire the clients
+
+For each frontend that used the removed client checks:
+
+- **Project generates its client** (kubb, Hey API or orval in the config or `package.json`): do not paste rules. Call `suggest_client_wiring` with `frontend` (`react`, `angular`, `vue`, `dom`), `generator` and `schemaName`, add the plugin from the result to the generator config, and change the form's import to the generated `validonce.gen.ts` as the snippet shows. `read_openapi_rules` lists `generatorNames` per schema, which tells you the export each style will match.
+- **No generator:** call `suggest_client_wiring` without `generator` and apply the runtime wiring (`rulesFromOpenApi` + `withRules`, `validonceGroupValidator`, or `attachRules`), the dependent-field helper (`registerDeps`, `watchDependents`) and the server-error mapping. Use the snippets as returned; do not improvise names or imports.
+- Tell the human which packages to install (the result has an `install` line). Do not run the install yourself.
+- Re-run the project's build and form tests after the last edit.
+
+### Kubernetes branch (CRDs with CEL)
+
+Use this instead of steps 2 to 9 for `x-kubernetes-validations`. Read `references/kubernetes.md`.
+
+1. Call `translate_kubernetes` with `path` (a CRD manifest as JSON, or a Kubernetes OpenAPI v3 document; convert YAML to JSON first) or `document`.
+2. **Do not rewrite the CEL.** The original `x-kubernetes-validations` stay as they are; the tool adds `x-validonce` beside them. The API server keeps enforcing the CEL.
+3. Read the `report`: `translated` rules run in the browser; `server_only` rules (with a reason) stay server-side and show up through the dry-run error mapping. Do not hand-write rules for the `server_only` ones, and mention them in the report.
+4. Where a rule is left untranslated only because a guard failed (for example a text field without `minLength: 1`, an integer without `format: int32`), suggest the schema change to the human; do not edit the CRD yourself.
+5. The translation is proven in the validonce repo's CI against Kubernetes' own verdicts, so the step 6 to 8 differential check is not repeated here. Then go to step 10b for the client wiring.
 
 ### 11. Hand over
 

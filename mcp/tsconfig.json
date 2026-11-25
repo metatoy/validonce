@@ -20,5 +20,8 @@
   "include": [
     "src",
     "test"
+  ],
+  "exclude": [
+    "test/golden/out-targets"
   ]
 }
