@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Metatoy LLC
 
-import { Component, signal } from "@angular/core";
+import { Component, inject, signal } from "@angular/core";
 import type { RuleSet } from "validonce";
 import { rulesFromOpenApi } from "validonce/openapi";
 import {
@@ -10,7 +10,7 @@ import {
   fetchOpenApi,
   readParams,
 } from "validonce-playground-frame-shared";
-import { ContactForm } from "./contact-form";
+import { ContactForm, RulesStore } from "./contact-form";
 
 @Component({
   selector: "app-root",
@@ -20,8 +20,8 @@ import { ContactForm } from "./contact-form";
       @if (loadError(); as err) {
         <p class="load-error" data-testid="load-error">{{ err }}</p>
       }
-      @if (rules(); as r) {
-        <app-contact-form [rules]="r" [api]="params.api" />
+      @if (rules()) {
+        <app-contact-form [api]="params.api" />
       } @else if (!loadError()) {
         <p>Loading rules…</p>
       }
@@ -31,6 +31,7 @@ import { ContactForm } from "./contact-form";
 export class App {
   protected readonly params = readParams();
   protected readonly rules = signal<RuleSet | null>(null);
+  private readonly store = inject(RulesStore);
   protected readonly loadError = signal<string | null>(null);
 
   constructor() {
@@ -40,6 +41,7 @@ export class App {
         const rs = rulesFromOpenApi(doc, this.params.schema);
         if (!rs) throw new Error(`no x-validonce rules for ${this.params.schema}`);
         this.rules.set(rs);
+        this.store.rules.set(rs);
         announceReady("angular");
       })
       .catch((e: unknown) => this.loadError.set(String(e)));
