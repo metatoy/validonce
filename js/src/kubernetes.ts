@@ -844,7 +844,6 @@ interface State {
 
 function emitRule(
   st: State,
-  node: Obj,
   entry: Obj,
   cel: string,
   rec: Recognition,
@@ -854,15 +853,11 @@ function emitRule(
   const { schemaName } = st.ctx;
   let serverOnly = false;
   let reason = "translated";
-  let shape: Shape | undefined;
-  let fallback = false;
 
-  if ("reason" in rec) {
-    serverOnly = true;
-    fallback = true;
-    reason = rec.reason;
-  } else {
-    shape = rec.shape;
+  // Unrecognised CEL has no rule shape. It is reported only, never written to x-validonce.
+  if ("reason" in rec) return { outcome: "server_only", reason: rec.reason };
+  const shape = rec.shape;
+  {
     const level = st.ctx.translations?.[rec.row] ?? TRANSLATIONS[rec.row];
     const guard = st.ctx.guards?.[rec.row] ?? GUARDS[rec.row];
     if (level === "drop") {
@@ -872,26 +867,6 @@ function emitRule(
       serverOnly = true;
       reason = `row '${rec.row}' guard rejected the field schemas`;
     }
-  }
-
-  // An unrecognised rule has no shape: carry it as an at_least_one_of placeholder over the fields it
-  // mentions. Clients skip it (server_only); it exists to hold the CEL and to name the fields.
-  if (!shape) {
-    const mentioned = distinct(
-      [...cel.matchAll(/\bself\.([A-Za-z_][A-Za-z0-9_]*)/g)].map(
-        (m) => m[1] as string,
-      ),
-    );
-    const props = isObj(node.properties) ? Object.keys(node.properties) : [];
-    let fields = mentioned.length > 0 ? mentioned : props.slice(0, 2);
-    if (fields.length === 1)
-      fields = [fields[0] as string, fields[0] as string];
-    if (fields.length < 2)
-      return {
-        outcome: "server_only",
-        reason: `${reason} (no field to attach a server_only placeholder to; rule not emitted)`,
-      };
-    shape = { kind: "at_least_one_of", fields };
   }
 
   const id = `k8s.${schemaName}.${shape.kind}.${n}`;
@@ -934,9 +909,7 @@ function emitRule(
   return {
     rule,
     outcome: serverOnly ? "server_only" : "translated",
-    reason: fallback
-      ? `${reason}; kept as an at_least_one_of placeholder`
-      : reason,
+    reason,
   };
 }
 
@@ -972,7 +945,7 @@ function processNode(st: State, node: Obj, pointer: string): void {
         ? recognise(parsed.ast, (name) => fieldInfoOf(node, name))
         : { reason: parsed.reason };
       const { path, note } = pathOf(e.fieldPath);
-      const out = emitRule(st, node, e, cel, rec, path, n);
+      const out = emitRule(st, e, cel, rec, path, n);
       report.outcome = out.outcome;
       report.reason = out.reason;
       if (note) report.notes = [note];

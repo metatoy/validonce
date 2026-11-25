@@ -241,9 +241,10 @@ describe("unrecognised CEL stays server_only", () => {
     expect(entry?.outcome).toBe("server_only");
     expect(entry?.reason).toMatch(reason);
     expect(entry?.cel).toBe(cel);
-    const rule = r.rules[0];
-    expect(rule?.server_only).toBe(true);
-    expect(rule?.message.params?.cel).toBe(cel);
+    // unrecognised CEL is reported only; nothing goes into x-validonce or the catalog
+    expect(r.rules).toEqual([]);
+    expect(entry?.ruleId).toBeUndefined();
+    expect(r.catalog).toEqual({});
   });
 
   test("parseCel never throws", () => {
@@ -263,30 +264,6 @@ describe("unrecognised CEL stays server_only", () => {
     ]) {
       expect(parseCel(junk).ok).toBe(false);
     }
-  });
-
-  test("a placeholder names the fields the CEL mentions, and pads a single one", () => {
-    const two = run("self.a + self.b > 3").rules[0];
-    expect(two).toMatchObject({ kind: "at_least_one_of", fields: ["a", "b"] });
-    const one = run("self.a.size() > 3").rules[0];
-    expect(one).toMatchObject({ kind: "at_least_one_of", fields: ["a", "a"] });
-    const none = run("size(self) > 3").rules[0];
-    expect(none).toMatchObject({ fields: ["plan", "company"] });
-  });
-
-  test("no field to attach to: the rule is reported but not emitted", () => {
-    const r = translateKubernetesSchema(
-      {
-        type: "object",
-        "x-kubernetes-validations": [{ rule: "size(self) > 1" }],
-      },
-      { schemaName: "S", translations: allExact },
-    );
-    expect(r.report[0]?.outcome).toBe("server_only");
-    expect(r.report[0]?.reason).toMatch(/not emitted/);
-    expect(
-      (r.schema as Record<string, unknown>)["x-validonce"],
-    ).toBeUndefined();
   });
 
   test("a rule on a non-object node is reported, not emitted", () => {
@@ -412,10 +389,12 @@ describe("messages, ids and paths", () => {
   });
 
   test("a server_only rule keeps its static message key and carries the CEL", () => {
-    const r = run("self.a + 1 > 2");
-    expect(r.rules[0]?.message).toEqual({
+    const r = translateKubernetesSchema(node("self.max > 1"), {
+      schemaName: "S",
+    });
+    expect(rulesOf(r.schema)[0]?.message).toEqual({
       key: "k8s.S.0",
-      params: { cel: "self.a + 1 > 2" },
+      params: { cel: "self.max > 1" },
     });
   });
 
@@ -494,9 +473,8 @@ describe("schema walking", () => {
     }
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toEqual([
-      "k8s.Sig.at_least_one_of.0", // root rule: placeholder (bare has())
+      // rules 0 (bare has()) and 2 (arithmetic) are unrecognised: reported, not emitted
       "k8s.Sig.compare.1",
-      "k8s.Sig.at_least_one_of.2", // arithmetic placeholder
       "k8s.Sig.at_least_one_of.3",
       "k8s.Sig.all_or_none.4",
     ]);
@@ -509,16 +487,6 @@ describe("schema walking", () => {
     ]);
     expect(r.catalog["k8s.Sig.1"]).toBe("max below min");
     expect(r.catalog["k8s.Sig.3"]).toBe("x or y");
-  });
-
-  test("the root has(self.spec) with no other field to name cannot be a placeholder", () => {
-    const r = translateKubernetesSchema(original(), {
-      schemaName: "Sig",
-      translations: allExact,
-    });
-    // root has one property (`spec`), mentioned once: padded to [spec, spec]
-    const root = rulesOf(r.schema)[0];
-    expect(root).toMatchObject({ server_only: true, fields: ["spec", "spec"] });
   });
 
   test("an existing x-validonce on the node is kept and extended", () => {
