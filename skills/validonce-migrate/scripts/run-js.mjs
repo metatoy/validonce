@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Metatoy LLC
 //
-// validonce-migrate runner: run a Zod schema, a yup schema or an Angular group
-// validator over wire-JSON inputs, in a locked-down child process.
+// validonce-migrate runner: run a Zod schema, a yup schema, an Angular group
+// validator, a class-validator class or a Joi schema over wire-JSON inputs, in a locked-down child process.
 //
-//   node run-js.mjs <entry-module> <exportName> <inputs.jsonl> <out.jsonl> [--kind zod|yup|angular]
+//   node run-js.mjs <entry-module> <exportName> <inputs.jsonl> <out.jsonl> [--kind zod|yup|angular|class-validator|joi]
 //
 // Run it from a scratch directory, with the user's consent. `esbuild` must be
 // resolvable from the current directory or from this script (the user's project
@@ -27,6 +27,16 @@
 //           control (keys with no control are ignored), runs updateValueAndValidity,
 //           then reads errors: accept = group.valid; paths = names of controls with
 //           errors, plus "__root__" if only the group itself has errors.
+//   class-validator
+//           A CLASS decorated with class-validator (and class-transformer) decorators,
+//           as in NestJS DTOs. The runner does plainToInstance(Class, input), then
+//           validate(instance); paths = each error's `property` (the TypeScript
+//           property name: see the @Expose({ name }) caveat in references/class-validator.md).
+//           The module is bundled by esbuild with experimentalDecorators on; put
+//           `import "reflect-metadata"` in the module if class-transformer needs it.
+//   joi     a Joi schema. Runs schema.validate(input, { abortEarly: false });
+//           paths = first segment of each details[].path (Joi's defaults: convert on,
+//           unknown keys rejected, so list every wire field in the schema).
 //           (Extract the ValidatorFn and control list into a small module if the
 //           component file imports Angular DI/DOM; the module must not do I/O.)
 //
@@ -60,9 +70,9 @@ if (ki >= 0) {
   kind = argv[ki + 1];
   argv.splice(ki, 2);
 }
-if (argv.length !== 4 || !["zod", "yup", "angular"].includes(kind)) {
+if (argv.length !== 4 || !["zod", "yup", "angular", "class-validator", "joi"].includes(kind)) {
   console.error(
-    "usage: run-js.mjs <entry-module> <exportName> <inputs.jsonl> <out.jsonl> [--kind zod|yup|angular]",
+    "usage: run-js.mjs <entry-module> <exportName> <inputs.jsonl> <out.jsonl> [--kind zod|yup|angular|class-validator|joi]",
   );
   process.exit(2);
 }
@@ -129,6 +139,28 @@ const DRIVER = {
       if (!paths.length && g.errors) paths.push("__root__");
       return { accept: !g.invalid && !paths.length, paths };
     }`,
+  "class-validator": `
+    import { plainToInstance } from "class-transformer";
+    import { validate } from "class-validator";
+    const C = (await import("<<ENTRY>>"))["<<EXPORT>>"];
+    export async function run(input) {
+      const errs = await validate(plainToInstance(C, input));
+      const paths = [];
+      for (const e of errs) if (!paths.includes(e.property)) paths.push(e.property);
+      return { accept: !errs.length, paths };
+    }`,
+  joi: `
+    const r = (await import("<<ENTRY>>"))["<<EXPORT>>"];
+    export async function run(input) {
+      const res = r.validate(input, { abortEarly: false });
+      if (!res.error) return { accept: true, paths: [] };
+      const paths = [];
+      for (const d of res.error.details) {
+        const p = d.path && d.path.length ? String(d.path[0]) : "__root__";
+        if (!paths.includes(p)) paths.push(p);
+      }
+      return { accept: false, paths };
+    }`,
 }[kind];
 
 const PRELUDE = `for (const k of ["fetch","WebSocket","XMLHttpRequest","EventSource"]) { try { delete globalThis[k]; } catch (e) {} }`;
@@ -148,7 +180,7 @@ for (const line of buf.split("\\n")) {
 process.stdout.write(out.join("\\n") + (out.length ? "\\n" : ""));
 `;
 
-const ALLOWED = /^(zod|yup|rxjs|validonce|@angular\/[^/]+)(\/.*)?$/;
+const ALLOWED = /^(zod|yup|joi|class-validator|class-transformer|reflect-metadata|rxjs|validonce|@angular\/[^/]+)(\/.*)?$/;
 const plugin = {
   name: "validonce-runner",
   setup(b) {
@@ -167,6 +199,8 @@ const plugin = {
       // Pure-JS helpers of the allowed libraries (yup -> property-expr, ...) are
       // bundled; node builtins and anything the user's own code imports are stubbed.
       const builtin = a.path.startsWith("node:") || builtinModules.includes(a.path.split("/")[0]);
+      // Joi's @hapi/address parses URLs; `url` and `util` are pure computation (no I/O), so they are the only builtins a library may import.
+      if (/^(node:)?(url|util)$/.test(a.path) && /[\\/]node_modules[\\/]/.test(a.importer)) return null;
       if (!builtin && /[\\/]node_modules[\\/]/.test(a.importer)) return null;
       return { path: a.path, namespace: "stub" };
     });
@@ -187,7 +221,8 @@ try {
     plugins: [plugin],
     logLevel: "error",
     absWorkingDir: dirname(entry),
-    banner: { js: "// validonce runner bundle (generated)" },
+    tsconfigRaw: { compilerOptions: { experimentalDecorators: true, useDefineForClassFields: false } },
+    banner: { js: "// validonce runner bundle (generated)\nimport { createRequire as __vo_cr } from \"node:module\"; const require = __vo_cr(import.meta.url);" },
   });
 } catch (e) {
   console.error(`validonce runner: cannot bundle ${entryName}: ${e.message}`);
@@ -210,7 +245,7 @@ const child = spawnSync(process.execPath, [...flags, bundle], {
 });
 if (child.status !== 0) {
   const lines = (child.stderr || "").split("\n");
-  const msg = lines.find((l) => l.includes("validonce runner:")) ?? lines.find((l) => l.trim()) ?? "child failed";
+  const msg = lines.find((l) => l.includes("validonce runner:")) ?? lines.find((l) => /^\w*Error\b/.test(l)) ?? lines.find((l) => l.trim()) ?? "child failed";
   const m = /validonce runner: [^"]*/.exec(msg);
   console.error(m ? m[0] : msg);
   process.exit(3);
