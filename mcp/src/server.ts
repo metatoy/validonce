@@ -6,6 +6,8 @@ import { loadDocument, propertiesFor, readRules, requiredFor, checkRules, evalua
 import { createHash } from "node:crypto";
 import { NAMINGS, TARGETS, generateCode } from "./codegen";
 import { compareResults } from "./compare";
+import { translateKubernetes } from "./kubernetes";
+import { FRONTENDS, GENERATORS, suggestClientWiring } from "./wiring";
 import { loadJsonl, writeNewJsonl } from "./files";
 import { DEFAULT_COUNT, MAX_COUNT, generateInputs } from "./generate";
 import {
@@ -195,6 +197,40 @@ export function buildServer(): ValidonceServer {
         naming,
         includeModel,
       }),
+  });
+
+  defineReadOnlyTool(server, {
+    name: "translate_kubernetes",
+    title: "Translate Kubernetes CEL validations to validonce rules",
+    description:
+      "Translates `x-kubernetes-validations` (CEL) in a CRD manifest or a Kubernetes OpenAPI v3 document into validonce rules (`x-validonce`), without rewriting the CEL. Pass either `path` (a JSON file inside the roots) or `document`. Returns the augmented document (for a CRD: { version: schema }; omitted with a per-schema `schemas` summary when it is very large), the message `catalog`, and a per-rule `report`: each CEL rule is `translated` or `server_only`, with the reason. Rules that cannot be translated stay enforced by the API server. Read-only; nothing is written.",
+    input: z.object({
+      path: z.string().optional().describe("Path to a CRD or Kubernetes OpenAPI v3 JSON file inside the roots"),
+      document: obj.optional().describe("The CRD or OpenAPI document as an object"),
+    }),
+    handler: async ({ path, document }) => {
+      if ((path === undefined) === (document === undefined))
+        throw new ToolError("Pass exactly one of `path` or `document`.");
+      const doc = path !== undefined ? await loadDocument(path, await roots()) : document;
+      try {
+        return translateKubernetes(doc);
+      } catch {
+        throw new ToolError("Not a CRD or a Kubernetes OpenAPI document.");
+      }
+    },
+  });
+
+  defineReadOnlyTool(server, {
+    name: "suggest_client_wiring",
+    title: "Suggest client wiring for validonce rules",
+    description:
+      "Returns deterministic, copy-ready snippets (taken from the validonce docs; no network, no file writes) for putting the server's rules on a frontend. `frontend`: react, angular, vue or dom. With `generator` (kubb, hey-api, orval): the validonce plugin config plus the one import change, and the generated export name for `schemaName`. Without it: the runtime wiring (`rulesFromOpenApi` + `withRules`, `validonceGroupValidator`, or `attachRules`). Always includes the dependent-field helper where the frontend needs one (`registerDeps`, `watchDependents`) and the server 422 error mapping.",
+    input: z.object({
+      frontend: z.enum(FRONTENDS),
+      generator: z.enum(GENERATORS).optional().describe("The project's OpenAPI client generator, if it has one"),
+      schemaName: z.string().min(1).max(200).optional().describe("OpenAPI schema name, e.g. Signup (default Signup)"),
+    }),
+    handler: (a) => suggestClientWiring(a),
   });
 
   return server;

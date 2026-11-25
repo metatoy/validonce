@@ -14,6 +14,7 @@ import {
 import { allRulesFromOpenApi, rulesFromOpenApi } from "validonce/openapi";
 import { resolveInsideRoots } from "./roots";
 import { ToolError } from "./sdk";
+import { generatorNames } from "./wiring";
 
 export const MAX_FILE_BYTES = 5_000_000;
 export const MAX_PAYLOADS = 200;
@@ -42,6 +43,8 @@ export interface SchemaRules {
   schema: string;
   ruleCount: number;
   rules: Rule[];
+  /** Export names the kubb, Hey API and orval styles would match for this schema. */
+  generatorNames: { kubb: string; "hey-api": string; orval: string };
 }
 
 export function readRules(document: unknown): {
@@ -62,6 +65,7 @@ export function readRules(document: unknown): {
       schema,
       ruleCount: rs.rules.length,
       rules: rs.rules,
+      generatorNames: generatorNames(schema),
     })),
     schemasWithoutRules: schemas.filter((s) => !(s in all)),
     errors,
