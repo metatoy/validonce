@@ -1,5 +1,7 @@
 # Client: React
 
+> **Try it first:** [the playground with React](https://playground.metatoy.com/?backend=aspnet&frontend=react) runs this frontend live against ASP.NET Core, FastAPI, Fastify, NestJS, Go, Spring Boot or a Kubernetes CRD.
+
 Use the server's rules in a React form with react-hook-form and Zod 4. The same code works against ASP.NET Core and FastAPI.
 
 ```sh
@@ -123,5 +125,9 @@ Then import from `schemas.rules` (`Signup` with orval, `signupSchema` with kubb)
 - `withRules` throws if a rule names a field the schema does not have. This catches renames early.
 - Rules marked `server_only` are skipped in the browser.
 - An empty string counts as blank, like `null`, `[]` and a missing key.
+
+## Migrate with an agent
+
+If the form's cross-field checks are Zod `refine` or `superRefine`, or yup `when` and `test`, an agent can replace them with `withRules`. The [Zod guide](../skills/validonce-migrate/references/zod.md) and [yup guide](../skills/validonce-migrate/references/yup.md) map each check, `generate_code` with targets `zod` and `react-hook-form` writes the wiring, and `suggest_client_wiring` with `frontend: "react"` returns copy-ready snippets (needs `validonce-mcp` 0.2.0 or later). See [Migrating with an agent](agentic-migration.md).
 
 Full working form: [examples/react-form](../examples/react-form/src/App.tsx). Package reference: [js/README.md](../js/README.md).

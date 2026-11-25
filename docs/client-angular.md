@@ -1,5 +1,7 @@
 # Client: Angular
 
+> **Try it first:** [the playground with Angular](https://playground.metatoy.com/?backend=aspnet&frontend=angular) runs this frontend live against ASP.NET Core, FastAPI, Fastify, NestJS, Go, Spring Boot or a Kubernetes CRD.
+
 Use the server's rules in an Angular form. Signal Forms need no adapter. Reactive Forms use one group validator. Both read the rules from the OpenAPI document.
 
 ```sh
@@ -85,5 +87,9 @@ const errors = fieldErrorsFromIssues(issuesFromResponse(body), messages, rules);
 - With Signal Forms and Zod 4, `withRules` is needed instead of `.refine()`: Zod 4 skips object refinements when any field fails, and `withRules` uses an always-run check.
 - `withRules` throws if a rule names a field the schema lacks.
 - A path with no control in a Reactive Form is ignored on the controls; the issue still appears in `group.errors`.
+
+## Migrate with an agent
+
+If the form's cross-field checks are Angular group validators, an agent can replace them with the rules from the server. The [Angular guide](../skills/validonce-migrate/references/angular.md) maps each check, `generate_code` with target `angular-reactive` writes `validonceGroupValidator`, and `suggest_client_wiring` with `frontend: "angular"` returns copy-ready snippets (needs `validonce-mcp` 0.2.0 or later). See [Migrating with an agent](agentic-migration.md).
 
 Package reference: [js/README.md](../js/README.md).

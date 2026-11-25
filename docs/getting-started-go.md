@@ -83,4 +83,8 @@ Each failing rule is a field error whose tag is the rule id; `playground.IssuesF
 - Ids default to `TypeName.kind.field`. Pass `ID(...)` on a collision.
 - Release tags for this module are `go/vX.Y.Z`.
 
+## Migrate with an agent
+
+If your cross-field checks are go-playground/validator tags or `RegisterStructValidation` functions, an agent can move them. The [go-playground guide](../skills/validonce-migrate/references/go-playground.md) maps each check to a `validonce.MustBuild[T]` rule set, and `generate_code` with target `go` writes the struct and rules (notes cover Huma and the go-playground adapter). The Go runner runs the old validator on generated inputs. These need `validonce-mcp` 0.2.0 or later. See [Migrating with an agent](agentic-migration.md).
+
 Next: the [React guide](client-react.md) or [Angular guide](client-angular.md). Runnable example: [examples/go-app](../examples/go-app/README.md).

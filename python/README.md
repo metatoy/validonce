@@ -146,6 +146,16 @@ the C# tool and JavaScript); for patterns without characters above U+FFFF they e
 indexes, otherwise convert with `utf16_span_to_py`. `SAFE_REWRITE_IDS` lists the findings whose
 `rewrite` is a drop-in replacement; `FINDINGS` is the whole table.
 
+## Migrate with an agent
+
+To move existing cross-field checks to validonce rules, use the [`validonce-mcp`](https://www.npmjs.com/package/validonce-mcp) MCP server, alone or with the `validonce-migrate` skill in the Claude Code plugin. The agent finds the checks (for a Python project: Pydantic `model_validator`s), writes the rules, and compares your old validator with validonce on generated inputs. It never commits for you.
+
+```sh
+claude mcp add --transport stdio validonce -- npx -y validonce-mcp
+```
+
+In Claude Code, `/plugin marketplace add metatoy/validonce` then `/plugin install validonce@validonce` adds the skill and the server together. Targets for Go, Java, Vue and plain HTML, Kubernetes CEL translation and client wiring need `validonce-mcp` 0.2.0 or later. Details: [Migrating with an agent](https://github.com/metatoy/validonce/blob/main/docs/agentic-migration.md); [server tools](https://github.com/metatoy/validonce/blob/main/mcp/README.md).
+
 ## More
 
 [Getting started with FastAPI](https://github.com/metatoy/validonce/blob/main/docs/getting-started-fastapi.md), the [rule format](https://github.com/metatoy/validonce/blob/main/docs/rule-format-v1.md) and the browser runtime (`npm install validonce zod`): [github.com/metatoy/validonce](https://github.com/metatoy/validonce).

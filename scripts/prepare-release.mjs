@@ -39,6 +39,7 @@ const edits = [
   [".github/ISSUE_TEMPLATE/bug_report.yml", /validonce (\d+\.\d+\.\d+[^,]*),/, `validonce ${next},`],
   ["java/gradle.properties", /^version=(.+)$/m, `version=${next}`],
   ["README.md", /com\.metatoy:validonce-spring:([^"]+)"/, `com.metatoy:validonce-spring:${next}"`],
+  ["java/README.md", /com\.metatoy:validonce-spring:([^"]+)"/, `com.metatoy:validonce-spring:${next}"`],
   ["docs/getting-started-spring.md", /com\.metatoy:validonce-spring:([^"]+)"/, `com.metatoy:validonce-spring:${next}"`],
   ["js/src/kubb.ts", /name: "plugin-validonce", version: "([^"]+)"/, `name: "plugin-validonce", version: "${next}"`],
 ];

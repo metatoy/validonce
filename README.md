@@ -64,7 +64,7 @@ The server always enforces the rules. The browser runs them first to give fast f
 
 ## Migrate an existing project with an agent
 
-Already have cross-field checks in FluentValidation, Pydantic, Zod, yup or Angular? A coding agent can move them to validonce and prove that nothing changed:
+Already have cross-field checks written by hand? A coding agent can move them to validonce and prove that nothing changed. It reads checks in FluentValidation, Pydantic, Zod, yup, Angular, go-playground/validator, Jakarta Bean Validation, class-validator, Joi and VeeValidate. Kubernetes CRDs with CEL rules (`x-kubernetes-validations`) are translated, not rewritten.
 
 ```text
 /plugin marketplace add metatoy/validonce      # Claude Code: the skill and the MCP server together
@@ -73,7 +73,7 @@ Already have cross-field checks in FluentValidation, Pydantic, Zod, yup or Angul
 claude mcp add --transport stdio validonce -- npx -y validonce-mcp   # or just the MCP server, in any MCP client
 ```
 
-The agent finds each check, rewrites it as a validonce rule, and runs a **differential test**: your old validator and validonce on thousands of generated edge-case inputs must accept and reject exactly the same. Every run is graded by code, not by a model. In 49 graded runs (including a hold-out of three public apps), no migration changed what the validator accepts or rejects. Details and results: [docs/agentic-migration.md](docs/agentic-migration.md).
+The agent finds each check, rewrites it as a validonce rule, and runs a **differential test**: your old validator and validonce on thousands of generated edge-case inputs must accept and reject exactly the same. Every run is graded by code, not by a model. The 49 graded runs covered FluentValidation, Pydantic, Zod, yup and Angular (our own examples) and three public apps (.NET/FluentValidation, FastAPI/Pydantic, React/Zod); in them, no migration changed what the validator accepts or rejects. The other sources (go-playground, Jakarta, class-validator, Joi, VeeValidate, Kubernetes CRDs) are not part of those runs: their runners and guides are tested in CI against hand-written fixtures, but no agent has been graded on them. The Go, Java, TypeScript, Vue and plain HTML code targets, `translate_kubernetes` and `suggest_client_wiring` need `validonce-mcp` 0.2.0 or later. Details and results: [docs/agentic-migration.md](docs/agentic-migration.md).
 
 ## Install
 
@@ -188,25 +188,37 @@ More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.m
 
 ## Docs
 
-- [How it works](docs/how-it-works.md)
+The full index is [docs/README.md](docs/README.md).
+
+**Server**
 - [Getting started: ASP.NET Core](docs/getting-started-aspnet.md)
 - [Getting started: FastAPI](docs/getting-started-fastapi.md)
 - [Getting started: Fastify](docs/getting-started-fastify.md)
 - [Getting started: NestJS](docs/getting-started-nestjs.md)
 - [Getting started: Go](docs/getting-started-go.md)
 - [Getting started: Spring Boot](docs/getting-started-spring.md)
-- [Client: React](docs/client-react.md)
-- [Client: Angular](docs/client-angular.md)
-- [Client: plain HTML and web components](docs/client-dom.md)
-- [Client: Vue](docs/client-vue.md)
-- [Generated clients: kubb, Hey API, orval](docs/client-codegen.md)
 - [Kubernetes custom resources](docs/kubernetes.md)
+
+**Client**
+- [React](docs/client-react.md)
+- [Angular](docs/client-angular.md)
+- [Vue](docs/client-vue.md)
+- [Plain HTML and web components](docs/client-dom.md)
+- [Generated clients: kubb, Hey API, orval](docs/client-codegen.md)
 - [Loading rules at runtime](docs/live-rules.md)
-- [How validonce compares](docs/comparison.md)
+
+**AI tooling**
 - [Migrating an existing project with an agent](docs/agentic-migration.md)
+- [MCP server](mcp/README.md)
+- [Skill: validonce-migrate](skills/validonce-migrate/SKILL.md)
+- [AGENTS.md](AGENTS.md) and [llms.txt](llms.txt)
+
+**Reference**
+- [How it works](docs/how-it-works.md)
 - [Rule format v1](docs/rule-format-v1.md)
+- [How validonce compares](docs/comparison.md)
 - [Regex findings](docs/regex-findings.md)
-- Packages: [TypeScript](js/README.md), [Python](python/README.md), [.NET](dotnet/README.md)
+- Packages: [TypeScript](js/README.md), [Python](python/README.md), [.NET](dotnet/README.md), [Go](go/README.md), [Java and Kotlin](java/README.md)
 - [Changelog](CHANGELOG.md)
 - [Security policy](SECURITY.md)
 
@@ -230,13 +242,21 @@ The tool reads an OpenAPI file, so it works for any backend language. The same c
 
 | Path | What |
 |---|---|
-| `docs/` | Guides, the rule format and the regex findings table |
+| `docs/` | Guides, the rule format and the regex findings table (index: [docs/README.md](docs/README.md)) |
 | `conformance/` | Shared test cases every implementation must pass |
 | `dotnet/` | C#: rule types, evaluator, FluentValidation and ASP.NET Core integration |
-| `js/` | TypeScript: evaluator, Zod integration, form helpers |
+| `js/` | TypeScript: evaluator, Zod integration, form helpers, Fastify and NestJS builders, Kubernetes translation, generator plugins |
 | `java/` | Java and Kotlin: rule model, evaluator, builders and the Spring Boot integration (Gradle) |
+| `go/` | Go: rule builders, evaluator, and the Huma and go-playground/validator adapters |
 | `python/` | Python: evaluator, Pydantic integration, regex linter |
-| `examples/` | ASP.NET Core, FastAPI, Fastify, NestJS, Go and Spring Boot backends with the same rules, and the forms that read them |
+| `mcp/` | `validonce-mcp`: the MCP server for agents, its tests and the agent evaluation harness |
+| `skills/` | The `validonce-migrate` agent skill: steps, per-library guides and the old-validator runners (the Claude Code plugin manifest is in `.claude-plugin/`) |
+| `testbeds/` | Hand-written old validators in each source library, and cases that must stay hand-written, used to test the migration proof |
+| `examples/` | ASP.NET Core, FastAPI, Fastify, NestJS, Go and Spring Boot backends with the same rules, the forms that read them, and the playground |
+| `schemas/` | Static files for schemas.metatoy.com; `scripts/build-schemas.mjs` adds the rule-format schemas from `conformance/schema/` |
+| `tools/` | The Kubernetes CEL differential test against the API server's validation |
+| `deploy/` | Docker and Helm files for the demo |
+| `scripts/` | Build, release and demo scripts |
 | `assets/brand/` | Logo, icons and banners (not covered by the code license) |
 
 ## Copyright and license

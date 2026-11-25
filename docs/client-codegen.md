@@ -1,5 +1,7 @@
 # Generated clients: kubb, Hey API, orval
 
+> **Try it first:** [the playground](https://playground.metatoy.com) runs every backend and frontend pairing live in the browser.
+
 If your frontend generates its API client and Zod schemas from OpenAPI, the generated schemas have
 the field rules (types, enums, formats, required) but not the cross-field ones: generators ignore
 `x-validonce`. A validonce plugin fixes that. After each generation run it writes one extra file,
@@ -113,6 +115,10 @@ npx validonce wrap --openapi openapi.json --zod src/gen/schemas.ts -o src/gen/va
   re-exported unchanged with a warning.
 - **Kubernetes.** The plugins read `x-validonce` from any OpenAPI document. A CRD translated with
   `validonce k8s` (see [Kubernetes custom resources](kubernetes.md)) works too.
+
+## Migrate with an agent
+
+`suggest_client_wiring` with `frontend`, `generator` (`kubb`, `hey-api` or `orval`) and optionally `schemaName` returns the plugin config, the one import change and the export name the generator will use. `read_openapi_rules` also lists those export names per schema as `generatorNames`. Both need `validonce-mcp` 0.2.0 or later. See [Migrating with an agent](agentic-migration.md).
 
 Working setups for each generator are in [`examples/codegen-clients`](../examples/codegen-clients).
 CI regenerates them, fails if the committed output changes, and tests that the generated schemas
