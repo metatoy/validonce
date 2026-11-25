@@ -277,6 +277,31 @@ jobs:
           docker logs app | tail -20
           [ "${ok:-}" = 1 ] || { echo "::error::${{ matrix.name }} image did not become healthy"; exit 1; }
 
+  e2e-playground-frames:
+    # The playground's four Contact forms (React, Angular, Vue, web components) against a stub OpenAPI
+    # document and a stub 422: errors under the right fields, the server badge, postMessage events.
+    runs-on: ubuntu-latest
+    env:
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        working-directory: js
+      - name: Build the four frames
+        run: for fw in react angular vue dom; do pnpm --filter "validonce-playground-frame-$fw" build || exit 1; done
+      - name: Install the Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: examples/playground/frames/e2e
+      - name: End-to-end tests
+        run: pnpm --filter validonce-playground-frames-e2e e2e
+
   conformance-schema:
     runs-on: ubuntu-latest
     steps:
