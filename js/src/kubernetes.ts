@@ -53,14 +53,14 @@ export const ROW_IDS: readonly RowId[] = [
  * Part 0 spike marks it. The lead edits this table; tests override it through `TranslateContext`.
  */
 export const TRANSLATIONS: Record<RowId, Level> = {
-  required_when: "drop",
-  "compare.number": "drop",
-  "compare.string": "drop",
-  "compare.date": "drop",
-  "compare.datetime": "drop",
-  at_least_one_of: "drop",
-  exactly_one_of: "drop",
-  all_or_none: "drop",
+  required_when: "guarded",
+  "compare.number": "guarded",
+  "compare.string": "guarded",
+  "compare.date": "guarded",
+  "compare.datetime": "guarded",
+  at_least_one_of: "guarded",
+  exactly_one_of: "guarded",
+  all_or_none: "guarded",
 };
 
 /** What the schema says about one field a rule uses. */
@@ -71,36 +71,173 @@ export interface FieldInfo {
   /** JSON Schema `type` (the first non-null entry of an array type). */
   type?: string;
   format?: string;
-  /** `nullable: true`, or `null` among the types. */
+  /** `nullable: true`, or `null` among the types. Kubernetes' `has()` treats null as absent either way. */
   nullable: boolean;
   /** Listed in the node's `required`. */
   required: boolean;
+  /** The schema has a `default`: the server fills it in before CEL runs. */
+  hasDefault: boolean;
+  /** An `enum` that does not contain `""`. */
+  enumExcludesEmpty: boolean;
   minLength?: number;
   minItems?: number;
+  pattern?: string;
+  minimum?: number;
+  maximum?: number;
 }
 
-/** `presence`: used through `has()`. `value`: its value is compared (operand, or `== literal`). */
-export interface FieldUse {
-  field: FieldInfo;
-  role: "presence" | "value";
-}
-
-/** For a `guarded` row: true when the rule is exact for these fields. */
-export type Guard = (uses: readonly FieldUse[]) => boolean;
+export type LitKind = "int" | "double" | "string" | "bool";
 
 /**
- * A conservative starting guard: every field is declared and not nullable; compared fields are
- * required (CEL errors on an unset operand where validonce skips the comparison); a field used with
- * `has()` can't be present-but-blank (a string needs `minLength` >= 1, an array `minItems` >= 1).
+ * `blank`: the rule reads the field through `has()` (G-blank, no default).
+ * `key`: a condition reads its value with `==`, `!=` or `in` (G-key, literal type).
+ * `operand`: a comparison reads its value (G-missing, plus the compare row's own checks).
  */
-export const defaultGuard: Guard = (uses) =>
-  uses.every(({ field, role }) => {
-    if (!field.known || field.nullable) return false;
-    if (role === "value") return field.required;
-    if (field.type === "string") return (field.minLength ?? 0) >= 1;
-    if (field.type === "array") return (field.minItems ?? 0) >= 1;
-    return field.type !== undefined;
-  });
+export interface FieldUse {
+  field: FieldInfo;
+  role: "blank" | "key" | "operand";
+  /** key: the CEL guards the read with `has()`. operand: the compare is in the has()-guarded form. */
+  selfGuarded?: boolean;
+  /** key: the kinds of literal it is compared with. */
+  literals?: LitKind[];
+}
+
+export interface CompareFacts {
+  op: CompareOp;
+  type: CompareType;
+  /** The has()-guarded form (`!has(a) || !has(b) || a <op> b`). */
+  guarded: boolean;
+  /** Kind of the literal operand, when the right side is a literal. */
+  literal?: LitKind;
+}
+
+export interface GuardInput {
+  row: RowId;
+  uses: readonly FieldUse[];
+  compare?: CompareFacts;
+}
+
+/** For a `guarded` row: `undefined` when the rule is exact for these fields, else the guard that failed. */
+export type Guard = (input: GuardInput) => string | undefined;
+
+const LIT_OF_TYPE: Record<string, LitKind> = {
+  integer: "int",
+  number: "double",
+  string: "string",
+  boolean: "bool",
+};
+
+/** G-blank: the field can't be present-but-blank (`""` or `[]`), and has no default. */
+function gBlank(f: FieldInfo, checkDefault = true): string | undefined {
+  if (!f.known) return `G-blank: field '${f.name}' is not declared`;
+  if (checkDefault && f.hasDefault)
+    return `no default: '${f.name}' has a default, which turns absent into present before CEL runs`;
+  let ok = true;
+  if (f.type === "string")
+    ok =
+      (f.minLength ?? 0) >= 1 ||
+      f.format === "date" ||
+      f.format === "date-time" ||
+      f.enumExcludesEmpty;
+  else if (f.type === "array") ok = (f.minItems ?? 0) >= 1;
+  else if (f.type === undefined) ok = false;
+  return ok
+    ? undefined
+    : `G-blank: '${f.name}' can be "" or [] (needs minLength >= 1 or minItems >= 1)`;
+}
+
+/** G-key: the condition field is always readable, and compared with literals of its own type. */
+function gKey(u: FieldUse): string | undefined {
+  const f = u.field;
+  if (!f.known) return `G-key: field '${f.name}' is not declared`;
+  if (!f.required && !f.hasDefault && !u.selfGuarded)
+    return `G-key: '${f.name}' may be missing (not required, no default, no has() guard in the CEL)`;
+  const want = f.type === undefined ? undefined : LIT_OF_TYPE[f.type];
+  for (const k of u.literals ?? [])
+    if (k !== want)
+      return `literal type '${k}' does not match the type of '${f.name}' (${f.type ?? "unknown"})`;
+  return undefined;
+}
+
+/** True when a `pattern` limits fractional seconds to 3 digits (or the anchored pattern has none). */
+function fractionLimited(pattern: string | undefined): boolean {
+  if (!pattern) return false;
+  const re = /\\\.(?:\\d|\[0-9\])(\{(\d+)(?:,(\d*))?\}|[+*])?/g;
+  let found = false;
+  for (const m of pattern.matchAll(re)) {
+    found = true;
+    const q = m[1];
+    if (q === undefined) continue;
+    if (q === "+" || q === "*") return false;
+    const max =
+      m[3] === undefined
+        ? Number(m[2])
+        : m[3] === ""
+          ? Number.POSITIVE_INFINITY
+          : Number(m[3]);
+    if (!(max <= 3)) return false;
+  }
+  return found || (pattern.startsWith("^") && pattern.endsWith("$"));
+}
+
+const intSafe = (f: FieldInfo) =>
+  f.format === "int32" ||
+  (f.minimum !== undefined &&
+    f.maximum !== undefined &&
+    Math.abs(f.minimum) <= Number.MAX_SAFE_INTEGER &&
+    Math.abs(f.maximum) <= Number.MAX_SAFE_INTEGER);
+
+function gOperand(
+  u: FieldUse,
+  row: RowId,
+  c: CompareFacts | undefined,
+): string | undefined {
+  const f = u.field;
+  if (!f.known) return `field '${f.name}' is not declared`;
+  if (c?.guarded) {
+    if (f.hasDefault)
+      return `no default: '${f.name}' has a default, which turns absent into present before CEL runs`;
+  } else if (!f.required)
+    return `G-missing: '${f.name}' is not required and the CEL does not guard it with has()`;
+  if (row === "compare.string") {
+    const r = gBlank(f, c?.guarded === true);
+    if (r) return r;
+  }
+  if (row === "compare.datetime" && !fractionLimited(f.pattern))
+    return `'${f.name}' needs a pattern limiting fractional seconds to 3 digits (validonce compares at millisecond precision)`;
+  if (row === "compare.number" && f.type === "integer" && !intSafe(f))
+    return `integer '${f.name}' is not bounded within +-2^53 (format int32, or minimum and maximum)`;
+  return undefined;
+}
+
+/**
+ * The spike's guards (tools/k8s-cel-diff/SEMANTICS.md): G-blank, G-key, G-missing, no defaults on
+ * fields read for presence, and the per-row extras (integer range, int/double mixing, date-time
+ * fraction digits).
+ */
+export const defaultGuard: Guard = ({ row, uses, compare }) => {
+  for (const u of uses) {
+    const r =
+      u.role === "blank"
+        ? gBlank(u.field)
+        : u.role === "key"
+          ? gKey(u)
+          : gOperand(u, row, compare);
+    if (r) return r;
+  }
+  if (
+    row === "compare.number" &&
+    compare &&
+    (compare.op === "eq" || compare.op === "ne")
+  ) {
+    const kinds = new Set(uses.map((u) => u.field.type));
+    if (compare.literal)
+      kinds.add(compare.literal === "int" ? "integer" : "number");
+    if (kinds.has("integer") && kinds.has("number"))
+      return "mixed int/double operands only compile for < <= > >=, not ==/!=";
+  }
+  return undefined;
+};
 
 export const GUARDS: Record<RowId, Guard> = {
   required_when: defaultGuard,
@@ -442,22 +579,33 @@ export function parseCel(src: string): CelResult {
 type FieldsKind = "at_least_one_of" | "exactly_one_of" | "all_or_none";
 
 type Shape =
-  | { kind: "required_when"; field: string; when: Condition }
+  | {
+      kind: "required_when";
+      field: string;
+      when: Condition;
+      lits: LitRef[];
+    }
   | {
       kind: "compare";
       left: string;
       op: CompareOp;
       right: { field: string } | { value: string | number };
       type: CompareType;
+      lit?: LitKind;
       /** Written behind has() guards, so a blank side is skipped; presence is what matters. */
       guarded?: boolean;
     }
   | { kind: FieldsKind; fields: string[] };
 
+interface LitRef {
+  field: string;
+  kind: LitKind;
+}
+
 interface Recognised {
   shape: Shape;
   row: RowId;
-  uses: FieldUse[];
+  input: GuardInput;
 }
 
 type Recognition = Recognised | { reason: string };
@@ -499,19 +647,27 @@ function scalar(l: Lit): Scalar {
   return l.v;
 }
 
-function toCondition(ast: CelAst): Condition {
+function litKind(l: Lit): LitKind {
+  if (typeof l.v === "string") return "string";
+  if (typeof l.v === "boolean") return "bool";
+  return l.num === "int" ? "int" : "double";
+}
+
+function toCondition(ast: CelAst, lits: LitRef[]): Condition {
   switch (ast.t) {
     case "has":
       return { present: { field: ast.name } };
     case "not":
-      return neg(toCondition(ast.a));
+      return neg(toCondition(ast.a, lits));
     case "and":
-      return { all: flatten(ast, "and").map(toCondition) };
+      return { all: flatten(ast, "and").map((x) => toCondition(x, lits)) };
     case "or":
-      return { any: flatten(ast, "or").map(toCondition) };
+      return { any: flatten(ast, "or").map((x) => toCondition(x, lits)) };
     case "in":
       if (ast.a.t !== "field")
         return unrec("'in' needs self.<field> on its left");
+      for (const v of ast.vals)
+        lits.push({ field: ast.a.name, kind: litKind(v) });
       return {
         in: { field: ast.a.name, values: ast.vals.map(scalar) },
       };
@@ -529,6 +685,7 @@ function toCondition(ast: CelAst): Condition {
           "condition comparison is not self.<field> against a literal",
         );
       const body = { field: f.name, value: scalar(l) };
+      lits.push({ field: f.name, kind: litKind(l) });
       return ast.op === "==" ? { eq: body } : { ne: body };
     }
     default:
@@ -536,15 +693,65 @@ function toCondition(ast: CelAst): Condition {
   }
 }
 
-function conditionUses(c: Condition, out: Array<[string, FieldUse["role"]]>) {
-  if ("eq" in c) out.push([c.eq.field, "value"]);
-  else if ("ne" in c) out.push([c.ne.field, "value"]);
-  else if ("in" in c) out.push([c.in.field, "value"]);
-  else if ("present" in c) out.push([c.present.field, "presence"]);
-  else if ("absent" in c) out.push([c.absent.field, "presence"]);
-  else if ("all" in c) for (const x of c.all) conditionUses(x, out);
-  else if ("any" in c) for (const x of c.any) conditionUses(x, out);
-  else conditionUses(c.not, out);
+/**
+ * Uses of the fields a condition reads. `has(x)` inside an `&&` that also reads `x == lit` (or `in`),
+ * and `!has(x)` inside an `||` that also reads `x != lit`, is the CEL's own guard: it makes the read
+ * safe and its blank-ness irrelevant, so it adds no G-blank use.
+ */
+function condUses(
+  c: Condition,
+  pres: Set<string>,
+  abs: Set<string>,
+  lits: LitRef[],
+  info: (n: string) => FieldInfo,
+  out: FieldUse[],
+): void {
+  const key = (field: string, selfGuarded: boolean) =>
+    out.push({
+      field: info(field),
+      role: "key",
+      selfGuarded,
+      literals: lits.filter((l) => l.field === field).map((l) => l.kind),
+    });
+  if ("eq" in c) key(c.eq.field, pres.has(c.eq.field));
+  else if ("in" in c) key(c.in.field, pres.has(c.in.field));
+  else if ("ne" in c) key(c.ne.field, abs.has(c.ne.field));
+  else if ("present" in c || "absent" in c) {
+    const f =
+      "present" in c
+        ? c.present.field
+        : (c as { absent: { field: string } }).absent.field;
+    out.push({ field: info(f), role: "blank" });
+  } else if ("all" in c || "any" in c) {
+    const isAll = "all" in c;
+    const kids = isAll
+      ? (c as { all: Condition[] }).all
+      : (c as { any: Condition[] }).any;
+    const here = new Set(isAll ? pres : abs);
+    const guardOnly = new Set<Condition>();
+    for (const k of kids) {
+      const g = isAll
+        ? "present" in k
+          ? k.present.field
+          : undefined
+        : "absent" in k
+          ? k.absent.field
+          : undefined;
+      if (g === undefined) continue;
+      const reads = kids.some((o) =>
+        isAll
+          ? ("eq" in o && o.eq.field === g) || ("in" in o && o.in.field === g)
+          : "ne" in o && o.ne.field === g,
+      );
+      if (reads) {
+        here.add(g);
+        guardOnly.add(k);
+      }
+    }
+    for (const k of kids)
+      if (!guardOnly.has(k))
+        condUses(k, isAll ? here : pres, isAll ? abs : here, lits, info, out);
+  } else condUses(c.not, pres, abs, lits, info, out);
 }
 
 const distinct = (xs: string[]) => [...new Set(xs)];
@@ -610,8 +817,8 @@ function allOrNoneOr(ast: CelAst): string[] | undefined {
   return undefined;
 }
 
-function requiredWhen(field: string, when: Condition): Shape {
-  return { kind: "required_when", field, when };
+function requiredWhen(field: string, when: Condition, lits: LitRef[]): Shape {
+  return { kind: "required_when", field, when, lits };
 }
 
 /** `has(a)` or `has(a) && has(b) && …` -> the field names. */
@@ -647,6 +854,7 @@ function recogniseCondition(
   ast: CelAst,
   info: (n: string) => FieldInfo,
 ): Shape {
+  const lits: LitRef[] = [];
   if (ast.t === "one") return fieldsShape("exactly_one_of", ast.names);
   if (
     ast.t === "cmp" &&
@@ -686,10 +894,10 @@ function recogniseCondition(
     if (has.length === 1 && has[0]?.t === "has") {
       const parts = terms
         .filter((t) => t.t !== "has")
-        .map((t) => neg(toCondition(t)));
+        .map((t) => neg(toCondition(t, lits)));
       const when =
         parts.length === 1 ? (parts[0] as Condition) : { all: parts };
-      return requiredWhen(has[0].name, when);
+      return requiredWhen(has[0].name, when, lits);
     }
     return unrec(
       "disjunction does not match 'condition implies has(self.field)'",
@@ -706,9 +914,9 @@ function recogniseCondition(
     if (notNames && isTrue(a) && isBareCmp(b))
       return guardedCompare(b, notNames, info);
     if (a.t === "has" && isTrue(b))
-      return requiredWhen(a.name, toCondition(ast.c));
+      return requiredWhen(a.name, toCondition(ast.c, lits), lits);
     if (isTrue(a) && b.t === "has")
-      return requiredWhen(b.name, neg(toCondition(ast.c)));
+      return requiredWhen(b.name, neg(toCondition(ast.c, lits)), lits);
     return unrec("conditional does not match 'cond ? has(self.field) : true'");
   }
   return unrec("expression shape is not in the translation table");
@@ -725,19 +933,22 @@ function operand(
 
 function fieldCompareType(f: FieldInfo, viaTimestamp: boolean): CompareType {
   if (!f.known) return unrec(`field '${f.name}' is not declared in the schema`);
-  if (viaTimestamp) {
-    if (
-      f.type !== "string" ||
-      (f.format !== undefined && f.format !== "date-time")
-    )
-      return unrec(
-        `timestamp() on '${f.name}' which is not a date-time string`,
-      );
-    return "datetime";
+  if (f.type === "integer" || f.type === "number") {
+    if (viaTimestamp)
+      return unrec(`timestamp() on '${f.name}', which is not a string`);
+    return "number";
   }
-  if (f.type === "integer" || f.type === "number") return "number";
-  // CEL compares date-time strings as plain strings, not instants, so only timestamp() means datetime.
-  if (f.type === "string") return f.format === "date" ? "date" : "string";
+  if (f.type === "string") {
+    // In Kubernetes CEL a `format: date` / `date-time` string is already a timestamp: timestamp() is
+    // a no-op on it, so the compare type comes from `format`.
+    if (f.format === "date") return "date";
+    if (f.format === "date-time") return "datetime";
+    if (viaTimestamp)
+      return unrec(
+        `timestamp() on '${f.name}', a plain string with no format, is not exact; kept server_only`,
+      );
+    return "string";
+  }
   return unrec(
     `field '${f.name}' (type ${f.type ?? "unknown"}) is not comparable`,
   );
@@ -763,7 +974,6 @@ function recogniseCompare(
   }
   if ("field" in a && "lit" in b) return buildCompare(a, b.lit, op, info);
   if ("field" in a && "field" in b) {
-    if (a.ts !== b.ts) return unrec("timestamp() on only one side");
     const ta = fieldCompareType(info(a.field), a.ts);
     const tb = fieldCompareType(info(b.field), b.ts);
     if (ta !== tb) return unrec(`comparison of ${ta} with ${tb}`);
@@ -796,20 +1006,46 @@ function buildCompare(
         (type !== "date" || /^\d{4}-\d{2}-\d{2}$/.test(v));
   if (!ok || v === null || typeof v === "boolean")
     return unrec(`literal does not match the ${type} field '${f.field}'`);
-  return { kind: "compare", left: f.field, op, right: { value: v }, type };
+  return {
+    kind: "compare",
+    left: f.field,
+    op,
+    right: { value: v },
+    type,
+    lit: litKind(lit),
+  };
 }
 
-function usesOf(shape: Shape, info: (n: string) => FieldInfo): FieldUse[] {
-  const raw: Array<[string, FieldUse["role"]]> = [];
+function inputOf(
+  row: RowId,
+  shape: Shape,
+  info: (n: string) => FieldInfo,
+): GuardInput {
   if (shape.kind === "required_when") {
-    raw.push([shape.field, "presence"]);
-    conditionUses(shape.when, raw);
-  } else if (shape.kind === "compare") {
-    const role = shape.guarded ? "presence" : "value";
-    raw.push([shape.left, role]);
-    if ("field" in shape.right) raw.push([shape.right.field, role]);
-  } else for (const f of shape.fields) raw.push([f, "presence"]);
-  return raw.map(([n, role]) => ({ field: info(n), role }));
+    const uses: FieldUse[] = [{ field: info(shape.field), role: "blank" }];
+    condUses(shape.when, new Set(), new Set(), shape.lits, info, uses);
+    return { row, uses };
+  }
+  if (shape.kind === "compare") {
+    const guarded = shape.guarded === true;
+    const names = [
+      shape.left,
+      ...("field" in shape.right ? [shape.right.field] : []),
+    ];
+    return {
+      row,
+      uses: names.map((n) => ({
+        field: info(n),
+        role: "operand",
+        selfGuarded: guarded,
+      })),
+      compare: { op: shape.op, type: shape.type, guarded, literal: shape.lit },
+    };
+  }
+  return {
+    row,
+    uses: shape.fields.map((n) => ({ field: info(n), role: "blank" })),
+  };
 }
 
 /** `(has(a) ? 1 : 0) + (has(b) ? 1 : 0) + … == 1` (either side), nothing else. */
@@ -844,7 +1080,7 @@ function recognise(ast: CelAst, info: (n: string) => FieldInfo): Recognition {
       shape.kind === "compare"
         ? (`compare.${shape.type}` as RowId)
         : shape.kind;
-    return { shape, row, uses: usesOf(shape, info) };
+    return { shape, row, input: inputOf(row, shape, info) };
   } catch (e) {
     if (e instanceof Unrecognised) return { reason: e.message };
     throw e;
@@ -896,7 +1132,15 @@ function fieldInfoOf(node: Obj, name: string): FieldInfo {
   const props = isObj(node.properties) ? node.properties : {};
   const prop = Object.hasOwn(props, name) ? props[name] : undefined;
   const required = Array.isArray(node.required) && node.required.includes(name);
-  if (!isObj(prop)) return { name, known: false, nullable: false, required };
+  if (!isObj(prop))
+    return {
+      name,
+      known: false,
+      nullable: false,
+      required,
+      hasDefault: false,
+      enumExcludesEmpty: false,
+    };
   const types = Array.isArray(prop.type) ? prop.type : [prop.type];
   const type = types.find((t) => typeof t === "string" && t !== "null");
   const num = (v: unknown) => (typeof v === "number" ? v : undefined);
@@ -907,8 +1151,13 @@ function fieldInfoOf(node: Obj, name: string): FieldInfo {
     format: typeof prop.format === "string" ? prop.format : undefined,
     nullable: prop.nullable === true || types.includes("null"),
     required,
+    hasDefault: Object.hasOwn(prop, "default"),
+    enumExcludesEmpty: Array.isArray(prop.enum) && !prop.enum.includes(""),
     minLength: num(prop.minLength),
     minItems: num(prop.minItems),
+    pattern: typeof prop.pattern === "string" ? prop.pattern : undefined,
+    minimum: num(prop.minimum),
+    maximum: num(prop.maximum),
   };
 }
 
@@ -949,9 +1198,12 @@ function emitRule(
     if (level === "drop") {
       serverOnly = true;
       reason = `row '${rec.row}' is not allowlisted (drop)`;
-    } else if (level === "guarded" && !guard(rec.uses)) {
-      serverOnly = true;
-      reason = `row '${rec.row}' guard rejected the field schemas`;
+    } else if (level === "guarded") {
+      const failure = guard(rec.input);
+      if (failure) {
+        serverOnly = true;
+        reason = `row '${rec.row}': ${failure}`;
+      }
     }
   }
 

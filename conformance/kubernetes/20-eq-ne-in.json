@@ -1,0 +1,1976 @@
+[
+ {
+  "id": "eq.optional.eq",
+  "description": "plan optional; `self.plan == 'pro'` on a missing plan",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan == 'pro') || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "plan=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": "pro"
+    },
+    "note": "plan=MISSING f=\"pro\""
+   },
+   {
+    "data": {
+     "f": "free"
+    },
+    "note": "plan=MISSING f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "plan=\"pro\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "free"
+    },
+    "note": "plan=\"pro\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "free"
+    },
+    "note": "plan=\"free\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "pro"
+    },
+    "note": "plan=\"free\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "free"
+    },
+    "note": "plan=\"free\" f=\"free\""
+   }
+  ]
+ },
+ {
+  "id": "eq.optional.ne",
+  "description": "plan optional; `self.plan != 'pro'` as condition",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan != 'pro') || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "ne": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "plan=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": "pro"
+    },
+    "note": "plan=MISSING f=\"pro\""
+   },
+   {
+    "data": {
+     "f": "free"
+    },
+    "note": "plan=MISSING f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "plan=\"pro\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "free"
+    },
+    "note": "plan=\"pro\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "free"
+    },
+    "note": "plan=\"free\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "pro"
+    },
+    "note": "plan=\"free\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "free"
+    },
+    "note": "plan=\"free\" f=\"free\""
+   }
+  ]
+ },
+ {
+  "id": "eq.optional.in",
+  "description": "plan optional; `self.plan in [...]`",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan in ['pro','team']) || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "in": {
+      "field": "plan",
+      "values": [
+       "pro",
+       "team"
+      ]
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "plan=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": "pro"
+    },
+    "note": "plan=MISSING f=\"pro\""
+   },
+   {
+    "data": {
+     "f": "team"
+    },
+    "note": "plan=MISSING f=\"team\""
+   },
+   {
+    "data": {
+     "f": "free"
+    },
+    "note": "plan=MISSING f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "plan=\"pro\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "team"
+    },
+    "note": "plan=\"pro\" f=\"team\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "free"
+    },
+    "note": "plan=\"pro\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "team"
+    },
+    "note": "plan=\"team\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "team",
+     "f": "pro"
+    },
+    "note": "plan=\"team\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "team",
+     "f": "team"
+    },
+    "note": "plan=\"team\" f=\"team\""
+   },
+   {
+    "data": {
+     "plan": "team",
+     "f": "free"
+    },
+    "note": "plan=\"team\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "free"
+    },
+    "note": "plan=\"free\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "pro"
+    },
+    "note": "plan=\"free\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "team"
+    },
+    "note": "plan=\"free\" f=\"team\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "free"
+    },
+    "note": "plan=\"free\" f=\"free\""
+   }
+  ]
+ },
+ {
+  "id": "eq.guarded.eq",
+  "description": "has() guard makes eq exact",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(has(self.plan) && self.plan == 'pro') || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "plan=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": null
+    },
+    "note": "plan=MISSING f=null"
+   },
+   {
+    "data": {
+     "f": "pro"
+    },
+    "note": "plan=MISSING f=\"pro\""
+   },
+   {
+    "data": {
+     "f": "free"
+    },
+    "note": "plan=MISSING f=\"free\""
+   },
+   {
+    "data": {
+     "plan": null
+    },
+    "note": "plan=null f=MISSING"
+   },
+   {
+    "data": {
+     "plan": null,
+     "f": null
+    },
+    "note": "plan=null f=null"
+   },
+   {
+    "data": {
+     "plan": null,
+     "f": "pro"
+    },
+    "note": "plan=null f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": null,
+     "f": "free"
+    },
+    "note": "plan=null f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "plan=\"pro\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": null
+    },
+    "note": "plan=\"pro\" f=null"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "free"
+    },
+    "note": "plan=\"pro\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "free"
+    },
+    "note": "plan=\"free\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": null
+    },
+    "note": "plan=\"free\" f=null"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "pro"
+    },
+    "note": "plan=\"free\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "free"
+    },
+    "note": "plan=\"free\" f=\"free\""
+   }
+  ]
+ },
+ {
+  "id": "eq.guarded.ne",
+  "description": "ne is true for a blank field in validonce, so the CEL guard is `!has || !=`",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(!has(self.plan) || self.plan != 'pro') || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "ne": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "plan=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": "pro"
+    },
+    "note": "plan=MISSING f=\"pro\""
+   },
+   {
+    "data": {
+     "f": "free"
+    },
+    "note": "plan=MISSING f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "plan=\"pro\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "free"
+    },
+    "note": "plan=\"pro\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "free"
+    },
+    "note": "plan=\"free\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "pro"
+    },
+    "note": "plan=\"free\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "free"
+    },
+    "note": "plan=\"free\" f=\"free\""
+   }
+  ]
+ },
+ {
+  "id": "eq.guarded.in",
+  "description": "in with has() guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(has(self.plan) && self.plan in ['pro','team']) || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "in": {
+      "field": "plan",
+      "values": [
+       "pro",
+       "team"
+      ]
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "plan=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": "pro"
+    },
+    "note": "plan=MISSING f=\"pro\""
+   },
+   {
+    "data": {
+     "f": "team"
+    },
+    "note": "plan=MISSING f=\"team\""
+   },
+   {
+    "data": {
+     "f": "free"
+    },
+    "note": "plan=MISSING f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "plan=\"pro\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "team"
+    },
+    "note": "plan=\"pro\" f=\"team\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "free"
+    },
+    "note": "plan=\"pro\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "team"
+    },
+    "note": "plan=\"team\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "team",
+     "f": "pro"
+    },
+    "note": "plan=\"team\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "team",
+     "f": "team"
+    },
+    "note": "plan=\"team\" f=\"team\""
+   },
+   {
+    "data": {
+     "plan": "team",
+     "f": "free"
+    },
+    "note": "plan=\"team\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "free"
+    },
+    "note": "plan=\"free\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "pro"
+    },
+    "note": "plan=\"free\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "team"
+    },
+    "note": "plan=\"free\" f=\"team\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "free"
+    },
+    "note": "plan=\"free\" f=\"free\""
+   }
+  ]
+ },
+ {
+  "id": "eq.required.eq",
+  "description": "plan listed in required: eq is exact",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan == 'pro') || has(self.f)"
+    }
+   ],
+   "required": [
+    "plan"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "plan=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": "pro"
+    },
+    "note": "plan=MISSING f=\"pro\""
+   },
+   {
+    "data": {
+     "f": "free"
+    },
+    "note": "plan=MISSING f=\"free\""
+   },
+   {
+    "data": {
+     "f": ""
+    },
+    "note": "plan=MISSING f=\"\""
+   },
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "plan=\"pro\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "free"
+    },
+    "note": "plan=\"pro\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": ""
+    },
+    "note": "plan=\"pro\" f=\"\""
+   },
+   {
+    "data": {
+     "plan": "free"
+    },
+    "note": "plan=\"free\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "pro"
+    },
+    "note": "plan=\"free\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "free"
+    },
+    "note": "plan=\"free\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": ""
+    },
+    "note": "plan=\"free\" f=\"\""
+   },
+   {
+    "data": {
+     "plan": ""
+    },
+    "note": "plan=\"\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "",
+     "f": "pro"
+    },
+    "note": "plan=\"\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "",
+     "f": "free"
+    },
+    "note": "plan=\"\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "",
+     "f": ""
+    },
+    "note": "plan=\"\" f=\"\""
+   }
+  ]
+ },
+ {
+  "id": "eq.default.eq",
+  "description": "plan has a default",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string",
+     "default": "free"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan == 'pro') || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {},
+    "note": "plan=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": null
+    },
+    "note": "plan=MISSING f=null"
+   },
+   {
+    "data": {
+     "f": "pro"
+    },
+    "note": "plan=MISSING f=\"pro\""
+   },
+   {
+    "data": {
+     "f": "free"
+    },
+    "note": "plan=MISSING f=\"free\""
+   },
+   {
+    "data": {
+     "plan": null
+    },
+    "note": "plan=null f=MISSING"
+   },
+   {
+    "data": {
+     "plan": null,
+     "f": null
+    },
+    "note": "plan=null f=null"
+   },
+   {
+    "data": {
+     "plan": null,
+     "f": "pro"
+    },
+    "note": "plan=null f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": null,
+     "f": "free"
+    },
+    "note": "plan=null f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "pro"
+    },
+    "note": "plan=\"pro\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": null
+    },
+    "note": "plan=\"pro\" f=null"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "free"
+    },
+    "note": "plan=\"pro\" f=\"free\""
+   },
+   {
+    "data": {
+     "plan": "free"
+    },
+    "note": "plan=\"free\" f=MISSING"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": null
+    },
+    "note": "plan=\"free\" f=null"
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "pro"
+    },
+    "note": "plan=\"free\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "free",
+     "f": "free"
+    },
+    "note": "plan=\"free\" f=\"free\""
+   }
+  ]
+ },
+ {
+  "id": "eq.int.eqlit",
+  "description": "integer field == int literal",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "n": {
+     "type": "integer"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.n == 1) || has(self.f)"
+    }
+   ],
+   "required": [
+    "n"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "n",
+      "value": 1
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "n": 1
+    },
+    "note": "n=1 f=MISSING"
+   },
+   {
+    "data": {
+     "n": 1,
+     "f": "x"
+    },
+    "note": "n=1 f=\"x\""
+   },
+   {
+    "data": {
+     "n": 2
+    },
+    "note": "n=2 f=MISSING"
+   },
+   {
+    "data": {
+     "n": 2,
+     "f": "x"
+    },
+    "note": "n=2 f=\"x\""
+   },
+   {
+    "data": {
+     "n": 1.0
+    },
+    "note": "n=1.0 f=MISSING"
+   },
+   {
+    "data": {
+     "n": 1.0,
+     "f": "x"
+    },
+    "note": "n=1.0 f=\"x\""
+   },
+   {
+    "data": {
+     "n": 0
+    },
+    "note": "n=0 f=MISSING"
+   },
+   {
+    "data": {
+     "n": 0,
+     "f": "x"
+    },
+    "note": "n=0 f=\"x\""
+   },
+   {
+    "data": {
+     "n": 1.5,
+     "f": "x"
+    },
+    "note": "n=1.5 (not an integer)"
+   }
+  ]
+ },
+ {
+  "id": "eq.double.eqint",
+  "description": "number field == int literal",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "d": {
+     "type": "number"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.d == 1) || has(self.f)"
+    }
+   ],
+   "required": [
+    "d"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "d",
+      "value": 1
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "d": 1
+    },
+    "note": "d=1 f=MISSING"
+   },
+   {
+    "data": {
+     "d": 1,
+     "f": "x"
+    },
+    "note": "d=1 f=\"x\""
+   },
+   {
+    "data": {
+     "d": 1.5
+    },
+    "note": "d=1.5 f=MISSING"
+   },
+   {
+    "data": {
+     "d": 1.5,
+     "f": "x"
+    },
+    "note": "d=1.5 f=\"x\""
+   },
+   {
+    "data": {
+     "d": 2
+    },
+    "note": "d=2 f=MISSING"
+   },
+   {
+    "data": {
+     "d": 2,
+     "f": "x"
+    },
+    "note": "d=2 f=\"x\""
+   }
+  ]
+ },
+ {
+  "id": "eq.double.eqdbl",
+  "description": "number field == double literal",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "d": {
+     "type": "number"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.d == 1.5) || has(self.f)"
+    }
+   ],
+   "required": [
+    "d"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "d",
+      "value": 1.5
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "d": 1
+    },
+    "note": "d=1 f=MISSING"
+   },
+   {
+    "data": {
+     "d": 1,
+     "f": "x"
+    },
+    "note": "d=1 f=\"x\""
+   },
+   {
+    "data": {
+     "d": 1.5
+    },
+    "note": "d=1.5 f=MISSING"
+   },
+   {
+    "data": {
+     "d": 1.5,
+     "f": "x"
+    },
+    "note": "d=1.5 f=\"x\""
+   },
+   {
+    "data": {
+     "d": 2
+    },
+    "note": "d=2 f=MISSING"
+   },
+   {
+    "data": {
+     "d": 2,
+     "f": "x"
+    },
+    "note": "d=2 f=\"x\""
+   }
+  ]
+ },
+ {
+  "id": "eq.bool",
+  "description": "boolean == true",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "flag": {
+     "type": "boolean"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.flag == true) || has(self.f)"
+    }
+   ],
+   "required": [
+    "flag"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "flag",
+      "value": true
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "flag": true
+    },
+    "note": "flag=true f=MISSING"
+   },
+   {
+    "data": {
+     "flag": true,
+     "f": "x"
+    },
+    "note": "flag=true f=\"x\""
+   },
+   {
+    "data": {
+     "flag": false
+    },
+    "note": "flag=false f=MISSING"
+   },
+   {
+    "data": {
+     "flag": false,
+     "f": "x"
+    },
+    "note": "flag=false f=\"x\""
+   }
+  ]
+ },
+ {
+  "id": "eq.bool.bare",
+  "description": "bare boolean `!self.flag || has(f)`",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "flag": {
+     "type": "boolean"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!self.flag || has(self.f)"
+    }
+   ],
+   "required": [
+    "flag"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "flag",
+      "value": true
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "flag": true
+    },
+    "note": "flag=true f=MISSING"
+   },
+   {
+    "data": {
+     "flag": true,
+     "f": "x"
+    },
+    "note": "flag=true f=\"x\""
+   },
+   {
+    "data": {
+     "flag": false
+    },
+    "note": "flag=false f=MISSING"
+   },
+   {
+    "data": {
+     "flag": false,
+     "f": "x"
+    },
+    "note": "flag=false f=\"x\""
+   }
+  ]
+ },
+ {
+  "id": "eq.mismatch.int-vs-string",
+  "description": "int field == string literal",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "n": {
+     "type": "integer"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.n == 'a') || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "n",
+      "value": "a"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "n": 1
+    },
+    "note": "n=1 f=MISSING"
+   },
+   {
+    "data": {
+     "n": 1,
+     "f": "x"
+    },
+    "note": "n=1 f=\"x\""
+   },
+   {
+    "data": {},
+    "note": "n=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": "x"
+    },
+    "note": "n=MISSING f=\"x\""
+   }
+  ]
+ },
+ {
+  "id": "eq.mismatch.in-int-vs-string",
+  "description": "int field in string list",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "n": {
+     "type": "integer"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.n in ['a','b']) || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "in": {
+      "field": "n",
+      "values": [
+       "a",
+       "b"
+      ]
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "n": 1
+    },
+    "note": "n=1 f=MISSING"
+   },
+   {
+    "data": {
+     "n": 1,
+     "f": "x"
+    },
+    "note": "n=1 f=\"x\""
+   },
+   {
+    "data": {},
+    "note": "n=MISSING f=MISSING"
+   },
+   {
+    "data": {
+     "f": "x"
+    },
+    "note": "n=MISSING f=\"x\""
+   }
+  ]
+ },
+ {
+  "id": "eq.mismatch.string-vs-int",
+  "description": "string field == int literal",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "s": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.s == 1) || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "s",
+      "value": 1
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "s": "1",
+     "f": "1"
+    },
+    "note": "s=\"1\" f=\"1\""
+   },
+   {
+    "data": {
+     "s": "1"
+    },
+    "note": "s=\"1\" f=MISSING"
+   },
+   {
+    "data": {
+     "f": "1"
+    },
+    "note": "s=MISSING f=\"1\""
+   },
+   {
+    "data": {},
+    "note": "s=MISSING f=MISSING"
+   }
+  ]
+ },
+ {
+  "id": "eq.intorstring.string",
+  "description": "x-kubernetes-int-or-string == 'pro'",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "v": {
+     "x-kubernetes-int-or-string": true
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.v == 'pro') || has(self.f)"
+    }
+   ],
+   "required": [
+    "v"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "v",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "v": "pro"
+    },
+    "note": "v=\"pro\" f=MISSING"
+   },
+   {
+    "data": {
+     "v": "pro",
+     "f": "x"
+    },
+    "note": "v=\"pro\" f=\"x\""
+   },
+   {
+    "data": {
+     "v": "x"
+    },
+    "note": "v=\"x\" f=MISSING"
+   },
+   {
+    "data": {
+     "v": "x",
+     "f": "x"
+    },
+    "note": "v=\"x\" f=\"x\""
+   },
+   {
+    "data": {
+     "v": 1
+    },
+    "note": "v=1 f=MISSING"
+   },
+   {
+    "data": {
+     "v": 1,
+     "f": "x"
+    },
+    "note": "v=1 f=\"x\""
+   },
+   {
+    "data": {
+     "v": 2
+    },
+    "note": "v=2 f=MISSING"
+   },
+   {
+    "data": {
+     "v": 2,
+     "f": "x"
+    },
+    "note": "v=2 f=\"x\""
+   }
+  ]
+ },
+ {
+  "id": "eq.intorstring.int",
+  "description": "x-kubernetes-int-or-string == 1",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "v": {
+     "x-kubernetes-int-or-string": true
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.v == 1) || has(self.f)"
+    }
+   ],
+   "required": [
+    "v"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "v",
+      "value": 1
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "v": "1"
+    },
+    "note": "v=\"1\" f=MISSING"
+   },
+   {
+    "data": {
+     "v": "1",
+     "f": "x"
+    },
+    "note": "v=\"1\" f=\"x\""
+   },
+   {
+    "data": {
+     "v": 1
+    },
+    "note": "v=1 f=MISSING"
+   },
+   {
+    "data": {
+     "v": 1,
+     "f": "x"
+    },
+    "note": "v=1 f=\"x\""
+   },
+   {
+    "data": {
+     "v": 2
+    },
+    "note": "v=2 f=MISSING"
+   },
+   {
+    "data": {
+     "v": 2,
+     "f": "x"
+    },
+    "note": "v=2 f=\"x\""
+   }
+  ]
+ },
+ {
+  "id": "eq.nullable.string",
+  "description": "nullable plan, explicit null, no guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string",
+     "nullable": true
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan == 'pro') || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "plan": null,
+     "f": null
+    },
+    "note": "plan=null f=null"
+   },
+   {
+    "data": {
+     "plan": null,
+     "f": "pro"
+    },
+    "note": "plan=null f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": null
+    },
+    "note": "plan=\"pro\" f=null"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   }
+  ]
+ },
+ {
+  "id": "eq.nullable.string.guarded",
+  "description": "nullable plan, has() guard",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string",
+     "nullable": true
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(has(self.plan) && self.plan == 'pro') || has(self.f)"
+    }
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "plan": null,
+     "f": null
+    },
+    "note": "plan=null f=null"
+   },
+   {
+    "data": {
+     "plan": null,
+     "f": "pro"
+    },
+    "note": "plan=null f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": null
+    },
+    "note": "plan=\"pro\" f=null"
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   }
+  ]
+ },
+ {
+  "id": "eq.string.case",
+  "description": "string eq is exact: case, trailing space, accents",
+  "schema": {
+   "type": "object",
+   "properties": {
+    "plan": {
+     "type": "string"
+    },
+    "f": {
+     "type": "string"
+    }
+   },
+   "x-kubernetes-validations": [
+    {
+     "rule": "!(self.plan == 'pro') || has(self.f)"
+    }
+   ],
+   "required": [
+    "plan"
+   ]
+  },
+  "rule": 0,
+  "validonce": [
+   {
+    "kind": "required_when",
+    "field": "f",
+    "when": {
+     "eq": {
+      "field": "plan",
+      "value": "pro"
+     }
+    }
+   }
+  ],
+  "inputs": [
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro"
+    },
+    "note": "plan=\"pro\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "Pro"
+    },
+    "note": "plan=\"pro\" f=\"Pro\""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pro "
+    },
+    "note": "plan=\"pro\" f=\"pro \""
+   },
+   {
+    "data": {
+     "plan": "pro",
+     "f": "pró"
+    },
+    "note": "plan=\"pro\" f=\"pró\""
+   },
+   {
+    "data": {
+     "plan": "Pro",
+     "f": "pro"
+    },
+    "note": "plan=\"Pro\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "Pro",
+     "f": "Pro"
+    },
+    "note": "plan=\"Pro\" f=\"Pro\""
+   },
+   {
+    "data": {
+     "plan": "Pro",
+     "f": "pro "
+    },
+    "note": "plan=\"Pro\" f=\"pro \""
+   },
+   {
+    "data": {
+     "plan": "Pro",
+     "f": "pró"
+    },
+    "note": "plan=\"Pro\" f=\"pró\""
+   },
+   {
+    "data": {
+     "plan": "pro ",
+     "f": "pro"
+    },
+    "note": "plan=\"pro \" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pro ",
+     "f": "Pro"
+    },
+    "note": "plan=\"pro \" f=\"Pro\""
+   },
+   {
+    "data": {
+     "plan": "pro ",
+     "f": "pro "
+    },
+    "note": "plan=\"pro \" f=\"pro \""
+   },
+   {
+    "data": {
+     "plan": "pro ",
+     "f": "pró"
+    },
+    "note": "plan=\"pro \" f=\"pró\""
+   },
+   {
+    "data": {
+     "plan": "pró",
+     "f": "pro"
+    },
+    "note": "plan=\"pró\" f=\"pro\""
+   },
+   {
+    "data": {
+     "plan": "pró",
+     "f": "Pro"
+    },
+    "note": "plan=\"pró\" f=\"Pro\""
+   },
+   {
+    "data": {
+     "plan": "pró",
+     "f": "pro "
+    },
+    "note": "plan=\"pró\" f=\"pro \""
+   },
+   {
+    "data": {
+     "plan": "pró",
+     "f": "pró"
+    },
+    "note": "plan=\"pró\" f=\"pró\""
+   }
+  ]
+ }
+]
