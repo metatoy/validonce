@@ -157,7 +157,7 @@ export function writeCompanion(input: CompanionInput): string[] {
 export function pluginValidonce(options: PluginValidonceOptions = {}): Plugin {
   return defineExtension({
     kind: "plugin",
-    meta: { name: "plugin-validonce", version: "0.4.0" },
+    meta: { name: "plugin-validonce", version: "0.5.0" },
     dependencies: ["plugin-zod"],
     hooks: {
       // By build end kubb has written plugin-zod's file to disk.
