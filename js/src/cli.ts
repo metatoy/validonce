@@ -20,7 +20,7 @@ const HELP = `validonce: extract shared validation rules from an OpenAPI documen
 Usage:
   validonce extract <openapi.json> [-o <file>] [--schema <Name>]... [--format ts|json]
   validonce wrap --openapi <openapi.json> --zod <schemas.ts> -o <schemas.rules.ts>
-                 [--style auto|orval|kubb] [--map <Name>=<export>]...
+                 [--style auto|orval|kubb|hey-api] [--map <Name>=<export>]...
   validonce k8s <crd.json|openapi.json|-> [-o <file>] [--catalog <file>] [--report]
 
 Options:
@@ -36,7 +36,7 @@ generated (export const Signup = withRules(gen.Signup, rules.Signup)):
   --openapi <file>     the OpenAPI document with x-validonce
   --zod <file>         the generated Zod module
   -o, --out <file>     the companion module to write (required)
-  --style <s>          export naming: auto (default), orval (Signup) or kubb (signupSchema)
+  --style <s>          export naming: auto (default), orval (Signup), kubb (signupSchema) or hey-api (zSignup)
   --map Name=export    use this export for schema Name (repeatable); needed for per-operation
                        exports such as CreateSignupBody
 
@@ -132,8 +132,10 @@ function wrapCommand(
       if (a === "--openapi") openapi = v;
       else if (a === "--zod") zodFile = v;
       else if (a === "--style") {
-        if (v !== "auto" && v !== "orval" && v !== "kubb")
-          return usage(`--style must be auto, orval or kubb, not "${v}"`);
+        if (v !== "auto" && v !== "orval" && v !== "kubb" && v !== "hey-api")
+          return usage(
+            `--style must be auto, orval, kubb or hey-api, not "${v}"`,
+          );
         style = v;
       } else if (a === "--map") {
         const eq = v.indexOf("=");

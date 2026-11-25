@@ -32,3 +32,4 @@ spec/
 .demo/
 # go
 examples/go-app/go-app
+!examples/codegen-clients/*/src/gen/*.gen.ts
