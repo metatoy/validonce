@@ -1,0 +1,24 @@
+{
+  "migrate": [],
+  "keep": [
+    {
+      "check": "postalCode format only for US",
+      "reason_category": "conditional_format",
+      "file": "address.dto.ts",
+      "marker": "Matches\\(/\\^\\\\d\\{5\\}",
+      "mention": "postalCode|ZIP"
+    },
+    {
+      "check": "canadianPostalCode format only for CA",
+      "reason_category": "conditional_format",
+      "file": "address.dto.ts",
+      "marker": "Matches\\(/\\^\\[A-Z\\]",
+      "mention": "canadianPostalCode|Canad"
+    }
+  ],
+  "allowedFiles": [
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}

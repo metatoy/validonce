@@ -10,7 +10,7 @@
 //   {"accept": bool, "paths": ["top-level wire field names with errors"], "error"?: "..."}
 //
 // Each line is bound to the user's class with Jackson (so @JsonProperty / naming strategies give the
-// wire names, as in Spring), then validated with the default Validator. A violation's first path node
+// wire names, as in Spring; the Jackson modules on the classpath are registered, so LocalDate binds), then validated with the default Validator. A violation's first path node
 // is mapped from the Java property to its wire name; a class-level violation with no property node
 // is "__root__". A line that does not bind is {"error": "parse: ..."} (never a rejection). A
 // ConstraintValidator that throws is {"error": ...}. Offline: reads only the inputs file.
@@ -46,7 +46,7 @@ public class Runner {
       System.exit(3);
       return;
     }
-    ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    ObjectMapper mapper = new ObjectMapper().findAndRegisterModules().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     Validator validator;
     try {
       validator = Validation.buildDefaultValidatorFactory().getValidator();

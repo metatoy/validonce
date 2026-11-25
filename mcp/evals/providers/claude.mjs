@@ -40,7 +40,7 @@ export function buildOptions(prep, config = {}) {
       autoAllowBashIfSandboxed: true,
       allowUnsandboxedCommands: false,
       network: { allowedDomains: [] },
-      filesystem: { allowWrite: [prep.work] },
+      filesystem: { allowWrite: [prep.work, ...(prep.extraWrite ?? [])] },
     },
   };
 }
@@ -72,7 +72,7 @@ export default class ClaudeProvider {
       appendFileSync(log, `${JSON.stringify({ s: Math.round((Date.now() - t0) / 1000), type: m.type, subtype: m.subtype, tools: tools.length ? tools : undefined })}\n`);
     };
     try {
-      for await (const m of query({ prompt, options: { ...options, abortController: ac, env: { ...process.env, CLAUDE_CODE_DISABLE_TELEMETRY: "1" } } })) {
+      for await (const m of query({ prompt, options: { ...options, abortController: ac, env: { ...process.env, ...prep.env, CLAUDE_CODE_DISABLE_TELEMETRY: "1" } } })) {
         note(m);
         if (m.type === "result") {
           // The result is the last message that matters. Stop here: a stream that stays open after it (seen once in

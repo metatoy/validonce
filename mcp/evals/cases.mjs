@@ -99,6 +99,99 @@ export const CASES = {
   },
 };
 
+// ---- The 0.5 stacks (Plan I) ----
+const CONTACT_PROPERTIES = {
+  ...Object.fromEntries(["email", "phone", "street", "city", "postalCode"].map((f) => [f, { type: ["string", "null"] }])),
+  country: { type: "string", enum: ["US", "CA", "GB", "other"] },
+  availableFrom: { type: ["string", "null"], format: "date" }, availableTo: { type: ["string", "null"], format: "date" },
+};
+const CONTACT_BASE = { country: "CA" };
+const contactWellFormed = (d) =>
+  ["US", "CA", "GB", "other"].includes(d.country) &&
+  ["email", "phone", "street", "city", "postalCode"].every((f) => d[f] == null || typeof d[f] === "string") &&
+  ["availableFrom", "availableTo"].every((f) => d[f] == null || (typeof d[f] === "string" && realDate(d[f])));
+const SIGNUP = { base: SIGNUP_BASE, properties: SIGNUP_PROPERTIES, wellFormed: signupWellFormed };
+const CONTACT = { base: CONTACT_BASE, properties: CONTACT_PROPERTIES, wellFormed: contactWellFormed };
+
+// Calls the route registered on a fake Express app: what the route answers is what the project enforces.
+const EXPRESS_WRAPPER = `import { mountSignups } from "./routes.mjs";
+let chain = [];
+const add = (_path, ...h) => { chain = h.flat(); };
+mountSignups({ post: add, route: () => ({ post: (...h) => add("", ...h) }), use() {} });
+export const Target = {
+  async validate(input) {
+    let status = 200, body;
+    const res = { status(s) { status = s; return res; }, type() { return res; }, set() { return res; }, header() { return res; }, setHeader() {}, json(b) { body = b; return res; }, send(b) { body = b; return res; }, end() { return res; }, sendStatus(s) { status = s; return res; } };
+    const req = { body: structuredClone(input), headers: {} };
+    for (const h of chain) {
+      let next = false, err;
+      await h(req, res, (e) => { next = true; err = e; });
+      if (err) throw err;
+      if (!next) break;
+    }
+    if (status >= 500) throw new Error("status " + status);
+    if (status < 400) return input;
+    const list = Array.isArray(body?.errors) ? body.errors : [];
+    throw Object.assign(new Error("invalid"), { name: "ValidationError", inner: list.map((e) => ({ path: String(e.field ?? "") })) });
+  },
+};
+`;
+// The form schema, whatever kind it is after the migration: yup, Zod, or a VeeValidate typed schema.
+const SCHEMA_WRAPPER = (file, name) => `import * as m from ${JSON.stringify(`./${file}`)};
+const s = m[${JSON.stringify(name)}] ?? m.schema ?? m.default ?? Object.values(m).find((x) => x && (x["~standard"] || x.parse || x.validate));
+const fail = (paths) => { throw Object.assign(new Error("invalid"), { name: "ValidationError", inner: paths.map((path) => ({ path })) }); };
+export const Target = {
+  async validate(input) {
+    if (s.__type === "VVTypedSchema") { const r = await s.parse(input); if (r.errors.length) fail(r.errors.map((e) => e.path ?? "")); return input; }
+    if (typeof s.safeParse === "function") { const r = s.safeParse(input); if (!r.success) fail(r.error.issues.map((i) => String(i.path[0] ?? ""))); return input; }
+    return s.validate(input, { abortEarly: false });
+  },
+};
+`;
+const importCheck = (entry) => ({ cmd: "node", args: ["-e", `import(${JSON.stringify(`./${entry}`)}).then(() => process.exit(0), (e) => { console.error(e); process.exit(1); })`] });
+// NestJS: bundle with esbuild (decorators; node_modules left external) and load it.
+const nestCheck = (entry) => ({ cmd: "node", args: ["-e", `const fs = require("fs"), out = process.cwd() + "/zz-load.mjs"; require("esbuild").build({ entryPoints: [${JSON.stringify(entry)}], bundle: true, packages: "external", format: "esm", platform: "node", outfile: out, logLevel: "error", tsconfigRaw: { compilerOptions: { experimentalDecorators: true, useDefineForClassFields: false } } }).then(() => import("reflect-metadata")).then(() => import(out)).then(() => 0, (e) => { console.error(e); return 1; }).then((code) => { fs.rmSync(out, { force: true }); process.exit(code); })`] });
+const vueCheck = { cmd: "node", args: ["-e", `const { parse, compileScript } = require("vue/compiler-sfc"); const { descriptor, errors } = parse(require("fs").readFileSync("ContactForm.vue", "utf8")); if (errors.length) throw errors[0]; compileScript(descriptor, { id: "x", inlineTemplate: true }); import("./contact.schema.mjs").then(() => process.exit(0), (e) => { console.error(e); process.exit(1); })`] };
+
+Object.assign(CASES, {
+  "go-playground": { dir: "stacks/go-playground", group: "stacks", stack: "go", runner: { script: "go-project" }, build: {}, export: { kind: "go" }, ...SIGNUP },
+  "spring-jakarta": {
+    dir: "stacks/spring-jakarta", group: "stacks", stack: "java", build: {}, export: { kind: "java", model: "example.signup.Signup" }, ...SIGNUP,
+    runner: { script: "java-project", model: "example.signup.Signup", pathMap: { endAfterStart: "end" } },
+  },
+  nestjs: {
+    dir: "stacks/nestjs", group: "stacks", stack: "js", deps: ["@nestjs/common", "@nestjs/core", "@nestjs/swagger", "class-transformer", "class-validator", "reflect-metadata", "rxjs"],
+    runner: { script: "run-js.mjs", kind: "class-validator", entry: "contact.dto.ts", exportName: "Contact" }, build: nestCheck("contacts.controller.ts"), ...CONTACT,
+  },
+  "express-joi": {
+    dir: "stacks/express-joi", group: "stacks", stack: "js", deps: ["joi"],
+    runner: { script: "run-js.mjs", kind: "yup", wrapper: EXPRESS_WRAPPER, exportName: "Target" }, build: importCheck("routes.mjs"), ...SIGNUP,
+  },
+  "vue-veevalidate": {
+    dir: "stacks/vue-veevalidate", group: "stacks", stack: "js", deps: ["@vee-validate/yup", "vee-validate", "vue", "yup", "zod"],
+    runner: { script: "run-js.mjs", kind: "yup", wrapper: SCHEMA_WRAPPER("contact.schema.mjs", "Contact"), exportName: "Target" }, build: vueCheck, ...CONTACT,
+  },
+  kubernetes: {
+    dir: "stacks/kubernetes", group: "stacks", stack: "none", runner: { script: "oracle", module: "kubernetes.mjs" },
+    build: { none: "nothing to build; the CRD must be unchanged (scope)" },
+    base: { tier: "standard" },
+    properties: {
+      tier: { type: "string", enum: ["standard", "premium"] }, contact: { type: "string", minLength: 1 }, email: { type: "string", minLength: 1 }, phone: { type: "string", minLength: 1 },
+      from: { type: "string", format: "date" }, to: { type: "string", format: "date" }, minGuests: { type: "integer" }, maxGuests: { type: "integer" },
+    },
+    // what the CRD's schema admits: minLength 1 text, real dates, int32 integers
+    wellFormed: (d) =>
+      ["standard", "premium"].includes(d.tier) &&
+      ["contact", "email", "phone"].every((f) => d[f] === undefined || (typeof d[f] === "string" && d[f] !== "")) &&
+      ["from", "to"].every((f) => d[f] === undefined || (typeof d[f] === "string" && realDate(d[f]))) &&
+      ["minGuests", "maxGuests"].every((f) => d[f] === undefined || (Number.isInteger(d[f]) && d[f] >= 0 && d[f] < 2 ** 31)),
+  },
+  "tricky-go-arithmetic": { dir: "tricky/arithmetic-go", group: "tricky", stack: "go", build: {} },
+  "tricky-jakarta-db": { dir: "tricky/db-jakarta", group: "tricky", stack: "java", build: {} },
+  "tricky-joi-coercion": { dir: "tricky/coercion-joi", group: "tricky", stack: "js", deps: ["joi"], build: importCheck("reservation.mjs") },
+  "tricky-nestjs-format": { dir: "tricky/format-nestjs", group: "tricky", stack: "js", deps: ["class-transformer", "class-validator", "reflect-metadata"], build: nestCheck("address.dto.ts") },
+});
+
 // Hold-out cases (Plan C Part 5): public apps measured once, kept OUTSIDE this repo (third-party code, scratch copies).
 // VALIDONCE_HOLDOUT_CASES points at a module exporting HOLDOUT: { [id]: case } where each case has an absolute
 // `root` (its fixture folder, holding expected.json) and group "holdout". They run with VALIDONCE_EVAL_GROUP=holdout.

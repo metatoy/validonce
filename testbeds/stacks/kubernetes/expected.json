@@ -1,0 +1,93 @@
+{
+  "migrate": [
+    {
+      "id": "k8s.Booking.required_when.0",
+      "kind": "required_when",
+      "field": "contact",
+      "when": {
+        "eq": {
+          "field": "tier",
+          "value": "premium"
+        }
+      },
+      "message": {
+        "key": "k8s.Booking.0"
+      }
+    },
+    {
+      "id": "k8s.Booking.compare.1",
+      "kind": "compare",
+      "left": {
+        "field": "to"
+      },
+      "op": "ge",
+      "right": {
+        "field": "from"
+      },
+      "type": "date",
+      "message": {
+        "key": "k8s.Booking.1"
+      }
+    },
+    {
+      "id": "k8s.Booking.compare.2",
+      "kind": "compare",
+      "left": {
+        "field": "minGuests"
+      },
+      "op": "le",
+      "right": {
+        "field": "maxGuests"
+      },
+      "type": "number",
+      "path": "maxGuests",
+      "message": {
+        "key": "k8s.Booking.2"
+      }
+    },
+    {
+      "id": "k8s.Booking.at_least_one_of.3",
+      "kind": "at_least_one_of",
+      "fields": [
+        "email",
+        "phone"
+      ],
+      "message": {
+        "key": "k8s.Booking.3"
+      }
+    }
+  ],
+  "keep": [
+    {
+      "check": "has(note) == has(reason): free text without minLength",
+      "reason_category": "server_only",
+      "file": "crd/booking-crd.json",
+      "marker": "has\\(self\\.note\\) == has\\(self\\.reason\\)",
+      "mention": "note"
+    },
+    {
+      "check": "contact.size() <= 40",
+      "reason_category": "server_only",
+      "file": "crd/booking-crd.json",
+      "marker": "self\\.contact\\.size\\(\\) <= 40",
+      "mention": "size\\(\\)|40 char"
+    },
+    {
+      "check": "tier is immutable (oldSelf)",
+      "reason_category": "server_only",
+      "file": "crd/booking-crd.json",
+      "marker": "oldSelf\\.tier",
+      "mention": "oldSelf|immutable|transition|cannot change"
+    }
+  ],
+  "allowedFiles": [
+    "*.openapi.json",
+    "*messages*.json",
+    "*catalog*.json",
+    "crd/*.openapi.json",
+    "validonce/**",
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}

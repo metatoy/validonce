@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "k8s.Booking.required_when.0",
+      "kind": "required_when",
+      "field": "contact",
+      "when": {
+        "eq": {
+          "field": "tier",
+          "value": "premium"
+        }
+      },
+      "message": {
+        "key": "k8s.Booking.0"
+      }
+    },
+    {
+      "id": "k8s.Booking.compare.1",
+      "kind": "compare",
+      "left": {
+        "field": "to"
+      },
+      "op": "gt",
+      "right": {
+        "field": "from"
+      },
+      "type": "date",
+      "message": {
+        "key": "k8s.Booking.1"
+      }
+    },
+    {
+      "id": "k8s.Booking.compare.2",
+      "kind": "compare",
+      "left": {
+        "field": "minGuests"
+      },
+      "op": "le",
+      "right": {
+        "field": "maxGuests"
+      },
+      "type": "number",
+      "path": "maxGuests",
+      "message": {
+        "key": "k8s.Booking.2"
+      }
+    },
+    {
+      "id": "k8s.Booking.at_least_one_of.3",
+      "kind": "at_least_one_of",
+      "fields": [
+        "email",
+        "phone"
+      ],
+      "message": {
+        "key": "k8s.Booking.3"
+      }
+    }
+  ]
+}

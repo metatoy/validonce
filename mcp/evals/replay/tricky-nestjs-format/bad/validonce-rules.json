@@ -1,0 +1,1 @@
+{"version": 1, "rules": [{"id": "x.required_when", "kind": "required_when", "field": "a", "when": {"present": {"field": "b"}}, "message": {"key": "k"}}]}

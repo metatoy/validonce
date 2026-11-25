@@ -1,0 +1,17 @@
+{
+  "migrate": [],
+  "keep": [
+    {
+      "check": "subtotal + tax == total: arithmetic across fields",
+      "reason_category": "arithmetic",
+      "file": "order.go",
+      "marker": "o\\.Subtotal\\+o\\.Tax != o\\.Total",
+      "mention": "total"
+    }
+  ],
+  "allowedFiles": [
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}

@@ -42,7 +42,7 @@
 //
 // Isolation (Node >= 22 permission model):
 //   * the user's module is bundled with esbuild into one file in a scratch dir;
-//     every import from the user's own code other than zod, yup, @angular/* (and
+//     every import from the user's own code other than zod, yup, joi, class-validator, vue, @angular/* (and
 //     rxjs, which Angular needs), validonce (so a migrated schema can be run too) and relative files, and every node builtin, resolves to a stub that throws
 //     "validonce runner: <module> needs I/O; isolate the schema module"
 //     (that covers fs, node:net, http, axios, database clients, ...);
@@ -142,12 +142,16 @@ const DRIVER = {
   "class-validator": `
     import { plainToInstance } from "class-transformer";
     import { validate } from "class-validator";
+    import { evaluate } from "validonce-evaluate";
     const C = (await import("<<ENTRY>>"))["<<EXPORT>>"];
+    // A migrated DTO carries its rules (@ValidonceRules); ValidonceValidationPipe evaluates them on the body.
+    const set = C[Symbol.for("validonce.rules")];
     export async function run(input) {
       const errs = await validate(plainToInstance(C, input));
       const paths = [];
+      if (set && !errs.length) for (const i of evaluate(set.rules, input)) { const p = String(i.path[0]); if (!paths.includes(p)) paths.push(p); }
       for (const e of errs) if (!paths.includes(e.property)) paths.push(e.property);
-      return { accept: !errs.length, paths };
+      return { accept: !errs.length && !paths.length, paths };
     }`,
   joi: `
     const r = (await import("<<ENTRY>>"))["<<EXPORT>>"];
@@ -162,6 +166,18 @@ const DRIVER = {
       return { accept: false, paths };
     }`,
 }[kind];
+
+// NestJS DTO files import decorators that only describe the API or the DI container. They load Node's I/O modules, so
+// they are replaced: the @nestjs/swagger decorators do nothing, and @nestjs/common has only what validonce/nestjs uses.
+// Anything else (PartialType, a real pipe) is a bundling error: copy the DTO into a module without it.
+const NEST_SHIM = {
+  "@nestjs/swagger": `const no = () => () => {};
+    export { no as ApiAcceptedResponse, no as ApiBadRequestResponse, no as ApiBasicAuth, no as ApiBearerAuth, no as ApiBody, no as ApiConsumes, no as ApiConflictResponse, no as ApiCookieAuth, no as ApiCreatedResponse, no as ApiDefaultResponse, no as ApiExcludeController, no as ApiExcludeEndpoint, no as ApiExtension, no as ApiExtraModels, no as ApiForbiddenResponse, no as ApiHeader, no as ApiHideProperty, no as ApiInternalServerErrorResponse, no as ApiNoContentResponse, no as ApiNotFoundResponse, no as ApiOAuth2, no as ApiOkResponse, no as ApiOperation, no as ApiParam, no as ApiProduces, no as ApiProperty, no as ApiPropertyOptional, no as ApiQuery, no as ApiResponse, no as ApiResponseProperty, no as ApiSchema, no as ApiSecurity, no as ApiTags, no as ApiUnauthorizedResponse, no as ApiUnprocessableEntityResponse };`,
+  "@nestjs/common": `class HttpException extends Error { constructor(r) { super("http"); this.response = r; } }
+    const deco = () => () => {};
+    export const Injectable = deco, Catch = deco;
+    export class UnprocessableEntityException extends HttpException {}`,
+};
 
 const PRELUDE = `for (const k of ["fetch","WebSocket","XMLHttpRequest","EventSource"]) { try { delete globalThis[k]; } catch (e) {} }`;
 const MAIN = `
@@ -180,14 +196,19 @@ for (const line of buf.split("\\n")) {
 process.stdout.write(out.join("\\n") + (out.length ? "\\n" : ""));
 `;
 
-const ALLOWED = /^(zod|yup|joi|class-validator|class-transformer|reflect-metadata|rxjs|validonce|@angular\/[^/]+)(\/.*)?$/;
+const ALLOWED = /^(zod|yup|joi|class-validator|class-transformer|reflect-metadata|rxjs|validonce|vue|@angular\/[^/]+)(\/.*)?$/;
 const plugin = {
   name: "validonce-runner",
   setup(b) {
-    b.onResolve({ filter: /^validonce-(prelude|main|driver)$/ }, (a) => ({ path: a.path, namespace: "vo" }));
-    b.onLoad({ filter: /.*/, namespace: "vo" }, (a) => {
+    b.onResolve({ filter: /^validonce-(prelude|main|driver|evaluate)$/ }, (a) => ({ path: a.path, namespace: "vo" }));
+    b.onLoad({ filter: /.*/, namespace: "vo" }, async (a) => {
       if (a.path === "validonce-main") return { contents: MAIN, resolveDir: scratch };
       if (a.path === "validonce-prelude") return { contents: PRELUDE };
+      if (a.path === "validonce-evaluate") {
+        // Only a migrated project has validonce; without it there are no rules to evaluate.
+        const r = await b.resolve("validonce", { kind: "import-statement", resolveDir: dirname(entry) });
+        return { contents: r.errors.length ? "export const evaluate = () => [];" : `export { evaluate } from ${JSON.stringify(r.path)};`, resolveDir: scratch };
+      }
       return {
         contents: DRIVER.replaceAll("<<ENTRY>>", entry.replaceAll("\\", "\\\\")).replaceAll("<<EXPORT>>", exportName),
         resolveDir: dirname(entry),
@@ -195,6 +216,7 @@ const plugin = {
     });
     b.onResolve({ filter: /^[^./]|^\.\.?$/ }, (a) => {
       if (a.namespace === "vo" && a.path.startsWith("validonce-")) return null;
+      if (NEST_SHIM[a.path]) return { path: a.path, namespace: "shim" };
       if (ALLOWED.test(a.path)) return null;
       // Pure-JS helpers of the allowed libraries (yup -> property-expr, ...) are
       // bundled; node builtins and anything the user's own code imports are stubbed.
@@ -204,6 +226,7 @@ const plugin = {
       if (!builtin && /[\\/]node_modules[\\/]/.test(a.importer)) return null;
       return { path: a.path, namespace: "stub" };
     });
+    b.onLoad({ filter: /.*/, namespace: "shim" }, (a) => ({ contents: NEST_SHIM[a.path], loader: "js" }));
     b.onLoad({ filter: /.*/, namespace: "stub" }, (a) => ({
       contents: `throw new Error(${JSON.stringify(`validonce runner: ${a.path} needs I/O; isolate the schema module`)});`,
     }));

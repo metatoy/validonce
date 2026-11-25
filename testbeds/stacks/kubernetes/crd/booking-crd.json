@@ -1,0 +1,119 @@
+{
+  "apiVersion": "apiextensions.k8s.io/v1",
+  "kind": "CustomResourceDefinition",
+  "metadata": {
+    "name": "bookings.example.test"
+  },
+  "spec": {
+    "group": "example.test",
+    "scope": "Namespaced",
+    "names": {
+      "plural": "bookings",
+      "singular": "booking",
+      "kind": "Booking",
+      "listKind": "BookingList"
+    },
+    "versions": [
+      {
+        "name": "v1",
+        "served": true,
+        "storage": true,
+        "schema": {
+          "openAPIV3Schema": {
+            "type": "object",
+            "properties": {
+              "spec": {
+                "type": "object",
+                "required": [
+                  "tier"
+                ],
+                "properties": {
+                  "tier": {
+                    "type": "string",
+                    "enum": [
+                      "standard",
+                      "premium"
+                    ]
+                  },
+                  "contact": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "email": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "phone": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "from": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "to": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "minGuests": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "maxGuests": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  },
+                  "note": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "x-kubernetes-validations": [
+                  {
+                    "rule": "self.tier != 'premium' || has(self.contact)",
+                    "message": "A contact is required for premium bookings",
+                    "fieldPath": ".contact"
+                  },
+                  {
+                    "rule": "!has(self.from) || !has(self.to) || self.to >= self.from",
+                    "message": "To must be on or after from",
+                    "fieldPath": ".to"
+                  },
+                  {
+                    "rule": "!has(self.minGuests) || !has(self.maxGuests) || self.minGuests <= self.maxGuests",
+                    "message": "Max guests must be at least min guests",
+                    "fieldPath": ".maxGuests"
+                  },
+                  {
+                    "rule": "has(self.email) || has(self.phone)",
+                    "message": "Give an email or a phone number",
+                    "fieldPath": ".email"
+                  },
+                  {
+                    "rule": "has(self.note) == has(self.reason)",
+                    "message": "Note and reason go together",
+                    "fieldPath": ".note"
+                  },
+                  {
+                    "rule": "!has(self.contact) || self.contact.size() <= 40",
+                    "message": "Contact must be 40 characters or fewer",
+                    "fieldPath": ".contact"
+                  },
+                  {
+                    "rule": "!has(oldSelf.tier) || self.tier == oldSelf.tier",
+                    "message": "Tier cannot change",
+                    "fieldPath": ".tier"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
