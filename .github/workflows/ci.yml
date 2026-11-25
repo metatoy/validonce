@@ -259,6 +259,7 @@ jobs:
           - { name: nestjs, dockerfile: examples/nestjs-app/Dockerfile, port: 8030, health: /, probe: curl }
           - { name: go, dockerfile: examples/go-app/Dockerfile, port: 8040, health: /healthz, probe: wget }
           - { name: spring, dockerfile: examples/spring-app/Dockerfile, port: 8050, health: /healthz, probe: wget }
+          - { name: k8s, dockerfile: examples/playground/k8s/Dockerfile, port: 8060, health: /health, probe: curl }
     steps:
       - uses: actions/checkout@v7
       - name: Build
