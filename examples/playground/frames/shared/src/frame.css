@@ -1,0 +1,60 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Copyright 2026 Metatoy LLC */
+
+/* The form column of the playground wireframe, shared by all four frames. */
+:root {
+  --bg: #ffffff;
+  --fg: #231f20;
+  --muted: #6e6a63;
+  --line: #cfc9b8;
+  --field: #ffffff;
+  --accent: #4f7a17;
+  --accent-fg: #ffffff;
+  --error: #9b2c1d;
+  --badge-bg: #e8e2d2;
+  --badge-fg: #231f20;
+}
+:root[data-theme="dark"] {
+  --bg: #231f20;
+  --fg: #f2efe6;
+  --muted: #a6a298;
+  --line: #4a4547;
+  --field: #2d2829;
+  --accent: #8dc63f;
+  --accent-fg: #231f20;
+  --error: #ff8c7a;
+  --badge-bg: #3a3536;
+  --badge-fg: #f2efe6;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, sans-serif; margin: 0; }
+main { max-width: 420px; margin: 0 auto; padding: 16px; }
+form { display: grid; gap: 10px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field { display: grid; gap: 3px; min-width: 0; }
+label { font-weight: 600; font-size: 12px; color: var(--muted); display: grid; gap: 3px; }
+input, select {
+  font: inherit; color: var(--fg); background: var(--field); width: 100%;
+  border: 1px solid var(--line); border-radius: 6px; padding: 7px 8px;
+}
+input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+[aria-invalid="true"] { border-color: var(--error); }
+.errors { margin: 0; font-size: 12px; color: var(--error); }
+.errors[hidden] { display: none; }
+.errors .line { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.errors ul { margin: 2px 0 0; padding: 0; list-style: none; }
+.errors li { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.more { background: none; border: 0; padding: 0; font: inherit; color: var(--muted); text-decoration: underline; cursor: pointer; }
+.badge {
+  font-size: 10px; line-height: 1; padding: 2px 5px; border-radius: 999px;
+  background: var(--badge-bg); color: var(--badge-fg); border: 1px solid var(--line);
+}
+.toggle { display: flex; gap: 8px; align-items: center; font-weight: 400; color: var(--fg); font-size: 13px; }
+.toggle input { width: auto; }
+button.submit {
+  background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 6px;
+  padding: 9px; font: inherit; font-weight: 600; cursor: pointer;
+}
+.status { margin: 0; color: var(--accent); font-weight: 600; }
+.status[hidden], [hidden] { display: none; }
+.load-error { color: var(--error); }

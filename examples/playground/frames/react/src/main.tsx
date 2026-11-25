@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 Metatoy LLC
+
+import "validonce-playground-frame-shared/frame.css";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { App } from "./App";
+
+const root = document.getElementById("root");
+if (!root) throw new Error("missing #root");
+createRoot(root).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
