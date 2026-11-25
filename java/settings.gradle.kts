@@ -3,6 +3,12 @@
 
 rootProject.name = "validonce-java"
 
-include("validonce-core", "validonce-spring", "spring-app", "codegen-golden")
+include("validonce-core", "validonce-spring", "spring-app")
 project(":spring-app").projectDir = file("../examples/spring-app")
-project(":codegen-golden").projectDir = file("../mcp/test/golden-java")
+
+// Codegen golden test (CI only). Absent in the Spring example image, which copies only java/ and the example.
+val codegenGolden = file("../mcp/test/golden-java")
+if (codegenGolden.isDirectory) {
+    include("codegen-golden")
+    project(":codegen-golden").projectDir = codegenGolden
+}
