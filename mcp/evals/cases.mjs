@@ -166,6 +166,16 @@ Object.assign(CASES, {
   "express-joi": {
     dir: "stacks/express-joi", group: "stacks", stack: "js", deps: ["joi"],
     runner: { script: "run-js.mjs", kind: "yup", wrapper: EXPRESS_WRAPPER, exportName: "Target" }, build: importCheck("routes.mjs"), ...SIGNUP,
+    // Joi.date().iso() also takes datetimes and compares instants
+    probes: [["2024-06-15T10:00:00Z", "2024-06-15T09:00:00Z"], ["2024-06-15T10:00:00Z", "2024-06-15T11:00:00Z"], ["2024-06-15", "2024-06-14T10:00:00Z"], ["2024", "2023"]].map(([start, end]) => ({ ...SIGNUP_BASE, start, end })),
+  },
+  "express-joi-text": {
+    dir: "stacks/express-joi-text", group: "stacks", stack: "js", deps: ["joi"],
+    runner: { script: "run-js.mjs", kind: "yup", wrapper: EXPRESS_WRAPPER, exportName: "Target" }, build: importCheck("routes.mjs"),
+    base: { ...SIGNUP_BASE, confirmEmail: "a@example.test" },
+    properties: { ...SIGNUP_PROPERTIES, confirmEmail: { type: "string", minLength: 1 } },
+    wellFormed: (d) => signupWellFormed(d) && typeof d.confirmEmail === "string" && d.confirmEmail !== "",
+    probes: [["2024-06-15T10:00:00Z", "2024-06-15T09:00:00Z"], ["2024-06-15", "2024-06-14T10:00:00Z"], ["2024", "2023"], ["2024-02-31", "2024-02-30"]].map(([start, end]) => ({ ...SIGNUP_BASE, confirmEmail: "a@example.test", start, end })),
   },
   "vue-veevalidate": {
     dir: "stacks/vue-veevalidate", group: "stacks", stack: "js", deps: ["@vee-validate/yup", "vee-validate", "vue", "yup", "zod"],
