@@ -17,3 +17,5 @@ dotnet
 assets
 **/bin
 **/obj
+**/bin
+**/obj
