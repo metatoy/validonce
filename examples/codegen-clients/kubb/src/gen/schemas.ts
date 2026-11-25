@@ -5,6 +5,17 @@
 
 import * as z from 'zod'
 
+export const contactSchema = z.object({
+  email: z.string().nullable(),
+  phone: z.string().nullable(),
+  street: z.string().nullable(),
+  city: z.string().nullable(),
+  postalCode: z.string().nullable(),
+  country: z.string().nullable(),
+  availableFrom: z.iso.date().nullable(),
+  availableTo: z.iso.date().nullable(),
+})
+
 export const signupSchema = z.object({
   plan: z.string().nullable(),
   company: z.string().nullable(),
@@ -19,3 +30,9 @@ export const postSignupsStatus200Schema = z.unknown()
 export const postSignupsResponseSchema = postSignupsStatus200Schema
 
 export const postSignupsBodySchema = signupSchema
+
+export const postContactsStatus200Schema = z.unknown()
+
+export const postContactsResponseSchema = postContactsStatus200Schema
+
+export const postContactsBodySchema = contactSchema

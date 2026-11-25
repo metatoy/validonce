@@ -12,7 +12,7 @@ import { pluginValidonce, writeCompanion } from "../src/kubb";
 
 const golden = resolve(
   __dirname,
-  "../../conformance/golden/aspnet.openapi.json",
+  "./fixtures/openapi/aspnet.openapi.json",
 );
 
 describe("pluginValidonce", () => {

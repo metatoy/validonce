@@ -10,7 +10,7 @@ import { camel, pascal } from "../src/wrap";
 
 const here = (p: string) => new URL(p, import.meta.url).pathname;
 const golden = (n: string) =>
-  here(`../../conformance/golden/${n}.openapi.json`);
+  here(`./fixtures/openapi/${n}.openapi.json`);
 const fixture = (n: string) => here(`./fixtures/wrap/${n}.zod.ts.txt`);
 
 function run(argv: string[]) {

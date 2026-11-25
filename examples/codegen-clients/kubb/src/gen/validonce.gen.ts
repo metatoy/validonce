@@ -7,6 +7,63 @@ import { withRules as _withRules } from "validonce/zod";
 import * as _gen from "./schemas";
 
 const _rules = {
+  "Contact": {
+    "rules": [
+      {
+        "fields": [
+          "email",
+          "phone"
+        ],
+        "id": "Contact.at_least_one_of.email",
+        "kind": "at_least_one_of",
+        "message": {
+          "key": "rules.contact_email_or_phone"
+        }
+      },
+      {
+        "fields": [
+          "street",
+          "city",
+          "postalCode"
+        ],
+        "id": "Contact.all_or_none.street",
+        "kind": "all_or_none",
+        "message": {
+          "key": "rules.address_all_or_none"
+        }
+      },
+      {
+        "field": "postalCode",
+        "id": "Contact.required_when.postalCode",
+        "kind": "required_when",
+        "message": {
+          "key": "rules.postal_code_required_us"
+        },
+        "when": {
+          "eq": {
+            "field": "country",
+            "value": "US"
+          }
+        }
+      },
+      {
+        "id": "Contact.compare.availableTo",
+        "kind": "compare",
+        "left": {
+          "field": "availableTo"
+        },
+        "message": {
+          "key": "rules.available_to_after_from"
+        },
+        "op": "ge",
+        "right": {
+          "field": "availableFrom"
+        },
+        "type": "date"
+      }
+    ],
+    "version": 1
+  },
   "Signup": {
     "rules": [
       {
@@ -61,4 +118,5 @@ const _rules = {
   }
 } as const satisfies Record<string, RuleSet>;
 
+export const contactSchema = _withRules(_gen.contactSchema, _rules["Contact"]);
 export const signupSchema = _withRules(_gen.signupSchema, _rules["Signup"]);
