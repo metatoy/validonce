@@ -214,6 +214,8 @@ put(G, one("grp.all_or_none.mixed", "list / int / bool members", { props: mixed 
 // `expect` is the intended outcome of the translator's guard: "translated" (guard holds, rule is exact)
 // or "server_only" (guard fails, translating would be inexact).
 const GD = "70-guards.json";
+const IB = { type: "integer", minimum: -1000, maximum: 1000 };
+const IN2B = { props: { a: IB, b: IB } };
 const gput = (id, expect, desc, sch, rules, vo, ins) => put(GD, { ...one(id, desc, sch, rules, vo, ins), expect });
 const REQP = { required: ["plan"] };
 const FS = [M, null, "", "x"];
@@ -225,10 +227,10 @@ gput("guard.rw.fails.optionalCond", "server_only", "plan optional: bare == error
 gput("guard.present.holds", "translated", "g and f minLength 1", { props: { g: MIN, f: MIN } }, ["!has(self.g) || has(self.f)"], [{ ...rwf, when: { present: { field: "g" } } }], inputs({}, ["g", "f"], [M, "x"]));
 gput("guard.present.fails", "server_only", "g, f plain strings", { props: { g: S, f: S } }, ["!has(self.g) || has(self.f)"], [{ ...rwf, when: { present: { field: "g" } } }], inputs({}, ["g", "f"], [M, null, "", "x"]));
 // compare number
-gput("guard.num.holds.required", "translated", "both operands required", { ...IN2, extra: REQ }, ["self.a <= self.b"], cmp("number", "le", "a", "b"), inputs({}, ["a", "b"], [M, 0, 1, 2]));
-gput("guard.num.holds.hasGuard", "translated", "has() guards", IN2, ["!has(self.a) || !has(self.b) || self.a <= self.b"], cmp("number", "le", "a", "b"), inputs({}, ["a", "b"], nv));
+gput("guard.num.holds.required", "translated", "both operands required, integers bounded", { ...IN2B, extra: REQ }, ["self.a <= self.b"], cmp("number", "le", "a", "b"), inputs({}, ["a", "b"], [M, 0, 1, 2]));
+gput("guard.num.holds.hasGuard", "translated", "has() guards, integers bounded", IN2B, ["!has(self.a) || !has(self.b) || self.a <= self.b"], cmp("number", "le", "a", "b"), inputs({}, ["a", "b"], nv));
 gput("guard.num.fails.optional", "server_only", "bare compare on optional operands", IN2, ["self.a <= self.b"], cmp("number", "le", "a", "b"), inputs({}, ["a", "b"], nv));
-gput("guard.num.holds.literal", "translated", "required operand vs literal", { ...A1, extra: { required: ["a"] } }, ["self.a >= 0"], cmp("number", "ge", "a", "#0"), single("a", [M, -1, 0, 5]));
+gput("guard.num.holds.literal", "translated", "required operand vs literal", { props: { a: IB }, extra: { required: ["a"] } }, ["self.a >= 0"], cmp("number", "ge", "a", "#0"), single("a", [M, -1, 0, 5]));
 // compare string
 gput("guard.str.holds", "translated", "required, minLength 1", { props: { a: MIN, b: MIN }, extra: REQ }, ["self.a < self.b"], cmp("string", "lt", "a", "b"), pairs([M, "", "a", "B", "\u{10000}", "\uffff", "e\u0301", "\u00e9"]));
 gput("guard.str.fails.blank", "server_only", "required but \"\" allowed", { ...AB, extra: REQ }, ["self.a < self.b"], cmp("string", "lt", "a", "b"), pairs([M, "", "a", "b"]));

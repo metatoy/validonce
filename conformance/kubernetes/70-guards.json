@@ -466,15 +466,19 @@
  },
  {
   "id": "guard.num.holds.required",
-  "description": "both operands required",
+  "description": "both operands required, integers bounded",
   "schema": {
    "type": "object",
    "properties": {
     "a": {
-     "type": "integer"
+     "type": "integer",
+     "minimum": -1000,
+     "maximum": 1000
     },
     "b": {
-     "type": "integer"
+     "type": "integer",
+     "minimum": -1000,
+     "maximum": 1000
     }
    },
    "x-kubernetes-validations": [
@@ -610,15 +614,19 @@
  },
  {
   "id": "guard.num.holds.hasGuard",
-  "description": "has() guards",
+  "description": "has() guards, integers bounded",
   "schema": {
    "type": "object",
    "properties": {
     "a": {
-     "type": "integer"
+     "type": "integer",
+     "minimum": -1000,
+     "maximum": 1000
     },
     "b": {
-     "type": "integer"
+     "type": "integer",
+     "minimum": -1000,
+     "maximum": 1000
     }
    },
    "x-kubernetes-validations": [
@@ -1167,7 +1175,9 @@
    "type": "object",
    "properties": {
     "a": {
-     "type": "integer"
+     "type": "integer",
+     "minimum": -1000,
+     "maximum": 1000
     }
    },
    "x-kubernetes-validations": [
