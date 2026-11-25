@@ -10,6 +10,12 @@ All notable changes to validonce. Versions follow semantic versioning; before 1.
   - **What translates:** only the CEL shapes that match the five rule kinds. Each is guarded by schema conditions proven against the API server's own CRD validation; see the table in `docs/kubernetes.md`.
   - **The rest:** everything else stays `server_only`, and `dryRunIssues` places the API server's dry-run errors on the form's fields.
   - **CLI:** `validonce k8s <crd.json|openapi.json|->` does the same at build time.
+- **Generator plugins:** the Zod schemas that kubb, Hey API and orval generate now carry the cross-field rules. Each plugin writes `validonce.gen.ts`, which re-exports every schema under its own name with `withRules` attached. See `docs/client-codegen.md`.
+  - `validonce/kubb`: `pluginValidonce()`, after `pluginZod()`. It supports both the per-schema and single-file layouts.
+  - `validonce/hey-api`: `validonce()`, beside `"zod"`.
+  - `validonce/orval`: `withValidonce(config)`, which keeps existing hooks; `createValidonce()` returns the pieces separately.
+  - `validonce wrap --style hey-api` matches Hey API's `z{Name}` exports.
+  - Examples in `examples/codegen-clients/`. CI regenerates them and checks that the rules are enforced.
 - Example `examples/k8s-form` (a sample CRD and a React form). There's also a new CI job, `k8s-cel-diff`, which compares every translated rule with Kubernetes' verdicts on the same inputs.
 
 ## 0.4.0 (2026-11-24)

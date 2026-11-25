@@ -51,6 +51,7 @@ The server always enforces the rules. The browser runs them first to give fast f
 | Client | Angular (Signal or Reactive Forms) | `validonce/zod`, `validonce/angular` | [Angular](docs/client-angular.md) |
 | Client | Vue + VeeValidate | `validonce/vue` | [Vue](docs/client-vue.md) |
 | Client | Plain HTML, web components | `validonce/dom` | [HTML and web components](docs/client-dom.md) |
+| Client codegen | kubb, Hey API, orval (generated Zod schemas get the rules) | `validonce/kubb`, `validonce/hey-api`, `validonce/orval` | [Generated clients](docs/client-codegen.md) |
 | Rules from | Kubernetes CRDs (CEL `x-kubernetes-validations`) | `validonce/kubernetes`, `validonce k8s` | [Kubernetes](docs/kubernetes.md) |
 
 ## Install
@@ -177,6 +178,7 @@ More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.m
 - [Client: Angular](docs/client-angular.md)
 - [Client: plain HTML and web components](docs/client-dom.md)
 - [Client: Vue](docs/client-vue.md)
+- [Generated clients: kubb, Hey API, orval](docs/client-codegen.md)
 - [Kubernetes custom resources](docs/kubernetes.md)
 - [Loading rules at runtime](docs/live-rules.md)
 - [How validonce compares](docs/comparison.md)

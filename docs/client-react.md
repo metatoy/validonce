@@ -108,7 +108,7 @@ const deps = registerDeps(rules);
 
 ## Rules on generated Zod schemas (orval, kubb)
 
-If your Zod schemas come from orval or kubb, the generated code has the field rules but not the cross-field ones. `validonce wrap` writes a companion module that adds them:
+If your Zod schemas come from kubb, Hey API or orval, add the validonce plugin to the generator (see [Generated clients](client-codegen.md)): the generated schemas then carry the cross-field rules. Without a plugin, `validonce wrap` writes the same companion module after generation:
 
 ```sh
 npx validonce wrap --openapi openapi.json --zod src/gen/schemas.ts -o src/gen/schemas.rules.ts
