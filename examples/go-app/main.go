@@ -19,14 +19,20 @@ import (
 )
 
 var allowedOrigins = map[string]bool{
-	"http://localhost:5173": true,
-	"http://127.0.0.1:5173": true,
-	"http://localhost:4200": true,
-	"http://127.0.0.1:4200": true,
+	"http://localhost:5173":          true,
+	"http://127.0.0.1:5173":          true,
+	"http://localhost:4200":          true,
+	"http://127.0.0.1:4200":          true,
+	"https://playground.metatoy.com": true,
+	"http://localhost:5180":          true,
 }
 
 type signupInput struct {
 	Body Signup
+}
+
+type contactInput struct {
+	Body Contact
 }
 
 type signupOutput struct {
@@ -49,6 +55,23 @@ func newAPI(mux *http.ServeMux) huma.API {
 		out.Body.OK = true
 		return out, nil
 	}))
+
+	// Stateless; bodies are never logged. Huma answers 413 past the cap.
+	huma.Register(api, huma.Operation{
+		OperationID:  "createContact",
+		Method:       http.MethodPost,
+		Path:         "/contacts",
+		MaxBodyBytes: 16 * 1024,
+	}, humaonce.Wrap(contactRules, func(_ context.Context, _ *contactInput) (*signupOutput, error) {
+		out := &signupOutput{}
+		out.Body.OK = true
+		return out, nil
+	}))
+
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"ok":true}`))
+	})
 	return api
 }
 
