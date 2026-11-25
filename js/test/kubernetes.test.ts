@@ -120,6 +120,48 @@ describe("CEL -> rule table", () => {
     ],
     // compare
     ["self.max >= self.min", cmp("max", "ge", { field: "min" }, "number")],
+    // guarded compares: has() guards cover exactly the fields the comparison reads
+    [
+      "!has(self.max) || !has(self.min) || self.max >= self.min",
+      cmp("max", "ge", { field: "min" }, "number"),
+    ],
+    [
+      "self.max >= self.min || !has(self.min) || !has(self.max)",
+      cmp("max", "ge", { field: "min" }, "number"),
+    ],
+    [
+      "!has(self.min) || self.max >= self.min || !has(self.max)",
+      cmp("max", "ge", { field: "min" }, "number"),
+    ],
+    [
+      "!(has(self.max) && has(self.min)) || self.max >= self.min",
+      cmp("max", "ge", { field: "min" }, "number"),
+    ],
+    [
+      "has(self.max) && has(self.min) ? self.max >= self.min : true",
+      cmp("max", "ge", { field: "min" }, "number"),
+    ],
+    [
+      "!has(self.max) ? true : self.max > 5",
+      cmp("max", "gt", { value: 5 }, "number"),
+    ],
+    [
+      "!has(self.t1) || !has(self.t2) || timestamp(self.t1) < timestamp(self.t2)",
+      cmp("t1", "lt", { field: "t2" }, "datetime"),
+    ],
+    [
+      "has(self.t1) && has(self.t2) ? timestamp(self.t1) <= timestamp(self.t2) : true",
+      cmp("t1", "le", { field: "t2" }, "datetime"),
+    ],
+    [
+      "!has(self.end) || !has(self.start) || self.end > self.start",
+      cmp("end", "gt", { field: "start" }, "date"),
+    ],
+    [
+      "!has(self.max) || self.max <= 100",
+      cmp("max", "le", { value: 100 }, "number"),
+    ],
+    ["!has(self.a) || self.a != 'x'", cmp("a", "ne", { value: "x" }, "string")],
     ["self.max > 5", cmp("max", "gt", { value: 5 }, "number")],
     ["5 < self.max", cmp("max", "gt", { value: 5 }, "number")],
     ["5 <= self.max", cmp("max", "ge", { value: 5 }, "number")],
@@ -254,6 +296,24 @@ describe("unrecognised CEL stays server_only", () => {
     ["self.plan == 'x' ? has(self.a) : has(self.b)", /conditional/],
     ["self.plan > 'a' ? has(self.a) : true", /ordering/],
     ["self.plan in [self.a] ? has(self.b) : true", /literal|\[/],
+    ["!has(self.max) || self.max >= self.min", /do not cover exactly/],
+    [
+      "!has(self.max) || !has(self.min) || !has(self.a) || self.max >= self.min",
+      /do not cover exactly/,
+    ],
+    ["!has(self.min) || self.max > 5", /do not cover exactly/],
+    [
+      "has(self.max) && has(self.min) ? self.max > 5 : true",
+      /do not cover exactly/,
+    ],
+    [
+      "!has(self.max) || !has(self.a) || self.max >= self.a",
+      /number with string/,
+    ],
+    [
+      "!has(self.max) || !has(self.min) || self.max + self.min > 3",
+      /arithmetic/,
+    ],
     ["self.a ? has(self.b) : true", /not in the translation|condition shape/],
     ["self.plan in [] ? has(self.b) : true", /empty list/],
     ["self.plan == '''x''' ? has(self.b) : true", /triple/],

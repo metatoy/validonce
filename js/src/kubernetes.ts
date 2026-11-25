@@ -449,6 +449,8 @@ type Shape =
       op: CompareOp;
       right: { field: string } | { value: string | number };
       type: CompareType;
+      /** Written behind has() guards, so a blank side is skipped; presence is what matters. */
+      guarded?: boolean;
     }
   | { kind: FieldsKind; fields: string[] };
 
@@ -612,7 +614,39 @@ function requiredWhen(field: string, when: Condition): Shape {
   return { kind: "required_when", field, when };
 }
 
-function recogniseCondition(ast: CelAst): Shape {
+/** `has(a)` or `has(a) && has(b) && …` -> the field names. */
+function hasNames(ast: CelAst): string[] | undefined {
+  const parts = flatten(ast, "and");
+  const names = parts.map((p) => (p.t === "has" ? p.name : undefined));
+  return names.every((n) => n !== undefined) ? (names as string[]) : undefined;
+}
+
+const isBareCmp = (c: CelAst): c is CelAst & { t: "cmp" } =>
+  c.t === "cmp" && !(c.a.t === "has" && c.b.t === "has");
+
+/** A comparison behind has() guards that cover exactly the fields it reads. */
+function guardedCompare(
+  cmp: CelAst & { t: "cmp" },
+  guards: string[],
+  info: (n: string) => FieldInfo,
+): Shape {
+  const shape = recogniseCompare(cmp, info);
+  const read = new Set([
+    shape.left,
+    ...("field" in shape.right ? [shape.right.field] : []),
+  ]);
+  const have = new Set(guards);
+  if (read.size !== have.size || ![...read].every((f) => have.has(f)))
+    return unrec(
+      "has() guards do not cover exactly the fields the comparison reads",
+    );
+  return { ...shape, guarded: true };
+}
+
+function recogniseCondition(
+  ast: CelAst,
+  info: (n: string) => FieldInfo,
+): Shape {
   if (ast.t === "one") return fieldsShape("exactly_one_of", ast.names);
   if (
     ast.t === "cmp" &&
@@ -632,6 +666,17 @@ function recogniseCondition(ast: CelAst): Shape {
     const aon = allOrNoneOr(ast);
     if (aon) return fieldsShape("all_or_none", aon);
     const terms = flatten(ast, "or");
+    // `!has(a) || !has(b) || cmp`, `!(has(a) && has(b)) || cmp`, in any order
+    const guards: string[] = [];
+    const rest: CelAst[] = [];
+    for (const t of terms) {
+      const names = t.t === "not" ? hasNames(t.a) : undefined;
+      if (names) guards.push(...names);
+      else rest.push(t);
+    }
+    const only = rest[0];
+    if (guards.length > 0 && rest.length === 1 && only && isBareCmp(only))
+      return guardedCompare(only, guards, info);
     const has = terms.filter((t) => t.t === "has");
     if (has.length === terms.length)
       return fieldsShape(
@@ -653,6 +698,13 @@ function recogniseCondition(ast: CelAst): Shape {
   if (ast.t === "cond") {
     const [a, b] = [ast.a, ast.b];
     const isTrue = (x: CelAst) => x.t === "lit" && x.v === true;
+    // `has(a) && has(b) ? cmp : true`, and `!has(a) ? true : cmp`
+    const names = hasNames(ast.c);
+    if (names && isBareCmp(a) && isTrue(b))
+      return guardedCompare(a, names, info);
+    const notNames = ast.c.t === "not" ? hasNames(ast.c.a) : undefined;
+    if (notNames && isTrue(a) && isBareCmp(b))
+      return guardedCompare(b, notNames, info);
     if (a.t === "has" && isTrue(b))
       return requiredWhen(a.name, toCondition(ast.c));
     if (isTrue(a) && b.t === "has")
@@ -698,6 +750,8 @@ function recogniseCompare(
   if (ast.t !== "cmp") return unrec("not a comparison");
   const a = operand(ast.a);
   const b = operand(ast.b);
+  if (ast.a.t === "sum" || ast.b.t === "sum")
+    return unrec("arithmetic operator '+' is not supported");
   if (!a || !b)
     return unrec(
       "comparison operands must be self.<field>, timestamp(self.<field>) or a literal",
@@ -751,8 +805,9 @@ function usesOf(shape: Shape, info: (n: string) => FieldInfo): FieldUse[] {
     raw.push([shape.field, "presence"]);
     conditionUses(shape.when, raw);
   } else if (shape.kind === "compare") {
-    raw.push([shape.left, "value"]);
-    if ("field" in shape.right) raw.push([shape.right.field, "value"]);
+    const role = shape.guarded ? "presence" : "value";
+    raw.push([shape.left, role]);
+    if ("field" in shape.right) raw.push([shape.right.field, role]);
   } else for (const f of shape.fields) raw.push([f, "presence"]);
   return raw.map(([n, role]) => ({ field: info(n), role }));
 }
@@ -784,7 +839,7 @@ function recognise(ast: CelAst, info: (n: string) => FieldInfo): Recognition {
         ? sumExactlyOne(ast)
         : ast.t === "cmp" && !(ast.a.t === "has" && ast.b.t === "has")
           ? recogniseCompare(ast, info)
-          : recogniseCondition(ast);
+          : recogniseCondition(ast, info);
     const row: RowId =
       shape.kind === "compare"
         ? (`compare.${shape.type}` as RowId)
