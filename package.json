@@ -2,5 +2,10 @@
   "name": "validonce-workspace",
   "private": true,
   "description": "Workspace root for the validonce packages. Not published. It lets Dependabot update pnpm-lock.yaml.",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "pnpm": {
+    "overrides": {
+      "@hey-api/json-schema-ref-parser>js-yaml": "4.3.2"
+    }
+  }
 }

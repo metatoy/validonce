@@ -20,6 +20,8 @@ The schemas are plain Zod 4, so they work with every validonce frontend: `zodRes
 Angular Signal Forms or `validonce/angular`, `toVeeSchema` in Vue. For plain HTML and web components,
 pass the rules to `attachRules`.
 
+The generators themselves need **Node 22.18 or later** (their own requirement); the plugins run wherever the generator runs. The rest of validonce still supports Node 20.
+
 ## kubb
 
 ```ts
