@@ -2,8 +2,6 @@
 
 Write cross-field validation rules once, next to a Go struct. The server enforces them, [Huma](https://huma.rocks) publishes them in the OpenAPI document under `x-validonce`, and browser forms (React, Angular, Vue, plain HTML) enforce the same rules.
 
-This README is a landing page, shown on GitHub and pkg.go.dev. The module is fetched from source, so it adds nothing to a build.
-
 ## Install
 
 ```sh

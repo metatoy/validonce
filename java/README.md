@@ -2,8 +2,6 @@
 
 Write cross-field validation rules once, next to a Java record or Kotlin data class. Spring Boot enforces them inside the normal `@Valid` flow, springdoc publishes them in the OpenAPI document under `x-validonce`, and browser forms (React, Angular, Vue, plain HTML) enforce the same rules.
 
-This README is a landing page on GitHub. It is not part of the published artifacts' build.
-
 ## Modules
 
 | Artifact | What |
