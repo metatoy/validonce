@@ -72,4 +72,34 @@ public sealed class ContactTests(WebApplicationFactory<Program> factory) : IClas
         var r = await _http.PostAsync("/contacts", new StringContent(b.ToJsonString(), Encoding.UTF8, "application/json"));
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, r.StatusCode);
     }
+
+    private sealed class ChunkedContent(byte[] data) : HttpContent
+    {
+        protected override async Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context)
+        {
+            for (var i = 0; i < data.Length; i += 2048)
+                await stream.WriteAsync(data.AsMemory(i, Math.Min(2048, data.Length - i)));
+        }
+        protected override bool TryComputeLength(out long length) { length = 0; return false; }
+    }
+
+    [Fact]
+    public async Task Oversized_chunked_body_is_rejected()
+    {
+        var b = Valid();
+        b["street"] = new string('x', 20_000);
+        var content = new ChunkedContent(Encoding.UTF8.GetBytes(b.ToJsonString()));
+        content.Headers.ContentType = new("application/json");
+        var r = await _http.PostAsync("/contacts", content);
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, r.StatusCode);
+    }
+
+    [Fact]
+    public async Task Small_chunked_body_is_200()
+    {
+        var content = new ChunkedContent(Encoding.UTF8.GetBytes(Valid().ToJsonString()));
+        content.Headers.ContentType = new("application/json");
+        var r = await _http.PostAsync("/contacts", content);
+        Assert.Equal(HttpStatusCode.OK, r.StatusCode);
+    }
 }

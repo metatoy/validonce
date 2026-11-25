@@ -16,6 +16,9 @@ WORKDIR /src/examples/fastapi-app
 RUN uv sync --frozen --no-dev --no-editable
 
 FROM python:3.13.18-slim-bookworm
+# curl: Coolify runs its health check inside the container with curl or wget.
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
 RUN groupadd --system --gid 10001 app \
  && useradd --system --uid 10001 --gid app --no-create-home --shell /usr/sbin/nologin app
 WORKDIR /app
@@ -24,5 +27,6 @@ COPY examples/fastapi-app/app.py /app/app.py
 ENV PATH=/app/.venv/bin:$PATH PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 USER 10001:10001
 EXPOSE 8010
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -fs http://localhost:8010/openapi.json >/dev/null || exit 1
 # Health check: GET /openapi.json (200 when up).
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8010"]

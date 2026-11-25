@@ -12,10 +12,14 @@ RUN dotnet publish examples/aspnet-app/AspNetApp.csproj -c Release -o /out --no-
     -p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
+# curl: Coolify runs its health check inside the container with curl or wget.
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /out .
 ENV ASPNETCORE_URLS=http://0.0.0.0:5080 DOTNET_EnableDiagnostics=0
 USER $APP_UID
 EXPOSE 5080
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -fs http://localhost:5080/openapi/v1.json >/dev/null || exit 1
 # Health check: GET /openapi/v1.json (200 when up).
 ENTRYPOINT ["dotnet", "AspNetApp.dll"]

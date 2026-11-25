@@ -38,6 +38,24 @@ app.Use(async (ctx, next) =>
         }
         var limit = ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
         if (limit is { IsReadOnly: false }) limit.MaxRequestBodySize = ContactBodyLimit;
+        if (ctx.Request.ContentLength is null && ctx.Request.Body != Stream.Null)
+        {
+            // Chunked or streamed: read at most limit + 1 bytes, so the cap holds on any server.
+            var buffer = new MemoryStream();
+            var chunk = new byte[4096];
+            int n;
+            while ((n = await ctx.Request.Body.ReadAsync(chunk)) > 0)
+            {
+                buffer.Write(chunk, 0, n);
+                if (buffer.Length > ContactBodyLimit)
+                {
+                    ctx.Response.StatusCode = StatusCodes.Status413PayloadTooLarge;
+                    return;
+                }
+            }
+            buffer.Position = 0;
+            ctx.Request.Body = buffer;
+        }
     }
     await next();
 });
