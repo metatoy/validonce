@@ -1,0 +1,16 @@
+{
+  "name": "validonce-playground-frame-shared",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Metatoy LLC",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./frame.css": "./src/frame.css"
+  },
+  "dependencies": {
+    "validonce": "workspace:*",
+    "zod": "4.6.7"
+  }
+}
