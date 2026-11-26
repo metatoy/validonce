@@ -13,6 +13,8 @@ Field rules such as types, lengths and patterns already travel from a backend's 
 
 **[▶ Try it in the playground](https://playground.metatoy.com)**: pick a backend and a frontend and watch the same rules run in both. No install.
 
+**[Read the docs at validonce.metatoy.com](https://validonce.metatoy.com)**: a guide for every stack, live examples of each rule kind, search, and docs for each release.
+
 <p align="center"><a href="https://playground.metatoy.com"><img alt="The validonce playground: with Go and React selected, typing a US address without a postal code shows the error before submit; with browser checks off, the Go server answers 422 and the same three errors land on the same fields, numbered to match the rule, the x-validonce JSON and the response." src="assets/demo/playground-demo.gif" width="830"></a></p>
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/metatoy/validonce) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/metatoy/validonce/badge)](https://scorecard.dev/viewer/?uri=github.com/metatoy/validonce)
@@ -21,7 +23,7 @@ Try it without installing anything: the button opens a ready-to-run demo (ASP.NE
 
 <p align="center"><img alt="A sign-up form: the browser shows 'Company is required on the Pro plan'; with browser checks off, the server answers 422 and the same error appears under the same field" src="assets/demo/validonce-demo.gif" width="420"></p>
 
-> **Status: v0.3.** Adds `validonce wrap` for orval and kubb output, a one-click Codespaces demo, and Zod date helpers. v0.2 added the rule-sharing core (ASP.NET Core, FastAPI, TypeScript with Zod, React and Angular); v0.1 was the regex linter.
+> **Status: v0.5.** Adds Kubernetes custom resources (CEL rules translated to `x-validonce`) and plugins for the kubb, Hey API and orval client generators. v0.4 added Go, Spring Boot (Java and Kotlin), Fastify, NestJS, Vue and plain HTML forms; v0.3 added `validonce wrap` and the Codespaces demo. The full history is in the [changelog](CHANGELOG.md).
 
 ## How it works
 
@@ -188,7 +190,7 @@ More: [React guide](docs/client-react.md), [Angular guide](docs/client-angular.m
 
 ## Docs
 
-The full index is [docs/README.md](docs/README.md).
+The docs are published at **[validonce.metatoy.com](https://validonce.metatoy.com)**, with search, a quickstart for every stack, live rule examples, and a frozen copy for each release. The same pages are in [docs/](docs/README.md) here.
 
 **Server**
 - [Getting started: ASP.NET Core](docs/getting-started-aspnet.md)

@@ -21,6 +21,7 @@ import { loadRules, type XValidonce } from "./rules";
 import { tint } from "./tint";
 
 const REPO = "https://github.com/metatoy/validonce";
+const DOCS = "https://validonce.metatoy.com";
 type Theme = "light" | "dark";
 type Tab = "rule" | "x" | "response";
 
@@ -239,7 +240,7 @@ export function App() {
             {theme === "dark" ? "☀ Light" : "☾ Dark"}
           </button>
           <a href={REPO}>GitHub</a>
-          <a href={`${REPO}/tree/main/docs`}>Docs</a>
+          <a href={DOCS}>Docs</a>
         </nav>
       </header>
 
@@ -350,7 +351,7 @@ export function App() {
       <footer className="foot">
         <strong>Run it yourself</strong>
         <a className="btn" href="https://codespaces.new/metatoy/validonce">Open {backend.label} + {frontend.label} in Codespaces</a>
-        <a href={`${REPO}/blob/main/docs/${backend.doc}`}>
+        <a href={`${DOCS}/docs/${backend.doc.replace(/\.md$/, "")}`}>
           {backend.id === "k8s" ? "Kubernetes guide" : `Getting started: ${backend.sub === "Huma" ? "Go" : backend.label}`} →
         </a>
         <span className="grow" />
