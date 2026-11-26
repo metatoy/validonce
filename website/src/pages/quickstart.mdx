@@ -1,0 +1,51 @@
+---
+title: Choose your stack
+description: Pick your server and your client, and see the same validonce rules in each language.
+---
+
+{/* SPDX-License-Identifier: Apache-2.0 */}
+{/* Copyright 2026 Metatoy LLC */}
+
+import StackTabs from "@site/src/components/StackTabs";
+
+# Choose your stack
+
+validonce has two halves. On the **server** you write cross-field rules in your own language, and validonce
+exports them into your OpenAPI document under `x-validonce`. In the **browser** a small runtime reads those rules
+and checks the form before it is sent. The server still checks every request.
+
+## 1. Pick your server
+
+Each tab shows the same four rules for the playground's Contact form: email or phone, a full address or none of
+it, a postal code when the country is US, and an end date on or after the start date. Pick a tab once and every
+code sample on this site follows it.
+
+<StackTabs />
+
+Then follow the guide for your server:
+
+| Server | Guide |
+|---|---|
+| ASP.NET Core (FluentValidation) | [Getting started: ASP.NET Core](/docs/getting-started-aspnet) |
+| FastAPI (Pydantic) | [Getting started: FastAPI](/docs/getting-started-fastapi) |
+| Fastify (TypeBox) | [Getting started: Fastify](/docs/getting-started-fastify) |
+| NestJS (class-validator) | [Getting started: NestJS](/docs/getting-started-nestjs) |
+| Go (Huma or go-playground/validator) | [Getting started: Go](/docs/getting-started-go) |
+| Spring Boot (Java or Kotlin) | [Getting started: Spring Boot](/docs/getting-started-spring) |
+| Kubernetes CRDs (CEL) | [Kubernetes](/docs/kubernetes) |
+
+## 2. Pick your client
+
+| Client | Guide |
+|---|---|
+| React (react-hook-form and Zod) | [React client](/docs/client-react) |
+| Angular (Signal and Reactive Forms) | [Angular client](/docs/client-angular) |
+| Vue (VeeValidate) | [Vue client](/docs/client-vue) |
+| Plain forms and web components | [DOM client](/docs/client-dom) |
+| Generated clients (Hey API, kubb, orval) | [Client codegen](/docs/client-codegen) |
+
+## 3. See it run
+
+- [Rule kinds, live](/rules-live): each of the five rule kinds as a small form, running the real runtime in this page.
+- [The playground](https://playground.metatoy.com): any server with any client, with the server's answer next to the form's.
+- Moving an existing app over? [Agentic migration](/docs/agentic-migration) covers the MCP server and the migration skill.

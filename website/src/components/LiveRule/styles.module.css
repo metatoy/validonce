@@ -1,0 +1,55 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Copyright 2026 Metatoy LLC */
+.live {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 1.5rem 0 2.5rem;
+}
+@media (min-width: 900px) {
+  .live {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+.form {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: var(--ifm-global-radius);
+  padding: 1rem;
+}
+.title {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+.field input,
+.field select {
+  font: inherit;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 6px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+}
+.field input[aria-invalid="true"] {
+  border-color: var(--ifm-color-danger);
+}
+.error {
+  color: var(--ifm-color-danger);
+  font-size: 0.875rem;
+}
+.passing,
+.failing {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+.passing {
+  color: var(--ifm-color-success);
+}
+.failing {
+  color: var(--ifm-color-danger);
+}

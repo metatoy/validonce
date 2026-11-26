@@ -8,6 +8,7 @@ How the packages are published. Every package publishes from a GitHub Actions wo
 2. Publish the GitHub Release `vX.Y.Z` from `main`. This runs the npm, NuGet and PyPI workflows, which check the tag against the version and attach attested packages to the Release.
 3. Go: nothing to do. `publish-go.yml` runs on the same Release: it tests the module, pushes `go/vX.Y.Z` on the Release's commit and fetches it through the Go module proxy. (For an older release, run it by hand with the release tag.)
 4. Maven Central: `publish-maven.yml` runs on the same Release once you approve the deployment (see below).
+5. Docs site, for a minor release (X.Y.0): freeze its docs with `node website/scripts/snapshot.mjs X.Y vX.Y.0` (after the tag exists), then open a PR with `website/versioned_docs/`, `website/versioned_sidebars/`, `website/versions.json` and `website/version-refs.json`. Once merged, validonce.metatoy.com shows X.Y as the default version and `main` stays under "Next". A patch release needs nothing unless a docs fix should reach the frozen copy.
 
 ## Maven Central
 

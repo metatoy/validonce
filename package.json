@@ -5,7 +5,9 @@
   "license": "Apache-2.0",
   "pnpm": {
     "overrides": {
-      "@hey-api/json-schema-ref-parser>js-yaml": "4.3.2"
+      "@hey-api/json-schema-ref-parser>js-yaml": "4.3.2",
+      "@docusaurus/core>tinypool": "2.1.2",
+      "serialize-javascript@<7.0.3": "7.0.3"
     }
   }
 }

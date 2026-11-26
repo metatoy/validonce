@@ -1,0 +1,168 @@
+---
+title: Rule kinds, live
+description: Each validonce rule kind as a small form, checked in the browser by the real validonce runtime.
+---
+
+{/* SPDX-License-Identifier: Apache-2.0 */}
+{/* Copyright 2026 Metatoy LLC */}
+
+import LiveRule from "@site/src/components/LiveRule";
+import contact from "@site/src/generated/contact-rules.json";
+
+# Rule kinds, live
+
+Each form below runs the real `validonce` package in this page: the rules on the right are plain `x-validonce`
+data, and `evaluate()` checks them as you type. Nothing is sent anywhere. The exact semantics of each kind are in
+[Rule format v1](/docs/rule-format-v1).
+
+## required_when
+
+A field is required when a condition holds. Pick **pro** and leave the company empty.
+
+<LiveRule
+  title="Signup"
+  fields={[
+    { name: "plan", label: "Plan", options: ["free", "pro"], initial: "free" },
+    { name: "company", label: "Company" },
+  ]}
+  xValidonce={{
+    version: 1,
+    rules: [
+      {
+        id: "Signup.required_when.company",
+        kind: "required_when",
+        field: "company",
+        when: { eq: { field: "plan", value: "pro" } },
+        message: { key: "rules.company_required" },
+      },
+    ],
+  }}
+  messages={{ "rules.company_required": "Company is required on the Pro plan." }}
+/>
+
+## compare
+
+One field compared with another field or a fixed value. Set an end date before the start date.
+
+<LiveRule
+  title="Availability"
+  fields={[
+    { name: "availableFrom", label: "Available from", type: "date" },
+    { name: "availableTo", label: "Available to", type: "date" },
+  ]}
+  xValidonce={{
+    version: 1,
+    rules: [
+      {
+        id: "Contact.compare.availableTo",
+        kind: "compare",
+        left: { field: "availableTo" },
+        op: "ge",
+        right: { field: "availableFrom" },
+        type: "date",
+        message: { key: "rules.available_to_after_from" },
+      },
+    ],
+  }}
+  messages={{ "rules.available_to_after_from": "The end date must be on or after the start date." }}
+/>
+
+## at_least_one_of
+
+At least one of the fields must be filled in. It starts failing: fill in either one.
+
+<LiveRule
+  title="How to reach you"
+  fields={[
+    { name: "email", label: "Email", type: "email" },
+    { name: "phone", label: "Phone", type: "tel" },
+  ]}
+  xValidonce={{
+    version: 1,
+    rules: [
+      {
+        id: "Contact.at_least_one_of.email",
+        kind: "at_least_one_of",
+        fields: ["email", "phone"],
+        message: { key: "rules.contact_email_or_phone" },
+      },
+    ],
+  }}
+  messages={{ "rules.contact_email_or_phone": "Give an email address or a phone number." }}
+/>
+
+## exactly_one_of
+
+Exactly one of the fields must be filled in: none fails, and so do both.
+
+<LiveRule
+  title="Payment"
+  fields={[
+    { name: "cardToken", label: "Card token" },
+    { name: "iban", label: "IBAN" },
+  ]}
+  xValidonce={{
+    version: 1,
+    rules: [
+      {
+        id: "Payment.exactly_one_of.cardToken",
+        kind: "exactly_one_of",
+        fields: ["cardToken", "iban"],
+        message: { key: "rules.pay_one_way" },
+      },
+    ],
+  }}
+  messages={{ "rules.pay_one_way": "Pay with a card or a bank account: one of them, not both." }}
+/>
+
+## all_or_none
+
+Either every field is filled in or none is. Fill in only the street.
+
+<LiveRule
+  title="Address"
+  fields={[
+    { name: "street", label: "Street" },
+    { name: "city", label: "City" },
+    { name: "postalCode", label: "Postal code" },
+  ]}
+  xValidonce={{
+    version: 1,
+    rules: [
+      {
+        id: "Contact.all_or_none.street",
+        kind: "all_or_none",
+        fields: ["street", "city", "postalCode"],
+        message: { key: "rules.address_all_or_none" },
+      },
+    ],
+  }}
+  messages={{ "rules.address_all_or_none": "Fill in the whole address, or leave it all empty." }}
+/>
+
+## All four Contact rules together
+
+These are the rules exactly as the six example backends export them (`conformance/golden/`). Change the country
+to **US** with a partial address, or clear both email and phone, and several rules fail at once. The same form
+runs against a real server in the [playground](https://playground.metatoy.com).
+
+<LiveRule
+  title="Contact"
+  fields={[
+    { name: "email", label: "Email", type: "email", initial: "ada@example.com" },
+    { name: "phone", label: "Phone", type: "tel" },
+    { name: "country", label: "Country", options: ["", "US", "GB", "DE"] },
+    { name: "street", label: "Street" },
+    { name: "city", label: "City" },
+    { name: "postalCode", label: "Postal code" },
+    { name: "availableFrom", label: "Available from", type: "date" },
+    { name: "availableTo", label: "Available to", type: "date" },
+  ]}
+  xValidonce={contact}
+  messages={{
+    "rules.contact_email_or_phone": "Give an email address or a phone number.",
+    "rules.address_all_or_none": "Fill in the whole address, or leave it all empty.",
+    "rules.postal_code_required_us": "A postal code is required for US addresses.",
+    "rules.available_to_after_from": "The end date must be on or after the start date.",
+  }}
+/>

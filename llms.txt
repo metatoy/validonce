@@ -4,6 +4,7 @@
 
 ## Docs
 
+- [Docs site](https://validonce.metatoy.com): every guide with search and versions; [llms-full.txt](https://validonce.metatoy.com/llms-full.txt) has every page as one Markdown file
 - [README](https://github.com/metatoy/validonce/blob/main/README.md): overview, install, status
 - [Playground](https://playground.metatoy.com): try every backend and frontend pairing live in the browser
 - [How it works](https://github.com/metatoy/validonce/blob/main/docs/how-it-works.md): the flow from server rules to browser feedback

@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Metatoy LLC
+
+# The docs site (website/, served at validonce.metatoy.com by Cloudflare Pages from main).
+# Builds it with broken links and anchors as errors, then checks the sidebar covers every docs/
+# page, the code snippets cut from the examples are non-empty, llms.txt is served unchanged, and a
+# browser smoke test (tabs, a live rule, versions, search).
+
+name: docs-site
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "docs/**"
+      - "website/**"
+      - "llms.txt"
+      - "README.md"
+      - "js/**"
+      - "examples/**"
+      - "conformance/golden/**"
+      - "assets/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/docs-site.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # scripts/snapshot.mjs reads release tags
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        working-directory: js
+      - name: Build (broken links and anchors fail)
+        run: pnpm build
+        working-directory: website
+      - name: Typecheck (after the build, which generates src/generated/)
+        run: pnpm typecheck
+        working-directory: website
+      - name: Site checks
+        run: pnpm check
+        working-directory: website
+      - name: Install the Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: website
+      - name: Smoke test
+        run: pnpm e2e
+        working-directory: website

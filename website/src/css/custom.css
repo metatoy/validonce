@@ -1,0 +1,58 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright 2026 Metatoy LLC
+ *
+ * validonce colours (assets/brand/README.md) mapped onto Infima. The accent is the check:
+ * #4f7a17 on light, #8dc63f on dark.
+ */
+:root {
+  --ifm-color-primary: #4f7a17;
+  --ifm-color-primary-dark: #476e15;
+  --ifm-color-primary-darker: #436814;
+  --ifm-color-primary-darkest: #375510;
+  --ifm-color-primary-light: #578619;
+  --ifm-color-primary-lighter: #5b8c1a;
+  --ifm-color-primary-lightest: #679f1e;
+  --ifm-background-color: #fbfaf6;
+  --ifm-footer-background-color: #231f20;
+  --ifm-code-font-size: 92%;
+  --docusaurus-highlighted-code-line-bg: rgb(79 122 23 / 12%);
+}
+
+[data-theme="dark"] {
+  --ifm-color-primary: #8dc63f;
+  --ifm-color-primary-dark: #80b934;
+  --ifm-color-primary-darker: #79af31;
+  --ifm-color-primary-darkest: #639028;
+  --ifm-color-primary-light: #99cc53;
+  --ifm-color-primary-lighter: #9fcf5d;
+  --ifm-color-primary-lightest: #b1d87b;
+  --ifm-background-color: #1b1819;
+  --ifm-background-surface-color: #231f20;
+  --docusaurus-highlighted-code-line-bg: rgb(141 198 63 / 16%);
+}
+
+.hero--validonce {
+  padding: 4rem 0 3rem;
+  text-align: center;
+}
+
+.hero--validonce h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.hero__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.features {
+  padding: 2rem 0 4rem;
+}
+
+.features h2 {
+  font-size: 1.15rem;
+}

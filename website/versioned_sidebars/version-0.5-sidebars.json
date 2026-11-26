@@ -1,0 +1,106 @@
+{
+  "docs": [
+    {
+      "type": "category",
+      "label": "Overview",
+      "collapsible": false,
+      "items": [
+        "how-it-works"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Getting started: server",
+      "items": [
+        "getting-started-aspnet",
+        "getting-started-fastapi",
+        "getting-started-fastify",
+        "getting-started-nestjs",
+        "getting-started-go",
+        "getting-started-spring"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Clients",
+      "items": [
+        "client-react",
+        "client-angular",
+        "client-vue",
+        "client-dom",
+        "client-codegen"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Rule format",
+      "items": [
+        "rule-format-v1",
+        "live-rules",
+        "kubernetes"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Agents and MCP",
+      "items": [
+        "agentic-migration",
+        {
+          "type": "link",
+          "label": "MCP server (validonce-mcp)",
+          "href": "https://github.com/metatoy/validonce/blob/main/mcp/README.md"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Reference",
+      "items": [
+        "comparison",
+        "regex-findings",
+        {
+          "type": "link",
+          "label": "JavaScript package",
+          "href": "https://github.com/metatoy/validonce/blob/main/js/README.md"
+        },
+        {
+          "type": "link",
+          "label": "Python package",
+          "href": "https://github.com/metatoy/validonce/blob/main/python/README.md"
+        },
+        {
+          "type": "link",
+          "label": ".NET packages",
+          "href": "https://github.com/metatoy/validonce/blob/main/dotnet/README.md"
+        },
+        {
+          "type": "link",
+          "label": "Go module",
+          "href": "https://github.com/metatoy/validonce/blob/main/go/README.md"
+        },
+        {
+          "type": "link",
+          "label": "Java and Kotlin",
+          "href": "https://github.com/metatoy/validonce/blob/main/java/README.md"
+        },
+        {
+          "type": "link",
+          "label": "Changelog",
+          "href": "https://github.com/metatoy/validonce/blob/main/CHANGELOG.md"
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Project",
+      "items": [
+        {
+          "type": "link",
+          "label": "Contributing",
+          "href": "https://github.com/metatoy/validonce/blob/main/CONTRIBUTING.md"
+        },
+        "releasing"
+      ]
+    }
+  ]
+}
