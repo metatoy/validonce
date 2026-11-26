@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Metatoy LLC
-// Generates ../../conformance/kubernetes/*.json (Part 0 semantics spike fixtures).
+// Generates ../../conformance/kubernetes/*.json (semantics study fixtures).
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

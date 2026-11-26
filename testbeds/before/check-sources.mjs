@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Metatoy LLC
-// The differential check for the Plan I sources: for each library and contract (Signup, Contact),
+// The differential check for the migration sources: for each library and contract (Signup, Contact),
 // generate inputs with the MCP generator, run the hand-written old validator through its runner,
 // and require compare_results to PASS with 0 divergences.
 //   node check-sources.mjs [go-playground|jakarta|class-validator|joi|yup ...]   (default: all)

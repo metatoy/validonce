@@ -45,7 +45,7 @@ jobs:
       - name: Each runner matches validonce evaluate on every input (zod, yup, angular, pydantic, fluentvalidation)
         run: node check.mjs
         working-directory: testbeds/before
-      - name: The Plan I runners match validonce on every generated input (go-playground, Jakarta, class-validator, Joi, yup) for Signup and Contact
+      - name: The migration runners match validonce on every generated input (go-playground, Jakarta, class-validator, Joi, yup) for Signup and Contact
         run: node check-sources.mjs
         working-directory: testbeds/before
       - name: A fixture that does I/O on import fails with the clear message
