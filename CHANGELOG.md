@@ -12,6 +12,7 @@ All notable changes to validonce. Versions follow semantic versioning; before 1.
   - The skill no longer treats a malformed date as a wrongly typed input unless the code rejects it at runtime: an OpenAPI `format: date` is a description, not a check.
   - Install configs for VS Code with GitHub Copilot, Cursor and any stdio MCP client are in `docs/agentic-migration.md`, with the graded results for the new sources.
 - The Claude Code plugin has a listing icon (`.claude-plugin/icon.png`) and passes `claude plugin validate --strict`, ready for Anthropic's plugin directory. The repo's agent guide moved to `.claude/CLAUDE.md`, so it isn't read as plugin content.
+- `plugin/`: the directory edition of the Claude Code plugin, for Anthropic's plugin directory. It holds the skill and its guides only (no MCP server, no scripts), finds and classifies checks and drafts rules, and points to the full plugin for the differential proof. `scripts/sync-directory-plugin.mjs` keeps its guides identical to `skills/`, checked in CI.
 - `plugin-evals/`: six `claude plugin eval` cases, run with and without the plugin: classification of Pydantic, FluentValidation, Zod (React), Angular group validators and VeeValidate (Vue) checks, and one request the skill must stay out of.
 
 ## 0.5.0 (2026-11-25)

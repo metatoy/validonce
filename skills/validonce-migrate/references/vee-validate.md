@@ -18,7 +18,7 @@ Wire names: the form's `name` for each field is the key VeeValidate sends. Check
 ## Where cross-field checks hide
 
 - **Schema-level:** yup `.when("plan", ...)`, `.test(function () { this.parent ... })`, `ref("start")`; Zod `.refine`, `.superRefine`, `.check`.
-- **Field-level rules that name another field:** `confirmed:@password`, `required_if:@plan,pro`, `min_value:@start`, `after:@start` (the `@field` syntax); `defineRule("afterStart", (value, [other], ctx) => ...)` reading `ctx.form`.
+- **Field-level rules that name another field:** `confirmed:@email`, `required_if:@plan,pro`, `min_value:@start`, `after:@start` (the `@field` syntax); `defineRule("afterStart", (value, [other], ctx) => ...)` reading `ctx.form`.
 - **Form-level `validate`:** a function in `useForm({ validationSchema: (values) => ... })` or `form.setErrors(...)` after a custom check.
 - **`watch` on one field calling `validateField` on another** (the manual refresh that `watchDependents` replaces).
 - **`useIsFieldDirty`/`values` reads inside computed `required` flags**: a visual requirement without a validator is a hint that the rule lives only in the UI.
