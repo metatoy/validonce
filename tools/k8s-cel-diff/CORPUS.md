@@ -1,6 +1,6 @@
-# Public CRD corpus for the Plan G differential and crash tests
+# Public CRD corpus for the Kubernetes differential and crash tests
 
-Survey only. Nothing here is vendored yet; vendoring is a founder gate (Plan G, Part 2).
+Survey only. Nothing here is vendored yet; vendoring needs a maintainer's review of each license.
 Surveyed 2026-11-24. Rule counts are `rule:` lines in the file on the named ref, so they include
 nested ones (the count is a rough guide, not a parse).
 

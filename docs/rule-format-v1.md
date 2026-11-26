@@ -1,6 +1,6 @@
 # validonce rule format, version 1
 
-Status: draft for Part 1 (2026-11-22). Changes to this file change the contract every implementation is tested against, so each change also updates `conformance/`.
+Status: draft (2026-11-22). Changes to this file change the contract every implementation is tested against, so each change also updates `conformance/`.
 
 ## Purpose
 

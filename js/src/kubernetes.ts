@@ -50,7 +50,7 @@ export const ROW_IDS: readonly RowId[] = [
 
 /**
  * Which translation rows are semantically exact against Kubernetes' CEL. Every row is `drop` until the
- * Part 0 spike marks it. The lead edits this table; tests override it through `TranslateContext`.
+ * semantics study (tools/k8s-cel-diff/SEMANTICS.md) marks it. Maintainers edit this table; tests override it through `TranslateContext`.
  */
 export const TRANSLATIONS: Record<RowId, Level> = {
   required_when: "guarded",

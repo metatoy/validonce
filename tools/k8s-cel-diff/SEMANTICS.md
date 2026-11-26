@@ -1,4 +1,4 @@
-# Plan G · Part 0: where Kubernetes CEL and validonce agree
+# Where Kubernetes CEL and validonce agree
 
 Status: spike result, 2026-11-24. Every claim below comes from a fixture run (id and both verdicts quoted). To reproduce:
 
@@ -134,12 +134,12 @@ Each case enumerates every combination of `{missing, null, "", "x"}` over the 2 
 
 ## Surprises
 
-1. **`null` is not a hazard.** Plan G assumed nullable fields needed their own guard. They do not: Kubernetes treats an explicit `null` as absent for `has()` whether or not the field is `nullable` (non-nullable nulls are dropped before CEL; nullable nulls make `has()` false). `has()` differs from validonce only on `""` and `[]`.
+1. **`null` is not a hazard.** The design assumed nullable fields needed their own guard. They do not: Kubernetes treats an explicit `null` as absent for `has()` whether or not the field is `nullable` (non-nullable nulls are dropped before CEL; nullable nulls make `has()` false). `has()` differs from validonce only on `""` and `[]`.
 2. **`self.f` on a missing field is a hard error, not false.** Every unguarded read of an optional field (`self.plan == 'pro'`, `self.a <= self.b`) is a 422 `no such key` against the rule's owning object, not the field, when the operand is absent. validonce passes or skips. This turns most bare `compare` and `eq` rules into `server_only` unless the author wrote `has()` guards or `required`. The `has()`-guarded form is exactly validonce's skip rule, so the translator should accept it as the canonical `compare` shape.
 3. **`format: date` / `date-time` strings are CEL timestamps.** `+` with a string fails to compile; `timestamp()` is a no-op. The translator reads `format` from the schema, not just the CEL.
 4. **Defaults silently turn "absent" into "present".** The client form sees the raw value; the server applies the default before CEL. Any rule reading a defaulted field is inexact.
 5. **Mixed `int == double`, and `number == int-literal`, do not compile**; mixed ordering does. No translator input will contain them.
-6. **CEL is skipped on `required` / type errors but not on `minLength` / `format` errors.** A cross-field error and a `minLength` error can come back together in one 422; a missing required field hides all rules (`has.rw.string.required`: `celAlso: skipped`). Relevant to how Part 3 maps messages.
+6. **CEL is skipped on `required` / type errors but not on `minLength` / `format` errors.** A cross-field error and a `minLength` error can come back together in one 422; a missing required field hides all rules (`has.rw.string.required`: `celAlso: skipped`). Relevant to how the translator maps messages.
 7. **Sub-millisecond timestamps** are the only place a plain, valid, well-formed input makes the client strict (blocking) where the server accepts. Everything else strict comes from `""`/`[]`/defaults, which have static guards.
 8. **`1.0` for an integer field** passes schema validation but breaks CEL at runtime (`expected int, got float64`).
 
