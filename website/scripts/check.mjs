@@ -31,6 +31,9 @@ for (const [id, s] of Object.entries(snippets)) {
 const served = readFileSync(resolve(site, "build/llms.txt"), "utf8");
 if (served !== readFileSync(resolve(repo, "llms.txt"), "utf8")) fail.push("build/llms.txt differs from llms.txt");
 
+const servedPrompt = readFileSync(resolve(site, "build/agent-setup/prompt.md"), "utf8");
+if (servedPrompt !== readFileSync(resolve(site, "agent-setup/prompt.md"), "utf8")) fail.push("build/agent-setup/prompt.md differs from agent-setup/prompt.md");
+
 const full = readFileSync(resolve(site, "build/llms-full.txt"), "utf8");
 for (const p of listed) {
   if (!full.includes(`/docs/${p}.md`)) fail.push(`llms-full.txt is missing docs/${p}.md`);

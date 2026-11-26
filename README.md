@@ -15,6 +15,8 @@ Field rules such as types, lengths and patterns already travel from a backend's 
 
 **[Read the docs at validonce.metatoy.com](https://validonce.metatoy.com)**: a guide for every stack, live examples of each rule kind, search, and docs for each release.
 
+**[Onboard your agent to validonce](https://validonce.metatoy.com/agent-setup)**: connect Claude Code, Copilot in VS Code, Cursor, Codex or any MCP client, and give it one prompt to find your cross-field checks and migrate them.
+
 <p align="center"><a href="https://playground.metatoy.com"><img alt="The validonce playground: with Go and React selected, typing a US address without a postal code shows the error before submit; with browser checks off, the Go server answers 422 and the same three errors land on the same fields, numbered to match the rule, the x-validonce JSON and the response." src="assets/demo/playground-demo.gif" width="830"></a></p>
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/metatoy/validonce) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/metatoy/validonce/badge)](https://scorecard.dev/viewer/?uri=github.com/metatoy/validonce)

@@ -46,6 +46,9 @@ export default function Home(): ReactNode {
               Try the playground
             </Link>
           </div>
+          <Link className="agent-pill" to="/agent-setup">
+            Onboard your agent to validonce <span aria-hidden="true">→</span>
+          </Link>
         </div>
       </header>
       <main className="container features">

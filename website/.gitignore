@@ -4,6 +4,7 @@ build/
 static/assets/
 static/llms.txt
 static/llms-full.txt
+static/agent-setup/
 src/generated/
 test-results/
 playwright-report/
