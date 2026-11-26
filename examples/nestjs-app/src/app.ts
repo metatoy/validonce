@@ -268,8 +268,8 @@ export async function buildApp() {
     [Signup, Contact],
   );
   // Same-origin path the React form reads (`/openapi.json`).
-  app.getHttpAdapter().get("/openapi.json", (_req: unknown, res: { json(b: unknown): void }) => {
-    res.json(document);
+  app.getHttpAdapter().get("/openapi.json", (_req: unknown, res: unknown) => {
+    (res as { json(b: unknown): void }).json(document);
   });
   await app.init();
   return { app, document };

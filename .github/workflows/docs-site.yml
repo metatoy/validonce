@@ -46,11 +46,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
         working-directory: js
-      - name: Typecheck
-        run: pnpm typecheck
-        working-directory: website
       - name: Build (broken links and anchors fail)
         run: pnpm build
+        working-directory: website
+      - name: Typecheck (after the build, which generates src/generated/)
+        run: pnpm typecheck
         working-directory: website
       - name: Site checks
         run: pnpm check
