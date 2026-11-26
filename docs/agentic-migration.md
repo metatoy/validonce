@@ -105,3 +105,14 @@ Every run is graded by code, not by a model: the agent's rules must accept and r
 | GitHub Copilot CLI (GPT-5.3-Codex) | 7 of 7 | 2 of 3; one left code that did not import (caught by the build check) |
 
 Of 49 graded runs (final tuning round and hold-out), 45 passed every check (43 as first run; two rescored after a timeout and a build failure), and in those the old and migrated validators agreed on every generated input. In a later check with other inputs, 9 of the 28 passing runs that migrated rules changed a verdict on at least one, mostly dates held as plain text. Supported: **Claude Code**. Copilot's results are reported as measured.
+
+### Go, Java, NestJS, Joi, Vue and Kubernetes
+
+The newer sources were graded later, the same way, with Claude Code. Copilot has not been measured on them yet.
+
+| Agent | Tuning set (10 cases: go-playground, Jakarta, class-validator, Joi, VeeValidate and a Kubernetes CRD, plus four that must not be migrated) | Date cases (yup, Angular, NestJS and Joi with dates checked at runtime; the proof includes malformed and partial dates) | Hold-out (one public Vue/VeeValidate app, measured once) |
+|---|---|---|---|
+| Claude Code (Opus) | 18 of 20 pass every check; both misses are Joi runs that kept a date rule hand-written | 6 of 7; the miss migrated correctly but added a file it was not asked for | 1 of 1 |
+| Claude Code (Sonnet) | not run | 4 of 4 (one run per case) | not measured |
+
+In the passing tuning runs the old and migrated validators agreed on every generated input. In a later check with other inputs, 11 of the 13 passing runs that migrated rules changed a verdict on at least one, mostly malformed or partial dates in the NestJS and Vue cases, and years 0000 or above 9999 in Go and Spring. The date cases put such inputs in the proof itself, and none of their passing runs changed a verdict.
