@@ -38,3 +38,6 @@ examples/go-app/go-app
 .angular/
 **/test-results/
 mcp/test/golden/out-targets/
+
+# Plugin eval results (claude plugin eval)
+plugin-evals/results/
