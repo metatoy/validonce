@@ -7,6 +7,7 @@ settings:
 overrides:
   '@hey-api/json-schema-ref-parser>js-yaml': 4.3.2
   '@docusaurus/core>tinypool': 2.1.2
+  serialize-javascript@<7.0.3: 7.0.3
 
 importers:
 
@@ -9807,9 +9808,6 @@ packages:
   quickjs-wasi@3.7.0:
     resolution: {integrity: sha512-6nOShBtCglrQL6yH+hptIfEdA1WlSmvY/Mm5Ypn9IvtsaDsrYIg8x+xoIXQt02w66a0f1eLTAj1lhfgAbJ4WVw==}
 
-  randombytes@2.1.0:
-    resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
-
   range-parser@1.2.0:
     resolution: {integrity: sha512-kA5WQoNVo4t9lNx2kQNFCxKeBl5IbbSNBl1M/tLkw9WCn+hxNBAW5Qh8gdhs63CJnhjJ2zQWFoqPJP2sK1AV5A==}
     engines: {node: '>= 0.6'}
@@ -10309,8 +10307,9 @@ packages:
     resolution: {integrity: sha512-1gnZf7DFcoIcajTjTwjwuDjzuz4PPcY2StKPlsGAQ1+YH20IRVrBaXSWmdjowTJ6u8Rc01PoYOGHXfP1mYcZNQ==}
     engines: {node: '>= 18'}
 
-  serialize-javascript@6.0.2:
-    resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
+  serialize-javascript@7.0.3:
+    resolution: {integrity: sha512-h+cZ/XXarqDgCjo+YSyQU/ulDEESGGf8AMK9pPNmhNSl/FzPl6L8pMp1leca5z6NuG6tvV/auC8/43tmovowww==}
+    engines: {node: '>=20.0.0'}
 
   serve-handler@6.1.8:
     resolution: {integrity: sha512-CYwNp8vJjDHTSQq52gHRVNkNOl89b5Q4HOHuQzbvodSyN+Y7ZgXy1pJI1PUKbSKK7NYgoPvI33EjkIxNa7kDmA==}
@@ -18407,7 +18406,7 @@ snapshots:
       globby: 13.2.2
       normalize-path: 3.0.0
       schema-utils: 4.8.5(webpack@5.113.0(postcss@8.5.33))
-      serialize-javascript: 6.0.2
+      serialize-javascript: 7.0.3
       webpack: 5.113.0(clean-css@5.3.3)(cssnano@6.1.2(postcss@8.5.33))(html-minifier-terser@7.2.0)(postcss@8.5.33)
 
   core-js-compat@3.51.0:
@@ -18478,7 +18477,7 @@ snapshots:
       jest-worker: 29.7.0
       postcss: 8.5.33
       schema-utils: 4.8.5(webpack@5.113.0(postcss@8.5.33))
-      serialize-javascript: 6.0.2
+      serialize-javascript: 7.0.3
       webpack: 5.113.0(clean-css@5.3.3)(cssnano@6.1.2(postcss@8.5.33))(html-minifier-terser@7.2.0)(postcss@8.5.33)
     optionalDependencies:
       clean-css: 5.3.3
@@ -22419,10 +22418,6 @@ snapshots:
 
   quickjs-wasi@3.7.0: {}
 
-  randombytes@2.1.0:
-    dependencies:
-      safe-buffer: 5.2.1
-
   range-parser@1.2.0: {}
 
   range-parser@1.2.1: {}
@@ -23040,9 +23035,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  serialize-javascript@6.0.2:
-    dependencies:
-      randombytes: 2.1.0
+  serialize-javascript@7.0.3: {}
 
   serve-handler@6.1.8:
     dependencies:
