@@ -9,7 +9,7 @@
       "name": "validonce",
       "source": "./",
       "description": "Migrate hand-written cross-field validation to validonce rules, proven by a differential check (skill + MCP server).",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": { "name": "Metatoy LLC" },
       "license": "Apache-2.0",
       "category": "development",

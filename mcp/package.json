@@ -1,6 +1,6 @@
 {
   "name": "validonce-mcp",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "MCP server for validonce: read, check and evaluate shared validation rules. Read-only.",
   "license": "Apache-2.0",
   "author": "Metatoy LLC",
