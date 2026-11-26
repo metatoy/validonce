@@ -253,6 +253,7 @@ The tool reads an OpenAPI file, so it works for any backend language. The same c
 | `python/` | Python: evaluator, Pydantic integration, regex linter |
 | `mcp/` | `validonce-mcp`: the MCP server for agents, its tests and the agent evaluation harness |
 | `skills/` | The `validonce-migrate` agent skill: steps, per-library guides and the old-validator runners (the Claude Code plugin manifest is in `.claude-plugin/`) |
+| `plugin/` | The directory edition of the Claude Code plugin: the skill and guides only, listed in Anthropic's plugin directory |
 | `testbeds/` | Hand-written old validators in each source library, and cases that must stay hand-written, used to test the migration proof |
 | `examples/` | ASP.NET Core, FastAPI, Fastify, NestJS, Go and Spring Boot backends with the same rules, the forms that read them, and the playground |
 | `schemas/` | Static files for schemas.metatoy.com; `scripts/build-schemas.mjs` adds the rule-format schemas from `conformance/schema/` |

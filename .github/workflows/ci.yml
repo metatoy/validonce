@@ -309,6 +309,8 @@ jobs:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
       - run: uv run --project python pytest -q python/tests/test_conformance_schema.py
+      - name: Directory plugin guides match the skill
+        run: node scripts/sync-directory-plugin.mjs --check
 
   golden:
     # Regenerates each example backend's OpenAPI document and fails on any difference from the
