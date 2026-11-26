@@ -6,6 +6,9 @@ Cases for `claude plugin eval`, which runs each prompt with and without the plug
 |---|---|
 | `pydantic-classify` | Sorts three Pydantic checks into a `compare`, an `at_least_one_of` and one kept hand-written (arithmetic) |
 | `fluentvalidation-classify` | Sorts three FluentValidation rules into a `required_when`, a strict `gt` compare and one kept hand-written (async lookup) |
+| `zod-react-classify` | Zod `superRefine` in a React form: a date `compare` (`ge`), a password `eq`, and a country-gated age check kept hand-written |
+| `angular-classify` | Angular group validators: `at_least_one_of`, `exactly_one_of`, and an async API check kept hand-written |
+| `veevalidate-vue-classify` | VeeValidate with yup in Vue: `required_when`, `all_or_none`, and an arithmetic discount check kept hand-written |
 | `unrelated-no-trigger` | The skill stays out of an unrelated request |
 
 The cases ask for a classification and draft rules only, so no MCP server or old validator runs. Run from the repo root:
