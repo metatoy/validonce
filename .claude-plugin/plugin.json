@@ -7,11 +7,13 @@
   "repository": "https://github.com/metatoy/validonce",
   "license": "Apache-2.0",
   "keywords": ["validation", "migration", "openapi", "fluentvalidation", "pydantic", "zod", "kubernetes", "cel", "go-playground", "jakarta", "class-validator", "joi", "vee-validate", "kubb", "orval", "hey-api"],
+  "icon": "./.claude-plugin/icon.png",
   "skills": "./skills/",
   "mcpServers": {
     "validonce": {
       "command": "npx",
       "args": ["-y", "validonce-mcp"]
     }
-  }
+  },
+  "experimental": { "evals": "plugin-evals" }
 }
