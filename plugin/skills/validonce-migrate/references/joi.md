@@ -63,4 +63,4 @@ allOrNone(F.street, F.city, F.postalCode, { key: "rules.address_all_or_none", pa
 
 ## What stays hand-written
 
-`.external()` (async, I/O), `.custom()` that calls services or a clock, `Joi.ref("$context")` checks, `.without` / `.nand`, `.pattern` over key names, array `.unique()` / `.has()` and per-item rules, `.when` that changes a field's **type** or format rather than its presence (for example `Joi.when("kind", { is: "a", then: Joi.number(), otherwise: Joi.string() })`), and every field-level check. Say each one in the report.
+`.external()` (async, I/O), `.custom()` that calls services or a clock, context references (`Joi.ref` with a `$` prefix, which read values passed in at validate time), `.without` / `.nand`, `.pattern` over key names, array `.unique()` / `.has()` and per-item rules, `.when` that changes a field's **type** or format rather than its presence (for example `Joi.when("kind", { is: "a", then: Joi.number(), otherwise: Joi.string() })`), and every field-level check. Say each one in the report.
