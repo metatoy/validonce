@@ -41,7 +41,7 @@ The server always enforces the rules. The browser runs them first to give fast f
 - One shared conformance suite (125 cases) that every evaluator (C#, Python, TypeScript, Go, Java) passes.
 - Kubernetes: the CEL rules of custom resources (`x-kubernetes-validations`) translate to `x-validonce`, checked against the API server's own validation.
 - Generator plugins: the Zod schemas that kubb, Hey API and orval generate carry the cross-field rules.
-- AI-assisted migration: an MCP server (`validonce-mcp`) and a Claude Code plugin find your existing cross-field checks, rewrite them as validonce rules, and prove nothing changed with a differential test.
+- AI-assisted migration: an MCP server (`validonce-mcp`) and a Claude Code plugin find your existing cross-field checks, rewrite them as validonce rules, and check that nothing changed on generated inputs with a differential test.
 - Regex portability linter for `pattern` rules.
 
 ## Supported stacks
@@ -64,7 +64,7 @@ The server always enforces the rules. The browser runs them first to give fast f
 
 ## Migrate an existing project with an agent
 
-Already have cross-field checks written by hand? A coding agent can move them to validonce and prove that nothing changed. It reads checks in FluentValidation, Pydantic, Zod, yup, Angular, go-playground/validator, Jakarta Bean Validation, class-validator, Joi and VeeValidate. Kubernetes CRDs with CEL rules (`x-kubernetes-validations`) are translated, not rewritten.
+Already have cross-field checks written by hand? A coding agent can move them to validonce and check that nothing changed on generated inputs. It reads checks in FluentValidation, Pydantic, Zod, yup, Angular, go-playground/validator, Jakarta Bean Validation, class-validator, Joi and VeeValidate. Kubernetes CRDs with CEL rules (`x-kubernetes-validations`) are translated, not rewritten.
 
 ```text
 /plugin marketplace add metatoy/validonce      # Claude Code: the skill and the MCP server together
@@ -73,7 +73,7 @@ Already have cross-field checks written by hand? A coding agent can move them to
 claude mcp add --transport stdio validonce -- npx -y validonce-mcp   # or just the MCP server, in any MCP client
 ```
 
-The agent finds each check, rewrites it as a validonce rule, and runs a **differential test**: your old validator and validonce on thousands of generated edge-case inputs must accept and reject exactly the same. Every run is graded by code, not by a model. The 49 graded runs covered FluentValidation, Pydantic, Zod, yup and Angular (our own examples) and three public apps (.NET/FluentValidation, FastAPI/Pydantic, React/Zod); in them, no migration changed what the validator accepts or rejects. The other sources (go-playground, Jakarta, class-validator, Joi, VeeValidate, Kubernetes CRDs) are not part of those runs: their runners and guides are tested in CI against hand-written fixtures, but no agent has been graded on them. The Go, Java, TypeScript, Vue and plain HTML code targets, `translate_kubernetes` and `suggest_client_wiring` need `validonce-mcp` 0.2.0 or later. Details and results: [docs/agentic-migration.md](docs/agentic-migration.md).
+The agent finds each check, rewrites it as a validonce rule, and runs a **differential test**: your old validator and validonce on thousands of generated edge-case inputs must accept and reject exactly the same. Every run is graded by code, not by a model. The 49 graded runs covered FluentValidation, Pydantic, Zod, yup and Angular (our own examples) and three public apps (.NET/FluentValidation, FastAPI/Pydantic, React/Zod). In the runs that passed, the migrated validator and the original agreed on every generated input. Those inputs use well-formed dates and the declared field types. Outside them, some yup, Angular and Zod migrations accept values the original rejected, such as malformed dates in the wrong order, so enforce date formats at runtime. The other sources (go-playground, Jakarta, class-validator, Joi, VeeValidate, Kubernetes CRDs) are not part of those runs: their runners and guides are tested in CI against hand-written fixtures, but no agent has been graded on them. The Go, Java, TypeScript, Vue and plain HTML code targets, `translate_kubernetes` and `suggest_client_wiring` need `validonce-mcp` 0.2.0 or later. Details and results: [docs/agentic-migration.md](docs/agentic-migration.md).
 
 ## Install
 

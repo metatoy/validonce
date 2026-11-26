@@ -1,6 +1,6 @@
 # Migrating an existing project with an agent
 
-Moving an existing project to validonce means finding every hand-written cross-field check, deciding which rule kind each one is, rewriting it once on the server, deleting the client copies, and proving nothing changed. A coding agent can do most of that with two pieces from this repo:
+Moving an existing project to validonce means finding every hand-written cross-field check, deciding which rule kind each one is, rewriting it once on the server, deleting the client copies, and checking that nothing changed on generated inputs. A coding agent can do most of that with two pieces from this repo:
 
 - **`validonce-mcp`**: an MCP server with deterministic tools that read, check, evaluate, generate and compare rules.
 - **`validonce-migrate`**: an agent skill with the steps and the per-library mapping guides.
@@ -104,4 +104,4 @@ Every run is graded by code, not by a model: the agent's rules must accept and r
 | Claude Code (Opus) | 30 of 30 runs pass every check | 6 of 9 pass every check; the other 3 migrated less than they could (rules left hand-written, with reasons) |
 | GitHub Copilot CLI (GPT-5.3-Codex) | 7 of 7 | 2 of 3; one left code that did not import (caught by the build check) |
 
-In all 49 graded runs (final tuning round and hold-out), no migration changed what the validator accepts or rejects. Supported: **Claude Code**. Copilot's results are reported as measured.
+Of 49 graded runs (final tuning round and hold-out), 45 passed every check (43 as first run; two rescored after a timeout and a build failure), and in those the old and migrated validators agreed on every generated input. In a later check with other inputs, 9 of the 28 passing runs that migrated rules changed a verdict on at least one, mostly dates held as plain text. Supported: **Claude Code**. Copilot's results are reported as measured.
