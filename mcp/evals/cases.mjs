@@ -202,6 +202,17 @@ Object.assign(CASES, {
   "tricky-nestjs-format": { dir: "tricky/format-nestjs", group: "tricky", stack: "js", deps: ["class-transformer", "class-validator", "reflect-metadata"], build: nestCheck("address.dto.ts") },
 });
 
+// The same fixtures with the date format enforced at runtime. A validonce date compare skips malformed text, so where
+// nothing enforces the format (yup, angular, nestjs above) a migration accepts malformed dates the original rejected.
+// The Joi one is express-joi-text. The earlier fixtures and their scores stay as they are.
+const DATE_PAIRS = [["2024-06-15T10:00:00Z", "2024-06-15T09:00:00Z"], ["2024-06-15", "2024-06-14T10:00:00Z"], ["2024", "2023"], ["2024-02-31", "2024-02-30"], ["zzz", "aaa"], ["2024-06-15", "!!"]];
+const signupProbes = DATE_PAIRS.map(([start, end]) => ({ ...SIGNUP_BASE, start, end }));
+Object.assign(CASES, {
+  "yup-dates": { ...CASES.yup, dir: "stacks/yup-dates", group: "stacks", probes: signupProbes },
+  "angular-dates": { ...CASES.angular, dir: "stacks/angular-dates", group: "stacks", probes: signupProbes },
+  "nestjs-dates": { ...CASES.nestjs, dir: "stacks/nestjs-dates", probes: DATE_PAIRS.map(([availableFrom, availableTo]) => ({ ...CONTACT_BASE, email: "a@example.test", availableFrom, availableTo })) },
+});
+
 // Hold-out cases: public apps measured once, kept OUTSIDE this repo (third-party code, scratch copies).
 // VALIDONCE_HOLDOUT_CASES points at a module exporting HOLDOUT: { [id]: case } where each case has an absolute
 // `root` (its fixture folder, holding expected.json) and group "holdout". They run with VALIDONCE_EVAL_GROUP=holdout.

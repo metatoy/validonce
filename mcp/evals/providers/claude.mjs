@@ -21,9 +21,9 @@ const DENY_BASH = ["git push", "git commit", "rm", "curl", "wget", "ssh", "secur
 export function buildOptions(prep, config = {}) {
   return {
     cwd: prep.work,
-    model: config.model ?? process.env.EVAL_CLAUDE_MODEL ?? "opus",
+    model: process.env.EVAL_CLAUDE_MODEL ?? config.model ?? "opus",
     maxTurns: config.maxTurns ?? 60,
-    maxBudgetUsd: config.maxBudgetUsd ?? 5,
+    maxBudgetUsd: Number(process.env.EVAL_MAX_USD ?? config.maxBudgetUsd ?? 5),
     // file read/edit + bash inside the dir, the Skill tool, and the validonce MCP server. Nothing else.
     tools: ["Read", "Edit", "Write", "Glob", "Grep", "Bash", "Skill"],
     allowedTools: ["Read", "Edit", "Write", "Glob", "Grep", "Bash", "Skill", "mcp__validonce"],
