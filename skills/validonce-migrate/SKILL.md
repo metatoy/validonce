@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Needs the validonce-mcp MCP server (npx -y validonce-mcp). Running the old validator needs Node 22 (Zod, yup, Angular), the project's Python venv (Pydantic) or the .NET SDK (FluentValidation). Works in Claude Code and any agent that supports Agent Skills and MCP.
 metadata:
   author: Metatoy LLC
-  version: "0.1.0"
+  version: "0.2.0"
   homepage: https://github.com/metatoy/validonce
 allowed-tools: mcp__validonce__read_openapi_rules mcp__validonce__check_rules mcp__validonce__evaluate mcp__validonce__generate_code mcp__validonce__generate_inputs mcp__validonce__compare_results mcp__validonce__translate_kubernetes mcp__validonce__suggest_client_wiring Read Grep Glob
 ---

@@ -2,6 +2,16 @@
 
 All notable changes to validonce. Versions follow semantic versioning; before 1.0, minor versions may include breaking changes.
 
+## Unreleased
+
+### In the repository, not in the packages
+- **`validonce-mcp` 0.2.0** (the MCP server for migrating existing validation to validonce) and the `validonce` Claude Code plugin 0.2.0 cover the 0.4 and 0.5 stacks:
+  - `generate_code` writes Go, Java (usable from Kotlin), TypeScript rules for Fastify and NestJS, Vue (VeeValidate) and plain HTML targets.
+  - New tools: `translate_kubernetes` (CRD CEL to `x-validonce`, with a per-rule report) and `suggest_client_wiring` (React, Angular, Vue or plain HTML set-up, including the kubb, Hey API and orval plugin configs). `read_openapi_rules` also reports the names a client generator would export.
+  - The `validonce-migrate` skill has migration guides and proof runners for go-playground, Jakarta, class-validator, Joi, VeeValidate and Kubernetes CRDs, and a step for wiring generated clients.
+  - The skill no longer treats a malformed date as a wrongly typed input unless the code rejects it at runtime: an OpenAPI `format: date` is a description, not a check.
+  - Install configs for VS Code with GitHub Copilot, Cursor and any stdio MCP client are in `docs/agentic-migration.md`, with the graded results for the new sources.
+
 ## 0.5.0 (2026-11-25)
 
 Kubernetes custom resources and OpenAPI client generators. The CEL rules of a CRD now reach the browser, and the Zod schemas that kubb, Hey API and orval generate carry the cross-field rules.

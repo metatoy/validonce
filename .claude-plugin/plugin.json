@@ -1,6 +1,6 @@
 {
   "name": "validonce",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Migrate hand-written cross-field validation (FluentValidation, Pydantic, Zod, Angular, yup, go-playground, Jakarta, class-validator, Joi, VeeValidate), translate Kubernetes CEL, and wire kubb, Hey API and orval clients to validonce rules, proven by a differential check. Bundles the validonce-migrate skill and the validonce-mcp server.",
   "author": { "name": "Metatoy LLC" },
   "homepage": "https://github.com/metatoy/validonce",
