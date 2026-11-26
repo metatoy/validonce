@@ -1,0 +1,24 @@
+{
+  "migrate": [],
+  "keep": [
+    {
+      "check": "confirmCode equals code after String/trim/lowercase",
+      "reason_category": "coercion",
+      "file": "reservation.mjs",
+      "marker": "String\\(value\\)\\.trim\\(\\)\\.toLowerCase\\(\\)",
+      "mention": "code"
+    },
+    {
+      "check": "parseInt(children) <= parseInt(seats)",
+      "reason_category": "coercion",
+      "file": "reservation.mjs",
+      "marker": "parseInt\\(value, 10\\) <=",
+      "mention": "children|seats"
+    }
+  ],
+  "allowedFiles": [
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}

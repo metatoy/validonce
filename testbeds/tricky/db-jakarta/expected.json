@@ -1,0 +1,17 @@
+{
+  "migrate": [],
+  "keep": [
+    {
+      "check": "email uniqueness via an injected repository",
+      "reason_category": "async_db",
+      "file": "src/main/java/example/registration/UniqueEmail.java",
+      "marker": "existsByEmailAndDisplayNameNot\\(r\\.getEmail\\(\\)",
+      "mention": "email|unique"
+    }
+  ],
+  "allowedFiles": [
+    "validonce-rules.json",
+    "MIGRATION_REPORT.md",
+    ".validonce-scratch/**"
+  ]
+}

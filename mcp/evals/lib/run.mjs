@@ -27,7 +27,7 @@ export function readAgentRules(work) {
   return { rules, ruleSet: { version: 1, rules } };
 }
 
-const IGNORE_TOP = new Set([".claude", ".github", ".copilot", ".mcp.json", "node_modules", ".venv", "bin", "obj", "__pycache__", ".pytest_cache", ".git", ".ruff_cache", "nuget.config", ".vscode", "PROMPT.md", "RUN-SHEET.md", "run.json"]);
+const IGNORE_TOP = new Set([".claude", ".github", ".copilot", ".mcp.json", "node_modules", ".venv", "bin", "obj", "__pycache__", ".pytest_cache", ".git", ".ruff_cache", "nuget.config", ".vscode", "PROMPT.md", "RUN-SHEET.md", "run.json", "libs", "out", "build"]);
 export function listFiles(root, dir = root) {
   const out = [];
   for (const n of readdirSync(dir)) {

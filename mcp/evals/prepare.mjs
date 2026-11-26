@@ -11,6 +11,7 @@ import { basename, isAbsolute, join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import { pathToFileURL } from "node:url";
 import { CASES, caseDir } from "./cases.mjs";
+import { agentEnv, ensureJavaLibs } from "./lib/stacks.mjs";
 import { assertOutsideParentWorkspace, ensureNugetFeed, ensureDir, evalsDir, mcpEntry, readJson, repoRoot, scratchRoot, skillsDir, testbeds } from "./lib/util.mjs";
 
 // case.mjs, replay/ and SOURCE.md belong to a hold-out case's answer side, never the agent's copy
@@ -22,6 +23,9 @@ export function resolveVariant(variant) {
   if (variant === "baseline") return skillsDir;
   return isAbsolute(variant) ? variant : join(evalsDir, "variants", variant);
 }
+
+// dependencies of testbeds/before that only the stacks cases use (cases.mjs `deps`)
+const STACK_ONLY = new Set(["@nestjs/common", "@nestjs/core", "@nestjs/swagger", "@vee-validate/yup", "class-transformer", "class-validator", "joi", "reflect-metadata", "vee-validate", "vue"]);
 
 export function defaultRunId() {
   return new Date().toISOString().replace(/[-:]/g, "").replace(/\..*/, "").replace("T", "-");
@@ -46,12 +50,14 @@ export function prepare({ caseId, variant = "baseline", agent, runId = process.e
   const nm = join(testbeds, "before/node_modules");
   if (c.stack === "js" && existsSync(nm)) symlinkSync(nm, join(work, "node_modules"), "dir");
   if (c.stack === "python") symlinkSync(join(repoRoot, "python/.venv"), join(work, ".venv"), "dir"); // pydantic + the workspace validonce (editable)
-  if ((c.group === "before" || c.group === "holdout") && c.stack === "js") {
+  if ((c.group === "before" || c.group === "holdout" || c.deps) && c.stack === "js") {
     const p = readJson(join(testbeds, "before/package.json"));
     const dev = { ...p.devDependencies };
     delete dev.validonce;
-    writeFileSync(join(work, "package.json"), JSON.stringify({ name: `before-${caseId}`, private: true, version: "0.0.0", type: "module", dependencies: p.dependencies, devDependencies: dev }, null, 2) + "\n");
+    const dependencies = Object.fromEntries(Object.entries(p.dependencies).filter(([k]) => (c.deps ? c.deps.includes(k) : !STACK_ONLY.has(k))));
+    writeFileSync(join(work, "package.json"), JSON.stringify({ name: c.deps ? caseId : `before-${caseId}`, private: true, version: "0.0.0", type: "module", dependencies, devDependencies: dev }, null, 2) + "\n");
   }
+  if (c.stack === "java") symlinkSync(ensureJavaLibs(), join(work, "libs"), "dir");
   if (c.stack === "dotnet") {
     const feed = ensureNugetFeed();
     writeFileSync(join(work, "nuget.config"), `<?xml version="1.0" encoding="utf-8"?>\n<configuration>\n  <packageSources>\n    <clear />\n    <add key="validonce-local" value="${feed}" />\n  </packageSources>\n</configuration>\n`);
@@ -84,6 +90,8 @@ export function prepare({ caseId, variant = "baseline", agent, runId = process.e
   return {
     runId, caseId, variant, agent, runDir, work, pristine, copilotMcp,
     mcpServer: server,
+    env: agentEnv(c, runDir),
+    extraWrite: c.stack === "go" ? [join(runDir, "go")] : [],
     skillSource: skillSrc,
     skillHasSkillMd: existsSync(join(skillDest, "SKILL.md")),
   };

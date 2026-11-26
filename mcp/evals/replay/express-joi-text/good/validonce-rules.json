@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "Signup.required_when.company",
+      "kind": "required_when",
+      "field": "company",
+      "when": {
+        "eq": {
+          "field": "plan",
+          "value": "pro"
+        }
+      },
+      "message": {
+        "key": "rules.company_required"
+      }
+    },
+    {
+      "id": "Signup.compare.confirmEmail",
+      "kind": "compare",
+      "left": {
+        "field": "confirmEmail"
+      },
+      "op": "eq",
+      "right": {
+        "field": "email"
+      },
+      "type": "string",
+      "message": {
+        "key": "rules.email_match"
+      }
+    },
+    {
+      "id": "Signup.compare.end",
+      "kind": "compare",
+      "left": {
+        "field": "end"
+      },
+      "op": "ge",
+      "right": {
+        "field": "start"
+      },
+      "type": "date",
+      "message": {
+        "key": "rules.end_after_start"
+      }
+    }
+  ]
+}

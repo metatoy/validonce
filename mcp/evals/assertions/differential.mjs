@@ -59,7 +59,7 @@ export default async function (_output, context) {
         }
       }
       writeFileSync(join(diff, "inputs.jsonl"), inputs.map((i) => JSON.stringify(i)).join("\n") + "\n");
-      const old = runOld(c, run.pristine, join(diff, "inputs.jsonl"), join(diff, "old.jsonl"), diff);
+      const old = await runOld(c, run.pristine, join(diff, "inputs.jsonl"), join(diff, "old.jsonl"), diff);
       if (!old.ok) return { pass: false, score: 0, reason: `old validator could not run: ${old.error}` };
       const common = { inputsPath: join(diff, "inputs.jsonl"), oldResultsPath: join(diff, "old.jsonl"), minInputs, runner: { name: c.runner.script, sandbox: old.header } };
       // A partial migration keeps some checks hand-written. Those checks still reject inputs in the old validator, so
@@ -75,10 +75,16 @@ export default async function (_output, context) {
         if (!new RegExp(r.keptIf.marker, r.keptIf.flags ?? "").test(text))
           return { pass: false, score: 0, reason: `${r.id} was neither migrated nor kept as a hand-written check in ${r.keptIf.file}` };
       }
+      // Rules that are written but never called change behaviour without changing the validator this harness can run.
+      for (const w of run.expected.wired ?? []) {
+        const src = join(run.work, w.file);
+        if (!new RegExp(w.marker).test(existsSync(src) ? readFileSync(src, "utf8") : ""))
+          return { pass: false, score: 0, reason: `not wired: ${w.file}: ${w.why}` };
+      }
       // Run the MIGRATED validator (its rules plus everything it kept by hand) on the same inputs.
       const whole = join(diff, "whole");
       mkdirSync(whole, { recursive: true });
-      const mig = runOld(c, run.work, join(diff, "inputs.jsonl"), join(whole, "migrated.jsonl"), whole);
+      const mig = await runOld(c, run.work, join(diff, "inputs.jsonl"), join(whole, "migrated.jsonl"), whole);
       const before = readJsonl(join(diff, "old.jsonl"));
       const after = mig.ok ? readJsonl(join(whole, "migrated.jsonl")) : [];
       // Scoped proof: the agent's RULES (what browsers will enforce) against the old verdicts on the fields its rules
@@ -106,6 +112,18 @@ export default async function (_output, context) {
       // This catches a check deleted without a rule in its place.
       // No whole-model proof, no pass: a deleted check would go unseen.
       if (!mig.ok) return { pass: false, score: 0, reason: `${scopedNote}; whole model FAIL: the migrated validator could not run (${mig.error.slice(0, 160)})` };
+      // Probes: hand-picked inputs the ORIGINAL accepts or rejects for reasons the declared types do not show (values a
+      // coercing validator also understands). They are outside the generated set, so only the whole-model proof uses them.
+      if (c.probes?.length) {
+        const pin = join(diff, "probes.jsonl");
+        writeFileSync(pin, c.probes.map((x) => JSON.stringify(x)).join("\n") + "\n");
+        const a = await runOld(c, run.pristine, pin, join(diff, "probes-old.jsonl"), join(diff, "probes-a"));
+        const b = await runOld(c, run.work, pin, join(diff, "probes-new.jsonl"), join(diff, "probes-b"));
+        if (!a.ok || !b.ok) return { pass: false, score: 0, reason: `probes could not run: ${a.error ?? b.error}` };
+        const pa = readJsonl(join(diff, "probes-old.jsonl")), pb = readJsonl(join(diff, "probes-new.jsonl"));
+        const k = pa.findIndex((o, i) => o.accept !== pb[i]?.accept);
+        if (k >= 0) return { pass: false, score: 0, reason: `${scopedNote}; behaviour changes outside the declared types: ${JSON.stringify(c.probes[k])}: original ${pa[k].accept ? "accepts" : "rejects"}, migrated ${pb[k].accept ? "accepts" : "rejects"}` };
+      }
       const differs = before.map((o, i) => [o, after[i], inputs[i]]).filter(([o, n]) => !n || Boolean(o.error) !== Boolean(n.error) || o.accept !== n.accept);
       const wholePass = differs.length === 0;
       const example = differs[0] ? ` (e.g. ${JSON.stringify(differs[0][2]).slice(0, 140)}: original ${differs[0][0].accept ? "accepts" : "rejects"}, migrated ${differs[0][1]?.accept ? "accepts" : "rejects"})` : "";

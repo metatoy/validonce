@@ -21,9 +21,9 @@ const DENY_BASH = ["git push", "git commit", "rm", "curl", "wget", "ssh", "secur
 export function buildOptions(prep, config = {}) {
   return {
     cwd: prep.work,
-    model: config.model ?? process.env.EVAL_CLAUDE_MODEL ?? "opus",
+    model: process.env.EVAL_CLAUDE_MODEL ?? config.model ?? "opus",
     maxTurns: config.maxTurns ?? 60,
-    maxBudgetUsd: config.maxBudgetUsd ?? 5,
+    maxBudgetUsd: Number(process.env.EVAL_MAX_USD ?? config.maxBudgetUsd ?? 5),
     // file read/edit + bash inside the dir, the Skill tool, and the validonce MCP server. Nothing else.
     tools: ["Read", "Edit", "Write", "Glob", "Grep", "Bash", "Skill"],
     allowedTools: ["Read", "Edit", "Write", "Glob", "Grep", "Bash", "Skill", "mcp__validonce"],
@@ -40,7 +40,7 @@ export function buildOptions(prep, config = {}) {
       autoAllowBashIfSandboxed: true,
       allowUnsandboxedCommands: false,
       network: { allowedDomains: [] },
-      filesystem: { allowWrite: [prep.work] },
+      filesystem: { allowWrite: [prep.work, ...(prep.extraWrite ?? [])] },
     },
   };
 }
@@ -72,7 +72,7 @@ export default class ClaudeProvider {
       appendFileSync(log, `${JSON.stringify({ s: Math.round((Date.now() - t0) / 1000), type: m.type, subtype: m.subtype, tools: tools.length ? tools : undefined })}\n`);
     };
     try {
-      for await (const m of query({ prompt, options: { ...options, abortController: ac, env: { ...process.env, CLAUDE_CODE_DISABLE_TELEMETRY: "1" } } })) {
+      for await (const m of query({ prompt, options: { ...options, abortController: ac, env: { ...process.env, ...prep.env, CLAUDE_CODE_DISABLE_TELEMETRY: "1" } } })) {
         note(m);
         if (m.type === "result") {
           // The result is the last message that matters. Stop here: a stream that stays open after it (seen once in

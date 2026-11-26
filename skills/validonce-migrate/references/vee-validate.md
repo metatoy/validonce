@@ -48,7 +48,7 @@ Kinds map exactly as in `yup.md` and `zod.md`: `.when` with `is` is `required_wh
 - **Errors by field.** `errors.value.company` is one string (the first message). validonce reports by rule path (default: the first field); set `path` when the old form showed the error elsewhere.
 - **Blank:** `required` in `@vee-validate/rules` rejects `""`, `null`, `undefined` and `[]`, and treats whitespace-only text as empty (it trims). validonce does not trim: `" "` is not blank. Check whether the old form relied on trimming.
 - **Number inputs.** `<input type="number">` gives strings unless `v-model.number` is used; VeeValidate casts nothing. A `compare` of type `number` on the wire value is what the server checks: convert in the base schema (`z.coerce.number()`), not in the rule.
-- **Dates.** `<input type="date">` gives `YYYY-MM-DD`; a `datetime-local` has no offset: the `datetime` compare needs one.
+- **Dates.** `<input type="date">` gives `YYYY-MM-DD` for years up to 9999, but the schema itself does not check that: a string comparison in the old schema ordered any text, a `date` compare skips values that are not dates, and a `format: date` in the OpenAPI document does not enforce it. A `datetime-local` has no offset: the `datetime` compare needs one.
 - **Dynamic fields** (`v-if`, array fields with `FieldArray`): rules over a field that is not rendered must not fail it; the field has to be absent from the values, not `""`.
 - **Zod 4 skips object refinements when a field fails.** `withRules` adds an always-run check, so rule errors show with field errors (see `client-vue.md`).
 

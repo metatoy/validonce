@@ -1,0 +1,11 @@
+# Migration report (replay)
+
+Recorded migration used to test the eval assertions without a model.
+
+## Server only
+
+- `has(self.note) == has(self.reason)`: server_only, the text fields have no minLength so an empty string would differ.
+- `self.contact.size() <= 40`: server_only, a method call on a field is not supported by the rule format.
+- `self.tier == oldSelf.tier`: server_only, a transition rule (oldSelf) compares to the stored object.
+
+{{HEADINGS}}

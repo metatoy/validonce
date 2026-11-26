@@ -15,6 +15,9 @@ dependencies {
   implementation("org.hibernate.validator:hibernate-validator:8.0.2.Final")
   implementation("org.glassfish.expressly:expressly:5.0.0")
   implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
+  // Spring Boot registers these by default: java.time types, and record / constructor parameter names.
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")
+  implementation("com.fasterxml.jackson.module:jackson-module-parameter-names:2.18.2")
 }
 
 tasks.register<Copy>("libs") {

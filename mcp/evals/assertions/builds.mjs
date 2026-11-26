@@ -9,7 +9,8 @@ import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadRun, readAgentRules, ruleKey } from "../lib/run.mjs";
-import { ensureDotnetExporter } from "../lib/util.mjs";
+import { buildGo, compileJava, exportGo, exportJava } from "../lib/stacks.mjs";
+import { ensureDir, ensureDotnetExporter } from "../lib/util.mjs";
 
 const here = fileURLToPath(new URL("..", import.meta.url));
 const env = { ...process.env, DOTNET_CLI_TELEMETRY_OPTOUT: "1", DOTNET_NOLOGO: "1" };
@@ -17,6 +18,16 @@ const env = { ...process.env, DOTNET_CLI_TELEMETRY_OPTOUT: "1", DOTNET_NOLOGO: "
 export default function (_output, context) {
   const run = loadRun(context);
   const c = run.case, b = c.build;
+  const outDir0 = ensureDir(join(run.runDir, "build"));
+  if (c.stack === "go" || c.stack === "java") {
+    const r = c.stack === "go" ? buildGo(run.work, outDir0) : compileJava(run.work, join(outDir0, "classes"));
+    if (!r.ok) return { pass: false, score: 0, reason: r.error };
+    if (!c.export || run.expected.migrate.length === 0) return { pass: true, score: 1, reason: `${c.stack} builds` };
+    const agent = readAgentRules(run.work);
+    if (agent.error) return { pass: false, score: 0, reason: `builds, but ${agent.error}` };
+    return sameRules(c.stack === "go" ? exportGo(run.work, outDir0) : exportJava(c, run.work, outDir0), agent);
+  }
+  if (b.none) return { pass: true, score: 1, reason: b.none };
   const cmd = b.cmd.startsWith(".") ? join(run.work, b.cmd) : b.cmd;
   const outDir = join(run.runDir, "build");
   const args = c.stack === "dotnet" ? [...b.args, "-o", outDir] : b.args;
@@ -33,6 +44,10 @@ export default function (_output, context) {
     p = spawnSync("dotnet", [ensureDotnetExporter(), join(outDir, c.export.assembly), c.export.validator], { encoding: "utf8", timeout: 120_000, cwd: run.work, env });
   let exported;
   try { exported = JSON.parse(p.stdout); } catch { return { pass: false, score: 0, reason: `builds, but export failed: ${(p.stderr || p.stdout).slice(-300)}` }; }
+  return sameRules(exported, agent);
+}
+
+function sameRules(exported, agent) {
   if (exported.error) return { pass: false, score: 0, reason: `builds, but the migrated validator exports no rules: ${exported.error}` };
   const a = new Set(exported.rules.map(ruleKey)), f = new Set(agent.rules.map(ruleKey));
   const same = a.size === f.size && [...a].every((k) => f.has(k));

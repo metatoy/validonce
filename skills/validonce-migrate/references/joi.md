@@ -35,7 +35,7 @@ quantity: Joi.number().min(1)
 F.end.ge(F.start, { key: "rules.end_after_start", type: "date" })
 F.quantity.ge(1, { key: "rules.quantity_min", params: { min: 1 }, type: "number" })
 ```
-`.min(ref)` is `ge`, `.greater(ref)` is `gt`, `.max(ref)` is `le`, `.less(ref)` is `lt`, `valid(Joi.ref(x))` is `eq`, `invalid(Joi.ref(x))` is `ne`. A constant `.min(1)` is a **field** check, not a cross-field one: it is `compare` against a constant only when the rule must stay beside other rules; otherwise leave it in the Joi schema.
+The string comparison and `Joi.date().min(ref)` map to a `date` compare only if a runtime check limits both fields to dates (see Convert, below). `.min(ref)` is `ge`, `.greater(ref)` is `gt`, `.max(ref)` is `le`, `.less(ref)` is `lt`, `valid(Joi.ref(x))` is `eq`, `invalid(Joi.ref(x))` is `ne`. A constant `.min(1)` is a **field** check, not a cross-field one: it is `compare` against a constant only when the rule must stay beside other rules; otherwise leave it in the Joi schema.
 
 ### at_least_one_of / exactly_one_of / all_or_none
 
@@ -55,7 +55,7 @@ allOrNone(F.street, F.city, F.postalCode, { key: "rules.address_all_or_none", pa
 
 - **Present is not non-blank.** `.or`, `.xor`, `.and`, `.with`, `.nand` count a key as present when it is not `undefined`. `null` and `""` **are present** to Joi, but blank to validonce, so `{ email: "", phone: "5551234" }` passes `.xor("email","phone")` as two present keys (fail) while validonce counts one non-blank (pass). The differential check shows this at the `""` and `null` rows; usually the validonce behaviour is what the form wanted, and the report says so. If the old behaviour must stay, keep the rule hand-written.
 - **`string()` rejects `""` by default** (`.allow("")` lifts that) and a `string().required()` in `then` therefore rejects `""` and `null`, matching blank. But `Joi.any()` and `.allow(null, "")` accept both: copy the allowances of the schema you are removing.
-- **Convert is on by default.** Joi turns `"5"` into `5`, `"true"` into `true` and ISO strings into `Date` unless `convert: false`. validonce compares the wire value. Dates as `Joi.date()` compare instants and accept many formats; a rule type `date` compares `YYYY-MM-DD`.
+- **Convert is on by default.** Joi turns `"5"` into `5`, `"true"` into `true` and ISO strings into `Date` unless `convert: false`. validonce compares the wire value. Dates as `Joi.date()` compare instants and accept many formats; a rule type `date` compares `YYYY-MM-DD`. `Joi.date().iso().min(Joi.ref("start"))` therefore maps to a `date` compare only when a check that runs on the request limits both fields to `YYYY-MM-DD` (a `Joi.string()` pattern, or a request validator that enforces `format: date`). A `format: date` that only describes the field in the OpenAPI document is not such a check. Otherwise datetime bodies change verdict even though the differential passes on date inputs: keep it hand-written and say so.
 - **Unknown keys fail by default** (`"x" is not allowed`). Run the old validator over the migrated rules only, and list every wire field in the Joi object, or the extra keys show as divergences.
 - **`Joi.ref` direction:** `Joi.date().min(Joi.ref("start"))` is on the *end* key. The rule's `left` is the key that carries the `min`.
 - **Messages:** Joi messages are ignored by the check; keep your message keys.
