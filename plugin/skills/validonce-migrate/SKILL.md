@@ -5,7 +5,7 @@ license: Apache-2.0
 compatibility: Reads the project only. The differential proof and code generation need the validonce MCP server, which the full validonce plugin bundles (see "Proving the migration" below). Works in Claude Code and any agent that supports Agent Skills.
 metadata:
   author: Metatoy LLC
-  version: "0.2.0"
+  version: "0.2.1"
   homepage: https://github.com/metatoy/validonce
 allowed-tools: Read Grep Glob
 ---
