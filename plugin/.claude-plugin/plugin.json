@@ -1,10 +1,13 @@
 {
   "name": "validonce",
+  "displayName": "validonce",
   "version": "0.2.0",
   "description": "Find hand-written cross-field validation (FluentValidation, Pydantic, Zod, Angular, yup, go-playground, Jakarta, class-validator, Joi, VeeValidate, Kubernetes CEL), classify each check, and draft validonce rules written once on the server and enforced in every client. The full plugin with the differential proof installs from the validonce repository's own marketplace.",
   "author": { "name": "Metatoy LLC" },
   "homepage": "https://validonce.metatoy.com",
   "repository": "https://github.com/metatoy/validonce",
+  "supportUrl": "https://github.com/metatoy/validonce/issues",
+  "privacyPolicyUrl": "https://github.com/metatoy/validonce/blob/main/PRIVACY.md",
   "license": "Apache-2.0",
   "keywords": ["validation", "migration", "openapi", "fluentvalidation", "pydantic", "zod", "angular", "vue", "react", "kubernetes"],
   "icon": "./.claude-plugin/icon.png"
