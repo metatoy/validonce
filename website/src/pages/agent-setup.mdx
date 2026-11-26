@@ -1,0 +1,97 @@
+---
+title: Onboard your agent to validonce
+description: Connect Claude Code, Copilot in VS Code, Cursor, Codex or any MCP client to validonce, and give your agent one prompt to set up the project.
+---
+
+{/* SPDX-License-Identifier: Apache-2.0 */}
+{/* Copyright 2026 Metatoy LLC */}
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import CodeBlock from "@theme/CodeBlock";
+import agent from "@site/src/generated/agent-prompt.json";
+
+# Onboard your agent to validonce
+
+Give your coding agent the validonce MCP server and the migration skill, then hand it one prompt. It finds the
+cross-field checks in your project, drafts the rules, and proves nothing changed before it migrates anything.
+
+## 1. Connect your agent
+
+The server runs locally with `npx -y validonce-mcp` (Node 20 or later). It needs no API key and makes no network
+calls.
+
+<Tabs groupId="agent" queryString="agent">
+<TabItem value="claude" label="Claude Code" default>
+
+The plugin bundles the server and the `validonce-migrate` skill:
+
+```text
+/plugin marketplace add metatoy/validonce
+/plugin install validonce@validonce
+```
+
+</TabItem>
+<TabItem value="vscode" label="VS Code (Copilot)">
+
+One click: <a href="vscode:mcp/install?%7B%22name%22%3A%22validonce%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22validonce-mcp%22%5D%7D">Install in VS Code</a>
+(opens VS Code and asks you to confirm). Or add `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "validonce": { "type": "stdio", "command": "npx", "args": ["-y", "validonce-mcp"] }
+  }
+}
+```
+
+Then pick **Agent** mode in Copilot Chat and enable the `validonce` tools.
+
+</TabItem>
+<TabItem value="cursor" label="Cursor">
+
+One click: <a href="cursor://anysphere.cursor-deeplink/mcp/install?name=validonce&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsInZhbGlkb25jZS1tY3AiXX0=">Add to Cursor</a>.
+Or add `.cursor/mcp.json` (or `~/.cursor/mcp.json` for every project):
+
+```json
+{
+  "mcpServers": {
+    "validonce": { "command": "npx", "args": ["-y", "validonce-mcp"] }
+  }
+}
+```
+
+</TabItem>
+<TabItem value="codex" label="Codex">
+
+Add to `~/.codex/config.toml`, then restart Codex:
+
+```toml
+[mcp_servers.validonce]
+command = "npx"
+args = ["-y", "validonce-mcp"]
+```
+
+</TabItem>
+<TabItem value="other" label="Any MCP client">
+
+Add a stdio server named `validonce` with command `npx` and arguments `-y validonce-mcp`, then restart the client.
+A client that sends no workspace roots gets the directory the server was started in.
+
+</TabItem>
+</Tabs>
+
+## 2. Give it this prompt
+
+Copy the prompt into your agent, in the project you want to migrate. It is also served as
+[/agent-setup/prompt.md](pathname:///agent-setup/prompt.md) for agents that fetch it themselves.
+
+<CodeBlock language="markdown">{agent.prompt}</CodeBlock>
+
+## What happens next
+
+The agent reads the [docs index](pathname:///llms.txt), lists your cross-field checks, classifies each one, and
+proposes rules. With the MCP server connected it checks them, runs your old validator against the new rules on
+generated inputs (only after you agree), and migrates only the rules that match. Nothing is committed for you.
+See [Migrating with an agent](/docs/agentic-migration) for the full workflow, its safety rules and what has been
+tested.

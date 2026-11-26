@@ -6,6 +6,7 @@
 //   static/llms.txt             a copy of the repository's llms.txt (scripts/check.mjs keeps them equal)
 //   static/llms-full.txt        every current docs page as plain Markdown, in sidebar order
 //   src/generated/snippets.json the Contact rules for each backend, cut from the real example files
+//   static/agent-setup/prompt.md and src/generated/agent-prompt.json, from agent-setup/prompt.md
 //                               between `playground:begin` / `playground:end` marker comments (the
 //                               same markers the playground uses), so the docs can't drift from the code
 
@@ -81,3 +82,9 @@ const golden = JSON.parse(readFileSync(resolve(repo, "conformance/golden/fastapi
 const contact = golden.components?.schemas?.Contact?.["x-validonce"];
 if (!contact) throw new Error("conformance/golden/fastapi.openapi.json: no Contact x-validonce");
 writeFileSync(resolve(site, "src/generated/contact-rules.json"), `${JSON.stringify(contact, null, 2)}\n`);
+
+// The agent onboarding prompt: served as /agent-setup/prompt.md and shown on /agent-setup.
+const prompt = readFileSync(resolve(site, "agent-setup/prompt.md"), "utf8");
+mkdirSync(resolve(site, "static/agent-setup"), { recursive: true });
+writeFileSync(resolve(site, "static/agent-setup/prompt.md"), prompt);
+writeFileSync(resolve(site, "src/generated/agent-prompt.json"), `${JSON.stringify({ prompt }, null, 2)}\n`);
