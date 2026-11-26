@@ -11,3 +11,4 @@ packages:
   - 'examples/playground/k8s'
   - 'examples/playground/shell'
   - 'examples/codegen-clients/*'
+  - 'website'
